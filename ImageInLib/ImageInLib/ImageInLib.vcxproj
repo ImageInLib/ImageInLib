@@ -68,7 +68,6 @@
     <ClCompile Include="src\vtk_format_ascii.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
     <ClInclude Include="include\filtering.h" />
     <ClInclude Include="include\noiseGeneration.h" />
