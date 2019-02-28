@@ -120,7 +120,7 @@ bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const 
 					// Old
 					//fscanf(file, "%d", &value);
 					// New
-					fscanf_s(file, "%d", &value, sizeof(&value));
+					fscanf_s(file, "%d", &value, sizeof(value));
 					imageDataPtr[k][x] = value / 255.;
 				}
 			}
