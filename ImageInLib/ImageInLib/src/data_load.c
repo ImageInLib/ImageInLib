@@ -7,7 +7,6 @@
 #include "data_load.h"
 #include "common_functions.h"
 
-
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTKHeaderLines * lines)
 {
@@ -29,7 +28,7 @@ bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength,
 		return false;
 	}
 	else {
-		//Read header 
+		//Read header
 		fgets(lines->line1, 100, file);
 		fgets(lines->line2, 100, file);
 		fgets(lines->line3, 100, file);
@@ -89,7 +88,6 @@ bool load3dDataArrayD(dataType ** imageDataPtr, const size_t imageLength, const 
 	return true;
 }
 
-
 bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr)
 {
@@ -119,7 +117,10 @@ bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const 
 					// 2D to 1D representation for i, j
 					x = x_new(i, j, imageLength);
 
-					fscanf(file, "%d", &value);
+					// Old
+					//fscanf(file, "%d", &value);
+					// New
+					fscanf_s(file, "%d", &value, sizeof(value));
 					imageDataPtr[k][x] = value / 255.;
 				}
 			}
@@ -128,4 +129,3 @@ bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const 
 	fclose(file);
 	return true;
 }
-

@@ -26,7 +26,6 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-
 bool subsurfSegmentation(ImageData inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
@@ -123,7 +122,6 @@ bool subsurfSegmentation(ImageData inputImageData, SegParameters segParameters, 
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
 
-
 	//Array for name construction
 	unsigned char name[350];
 	unsigned char name_ending[100];
@@ -153,9 +151,14 @@ bool subsurfSegmentation(ImageData inputImageData, SegParameters segParameters, 
 		//writing density.
 		if ((i%segParameters.mod) == 0)
 		{
-			strcpy(name, outputPathPtr);
+			// Old
+			/*strcpy(name, outputPathPtr);
 			sprintf(name_ending, "_seg_func_%03zd.vtk", i);
-			strcat(name, name_ending);
+			strcat(name, name_ending);*/
+			// New
+			strcpy_s(name, sizeof name, outputPathPtr);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i);
+			strcat_s(name, sizeof(name), name_ending);
 			store3dDataVtkD(imageData.segmentationFuntionPtr, length, width, height, name, segParameters.h);
 		}
 		i++;
@@ -323,7 +326,7 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 				centers[i].x, centers[i].y, centers[i].z, 6., i);
 		}
 	}
-	
+
 	return true;
 }
 bool rescaleToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, size_t height)
@@ -445,7 +448,6 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	//Storage paths
 	unsigned char pathArray1[] = "D:\\segmentation\\test for library release\\segFunction.vtk";
 
-
 	// Construction of segmentation function
 	for (s = 0; s < no_of_centers; s++)
 	{
@@ -479,7 +481,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 				}
 			}
 		}
-		
+
 		if (no_of_centers == 1)
 		{
 			rescaleToIntervalZeroOne(inputDataArrayPtr, length, width, height);
@@ -524,7 +526,6 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 	presmoothingData.width = width_ext;
 	presmoothingData.imageDataPtr = extendedCoefPtr;
 
-
 	//copy data to extended area which will be used for calculation of diffusion coefficients
 	copyDataToExtendedArea(imageToBeSegPtr, extendedCoefPtr, inputImageData.height, inputImageData.length, inputImageData.width);
 
@@ -535,7 +536,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
 	copyDataToReducedArea(imageToBeSegPtr, extendedCoefPtr, inputImageData.height, inputImageData.length, inputImageData.width);
 
-	//calculation of coefficients 
+	//calculation of coefficients
 	for (k = 0, k_ext = 1; k < inputImageData.height; k++, k_ext++)
 	{
 		for (i = 0, i_ext = 1; i < inputImageData.length; i++, i_ext++)
@@ -583,7 +584,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 
 				//calculation of coefficients in the presmooted image data
 
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				ux = (uE - u) / segParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
 					/ quotient;
@@ -591,7 +592,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 					/ quotient;
 				GPtrs.GePtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				ux = (uW - u) / segParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
 					/ quotient;
@@ -599,7 +600,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 					/ quotient;
 				GPtrs.GwPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
 					/ quotient;
 				uy = (uN - u) / segParameters.h;
@@ -607,7 +608,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 					/ quotient;
 				GPtrs.GnPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
 					/ quotient;
 				uy = (uS - u) / segParameters.h;
@@ -615,7 +616,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 					/ quotient;
 				GPtrs.GsPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
 					/ quotient;
 				uy = ((TuN + uN) - (TuS + uS))
@@ -623,7 +624,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 				uz = (Tu - u) / segParameters.h;
 				GPtrs.GtPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
 					/ quotient;
 				uy = ((BuN + uN) - (BuS + uS))
@@ -665,7 +666,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 	//set boundary values to ensure Zero Dirichlet boundary condition.
 	setBoundaryToZeroDirichletBC(extendedCoefPtr, length_ext, width_ext, height_ext);
 
-	//calculation of coefficients 
+	//calculation of coefficients
 	for (k = 0, k_ext = 1; k < inputImageData.height; k++, k_ext++)
 	{
 		for (i = 0, i_ext = 1; i < inputImageData.length; i++, i_ext++)
@@ -682,7 +683,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 				kplus1 = k_ext + 1;
 				kminus1 = k_ext - 1;
 
-				//values of voxels in the extended data container for the original image  
+				//values of voxels in the extended data container for the original image
 				orig_u = extendedCoefPtr[k_ext][x_ext];
 				orig_uN = extendedCoefPtr[k_ext][x_new(i_ext, jminus1, length_ext)];
 				orig_uS = extendedCoefPtr[k_ext][x_new(i_ext, jplus1, length_ext)];
@@ -712,7 +713,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 				orig_BuSW = extendedCoefPtr[kplus1][x_new(iminus1, jplus1, length_ext)];
 
 				//calculation of coefficients in the original image data
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				orig_ux = (orig_uE - orig_u) / segParameters.h;
 				orig_uy = ((orig_uN + orig_uNE) - (orig_uS + orig_uSE))
 					/ quotient;
@@ -720,7 +721,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 					/ quotient;
 				orig_e = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				orig_ux = (orig_uW - orig_u) / segParameters.h;
 				orig_uy = ((orig_uNW + orig_uN) - (orig_uSW + orig_uS))
 					/ quotient;
@@ -728,7 +729,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 					/ quotient;
 				orig_w = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				orig_ux = ((orig_uNE + orig_uE) - (orig_uNW + orig_uW))
 					/ quotient;
 				orig_uy = (orig_uN - orig_u) / segParameters.h;
@@ -736,7 +737,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 					/ quotient;
 				orig_n = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				orig_ux = ((orig_uE + orig_uSE) - (orig_uW + orig_uSW))
 					/ quotient;
 				orig_uy = (orig_uS - orig_u) / segParameters.h;
@@ -744,7 +745,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 					/ quotient;
 				orig_s = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				orig_ux = ((orig_TuE + orig_uE) - (orig_TuW + orig_uW))
 					/ quotient;
 				orig_uy = ((orig_TuN + orig_uN) - (orig_TuS + orig_uS))
@@ -752,7 +753,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImage
 				orig_uz = (orig_Tu - orig_u) / segParameters.h;
 				orig_t = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				orig_ux = ((orig_BuW + orig_uW) - (orig_BuE + orig_uE))
 					/ quotient;
 				orig_uy = ((orig_BuN + orig_uN) - (orig_BuS + orig_uS))
