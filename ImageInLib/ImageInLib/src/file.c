@@ -7,19 +7,19 @@
 bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
 	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation)
 {
+	bool status = false; // Initial Status, only changed to true if the operation is successful
 	switch (operation)
 	{
 	case LOAD_DATA_VTK:
-		load3dDataArrayVTK((unsigned char **)imageDataPtr, length, width, height, pathPtr, lines);
+		status = load3dDataArrayVTK((unsigned char **)imageDataPtr, length, width, height, pathPtr, lines);
 		break;
 	case STORE_DATA_VTK:
-		store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines);
+		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines);
 		break;
 	default:
 		break;
 	}
-
-	return true;
+	return status;
 }
 
 void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height)
