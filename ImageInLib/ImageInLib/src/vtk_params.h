@@ -19,3 +19,8 @@ typedef struct
 	vtk_header_line line11;
 } VTKHeaderLines;
 //==============================================================================
+typedef enum {
+	BINARY_DATA = 1,
+	ASCII_DATA
+} loadDataType;
+//==============================================================================
