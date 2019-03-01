@@ -15,7 +15,7 @@ bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
 		status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
 		break;
 	case STORE_DATA_VTK:
-		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines);
+		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines, flags);
 		break;
 	case STORE_DATA_RAW:
 		switch (dType)
