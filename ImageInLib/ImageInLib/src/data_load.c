@@ -88,8 +88,8 @@ bool load3dDataArrayD(dataType ** imageDataPtr, const size_t imageLength, const 
 	return true;
 }
 
-bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
-	const size_t imageHeight, unsigned char * pathPtr)
+bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
+	const size_t imageHeight, unsigned char * pathPtr, loadDataType dType)
 {
 	//checks if the memory was allocated
 	if (imageDataPtr == NULL)
@@ -98,13 +98,26 @@ bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const 
 	if (pathPtr == NULL)
 		return false;
 
-	size_t i, j, k;
-	size_t x; //x = x_new(i, j, length);
+	size_t i, j, k, xd;
 	int value;
 	FILE *file;
+	char rmode[4];
 
-	//writing binary data to file
-	if (fopen_s(&file, pathPtr, "r") != 0) {
+	if (dType == BINARY_DATA)
+	{
+		strcpy(rmode, "rb");
+	}
+	else if (dType == ASCII_DATA)
+	{
+		strcpy(rmode, "r");
+	}
+	else
+	{
+		return false; // Unindentified read mode, exiting the function
+	}
+	// Reading data file
+	if (fopen_s(&file, pathPtr, rmode) != 0) {
+		fprintf(stderr, "Error: Unable to open file %s\n\n", pathPtr);
 		return false;
 	}
 	else {
@@ -115,13 +128,21 @@ bool load3dDataArrayA(dataType ** imageDataPtr, const size_t imageLength, const 
 				for (j = 0; j < imageWidth; j++)
 				{
 					// 2D to 1D representation for i, j
-					x = x_new(i, j, imageLength);
+					xd = x_new(i, j, imageLength);
 
-					// Old
-					//fscanf(file, "%d", &value);
-					// New
-					fscanf_s(file, "%d", &value, sizeof(value));
-					imageDataPtr[k][x] = value / 255.;
+					if (dType == BINARY_DATA)
+					{
+						value = getc(file);
+						imageDataPtr[k][xd] = (dataType)value;
+					}
+					else if (dType == ASCII_DATA)
+					{
+						// Old
+						//fscanf(file, "%d", &value);
+						// New
+						fscanf_s(file, "%d", &value, sizeof(value));
+						imageDataPtr[k][xd] = (dataType)value;
+					}
 				}
 			}
 		}
