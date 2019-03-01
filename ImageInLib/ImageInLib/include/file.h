@@ -12,7 +12,7 @@ typedef enum {
 } operationType;
 
 bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
-	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation, loadDataType dType);
+	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation, loadDataType dType, storageFlags flags);
 
 /*Converts to doulbe*/
 void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height);
