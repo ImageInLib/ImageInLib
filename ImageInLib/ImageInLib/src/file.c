@@ -5,13 +5,16 @@
 #include "data_storage.h"
 
 bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
-	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation)
+	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation, loadDataType dType)
 {
 	bool status = false; // Initial Status, only changed to true if the operation is successful
 	switch (operation)
 	{
 	case LOAD_DATA_VTK:
 		status = load3dDataArrayVTK((unsigned char **)imageDataPtr, length, width, height, pathPtr, lines);
+		break;
+	case LOAD_DATA_RAW:
+		status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
 		break;
 	case STORE_DATA_VTK:
 		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines);
