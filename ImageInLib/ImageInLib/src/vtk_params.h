@@ -1,5 +1,7 @@
 #pragma once
 //==============================================================================
+#include <stdbool.h>
+//==============================================================================
 #define VTK_MAX_HEADER_LINE_LENGTH 256
 
 typedef char vtk_header_line[VTK_MAX_HEADER_LINE_LENGTH];
@@ -23,4 +25,9 @@ typedef enum {
 	BINARY_DATA = 1,
 	ASCII_DATA
 } loadDataType;
+//==============================================================================
+typedef struct {
+	bool revertDataBytes;
+	bool appendToFile;
+} storageFlags;
 //==============================================================================
