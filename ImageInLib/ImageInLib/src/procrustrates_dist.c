@@ -1,15 +1,18 @@
-#include "procrustrates_dist.h"
+//==============================================================================
+#include <stdio.h>
 #include <stdlib.h>
 //==============================================================================
+#include "procrustrates_dist.h"
+//==============================================================================
 void calc_mean(dataType **dtaMean, dataType ** dtaInput, size_t height, size_t length, size_t width, size_t numShapes);
-void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, int m, int n, int n1);
-void transpose(dataType **tposed, dataType **entry, int m, int n);
+void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t m, const size_t n, const size_t n1);
+void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n);
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, int princomp, size_t height, size_t length, size_t width);
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shapeAnalysisParameters params)
 {
-	size_t k, i, j, xd, l;
+	size_t k, i, j, xd;
 	char st[160];
 	for (i = 0; i < 160; i++)
 	{
@@ -39,7 +42,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	//==============================================================================
 	// Step two - Register/Align the eigen shapes with the selected mean shape
 	int z;
-	dataType error, tmp, tol_proc = 1.0e-02;
+	dataType error, tol_proc = 1.0e-02;
 	z = 0;
 	do
 	{
@@ -53,7 +56,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		//==============================================================================
 		for (k = 0; k < numShapes; k++)
 		{
-			printf("Shape %d\n", k + 1);
+			printf("Shape %zd\n", k + 1);
 			run_registration(shapes[k].shp, initEstimate, shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
 			// Calculate the Mean shape
 			calc_mean(dtaMnShp, shapes[k].shp, height, length, width, numShapes);
@@ -91,7 +94,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	free(initEstimate);
 	initEstimate = NULL;
 }
-void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType ** eigvalues, int * princomp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
+void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType ** eigvalues, size_t * princomp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
 	size_t k, i, j, l, xd, xyd, dim3D = height * length * width;
 	// Initialize pointer functions
@@ -203,11 +206,11 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	dataType eigsum = 0.0, total = 0;
 	for (i = numShapes; i >= 1; i--)
 	{
-		total += fabsf(eig_values[i]);
+		total += fabs(eig_values[i]);
 	}
 	for (i = 1; i <= numShapes; i++)
 	{
-		eigsum += fabsf(eig_values[i]) / total;
+		eigsum += fabs(eig_values[i]) / total;
 		(*princomp)++;
 		if (eigsum >= pca_Threshold)
 		{
@@ -230,7 +233,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 		}
 		printf("\n");
 	}
-	printf("\nWe have selected %d principal components\n", (*princomp));
+	printf("\nWe have selected %zd principal components\n", (*princomp));
 	//==============================================================================
 	// Calculate the Eigenvalues and eigenvectos of S*S_transpose
 	// 1. Align the S - D by n matrix
@@ -298,7 +301,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 }
 void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shapeAnalysisParameters shapeParam, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
-	size_t k, i, j, xd;
+	size_t k;
 	// Init mean shape pointer
 	// Initialize the dtaMeanShape and initial estimate shape
 	dataType ** meanShape = (dataType **)malloc(sizeof(dataType*)*height);
@@ -355,7 +358,7 @@ void calc_mean(dataType ** dtaMean, dataType ** dtaInput, size_t height, size_t 
 	}
 }
 //==============================================================================
-void transpose(dataType **tposed, dataType **entry, int m, int n)
+void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n)
 {
 	int j, i;
 	// Interchange n with m, j with i
@@ -387,9 +390,9 @@ void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t len
 		}
 	}
 }
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, int princomp, size_t height, size_t length, size_t width)
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width)
 {
-	size_t k, i, j, xd, xyd, l;
+	size_t k, i, j, xd, xyd;
 	//==============================================================================
 	size_t dim3D = height * length * width;
 	//==============================================================================
@@ -462,7 +465,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	// Estimated shape parameter - 1 by 1
 	dataType energy_param = 0;
 	// Shape projection transpose
-	dataType ** shp_projection_trans = (dataType*)malloc(sizeof(dataType) * 1); // 1 by k
+	dataType ** shp_projection_trans = (dataType**)malloc(sizeof(dataType *) * 1); // 1 by k
 	for (i = 0; i < 1; i++)
 	{
 		shp_projection_trans[i] = (dataType*)malloc(sizeof(dataType) * princomp);
@@ -492,7 +495,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	dataType tolerance = 1.0e-04, error;
 	dataType eps = 1000;
 	// Initialize pointers#
-	dataType * est_shape = (dataType**)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
+	dataType * est_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
 	for (i = 0; i < dim3D; i++)
 	{
 		est_shape[i] = 0;
@@ -515,7 +518,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 			for (j = 0; j < princomp; j++)
 			{
 				// Estimated shape
-				est_shape[i] += shp_projection[j] * sqrtf(eigenvalues[j]) * eigenvectors[i][j];
+				est_shape[i] += shp_projection[j] * sqrt(eigenvalues[j]) * eigenvectors[i][j];
 			}
 		}
 		//==============================================================================
@@ -602,7 +605,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 }
 //==============================================================================
 // Perform two matrices multiplication Function
-void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, int m, int n, int n1)
+void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t  m, const size_t  n, const size_t n1)
 {
 	int i, j, k;
 	for (i = 0; i < m; i++)

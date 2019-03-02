@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 //==============================================================================
-dataType * vector(int n)
+dataType * vector(const size_t n)
 {
 	dataType *v;
 
@@ -13,7 +13,7 @@ dataType * vector(int n)
 	return v - 1;
 }
 //==============================================================================
-dataType ** matrix(int m, int n)
+dataType ** matrix(const size_t m, const size_t n)
 {
 	int i;
 	dataType **mat;
@@ -42,9 +42,9 @@ dataType ** matrix(int m, int n)
 		W H Press et al., Numerical Recipes in C, Cambridge U P,
 		1988, pp. 373-374.
 */
-void triDecomp(dataType ** a, int n, dataType * d, dataType * e)
+void triDecomp(dataType ** a, const size_t n, dataType * d, dataType * e)
 {
-	int l, k, j, i;
+	size_t l, k, j, i;
 	dataType scale, hh, h, g, f;
 
 	for (i = n; i >= 2; i--)
@@ -119,7 +119,7 @@ void triDecomp(dataType ** a, int n, dataType * d, dataType * e)
 }
 //==============================================================================
 // dataTyperidiagonal QL (Q- Orthogonal, R -Upper triangular) implicit Algorithm
-void triDian(dataType d[], dataType e[], int n, dataType ** z)
+void triDian(dataType d[], dataType e[], const size_t n, dataType ** z)
 {
 	int m, l, iter, i, k;
 	dataType s, r, p, g, f, dd, c, b;
@@ -192,14 +192,14 @@ void erhand(char err_msg[])
 	exit(1);
 }
 //==============================================================================
-void free_vector(dataType * v, int n)
+void free_vector(dataType * v, const size_t n)
 {
 	free((char*)(v + 1));
 }
 //==============================================================================
-void free_matrix(dataType ** mat, int n, int m)
+void free_matrix(dataType ** mat, const size_t n, const size_t m)
 {
-	int i;
+	size_t i;
 
 	for (i = n; i >= 1; i--)
 	{
@@ -207,7 +207,7 @@ void free_matrix(dataType ** mat, int n, int m)
 	}
 	free((char*)(mat + 1));
 }
-void eigenSort(dataType * eigval, dataType ** eigvectors, int dim)
+void eigenSort(dataType * eigval, dataType ** eigvectors, const size_t dim)
 {
 	size_t k, i, j;
 	dataType p;
@@ -236,7 +236,7 @@ void eigenSort(dataType * eigval, dataType ** eigvectors, int dim)
 		}
 	}
 }
-void covcol(dataType ** dta, int n, int m, dataType ** symmat)
+void covcol(dataType ** dta, const size_t n, const size_t m, dataType ** symmat)
 {
 	dataType *mean, *vector();
 	int i, j, j1, j2;
