@@ -23,9 +23,9 @@ typedef struct
 	enum cellState state;
 	dataType arrival;
 	size_t position;
-	int xpos;
-	int ypos;
-	int zpos;
+	size_t xpos;
+	size_t ypos;
+	size_t zpos;
 } objStructure;
 //==============================================================================
 // Linked List
@@ -34,9 +34,9 @@ struct Node
 	enum cellState state;
 	dataType arrival;
 	size_t position;
-	int xpos;
-	int ypos;
-	int zpos;
+	size_t xpos;
+	size_t ypos;
+	size_t zpos;
 	struct Node* next;
 };
 //==============================================================================
@@ -51,11 +51,11 @@ struct Node *middleNode(struct Node *startNode, struct Node *endNode);
 struct MaxHeap
 {
 	int size;
-	int** metadata;
+	size_t ** metadata;
 	dataType* array;
 };
 void swap(dataType* a, dataType* b);
-void swapMeta(int** a, int** b);
+void swapMeta(size_t ** a, size_t ** b);
 void maxHeapify(struct MaxHeap* maxHeap, int idx);
 struct MaxHeap* createAndBuildHeap(struct Node *head);
 void heap_sort(struct Node **head);

@@ -111,9 +111,9 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 				// Solve T's
 				dataType T01, T02, T03;
 				// Access Object Coordinate Positions
-				int posx = neighbours->xpos;
-				int posy = neighbours->ypos;
-				int posz = neighbours->zpos;
+				size_t posx = neighbours->xpos;
+				size_t posy = neighbours->ypos;
+				size_t posz = neighbours->zpos;
 				size_t xy = x_new(posx, posy, imageLength);
 				// Y Begin
 				objStructure objBegin;
@@ -216,7 +216,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 		// Gets the first element
 		struct Node * objFirst = getElement(band, 0);
 		// Change state to Frozen
-		int objx = objFirst->xpos, objy = objFirst->ypos, objz = objFirst->zpos;
+		size_t objx = objFirst->xpos, objy = objFirst->ypos, objz = objFirst->zpos;
 		size_t objxy = x_new(objx, objy, imageLength);
 		object[objz][objxy].state = FROZEN;
 		// Remove from band
@@ -270,9 +270,9 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 				// Solve T
 				dataType T11, T12, T13;
 				// Access Object Coordinate Positions
-				int pox = neighbourx->xpos;
-				int poy = neighbourx->ypos;
-				int poz = neighbourx->zpos;
+				size_t pox = neighbourx->xpos;
+				size_t poy = neighbourx->ypos;
+				size_t poz = neighbourx->zpos;
 				size_t pxy = x_new(pox, poy, imageLength);
 
 				// Begin
