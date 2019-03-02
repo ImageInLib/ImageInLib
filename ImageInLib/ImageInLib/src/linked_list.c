@@ -6,7 +6,7 @@
 #include "linked_list.h"
 
 // 1.a Searches linearly for an element in the linked list and updates the element value
-void searchUpdate(struct Node ** head, struct Node * objAdd, int position)
+void searchUpdate(struct Node ** head, struct Node * objAdd, const size_t position)
 {
 	struct Node *current = (*head);
 
@@ -139,7 +139,7 @@ struct MaxHeap* createAndBuildHeap(struct Node *head)
 	while (current != NULL)
 	{
 		tmpPtr[count] = current->arrival;
-		int data[5] = { current->xpos,current->ypos,current->zpos,1,current->position };
+		size_t data[5] = { current->xpos,current->ypos,current->zpos,1,current->position };
 		for (i = 0; i < 5; i++)
 		{
 			meta[count][i] = data[i];

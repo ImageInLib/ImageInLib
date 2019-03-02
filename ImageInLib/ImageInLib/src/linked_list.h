@@ -22,7 +22,7 @@ typedef struct
 {
 	enum cellState state;
 	dataType arrival;
-	int position;
+	size_t position;
 	int xpos;
 	int ypos;
 	int zpos;
@@ -33,7 +33,7 @@ struct Node
 {
 	enum cellState state;
 	dataType arrival;
-	int position;
+	size_t position;
 	int xpos;
 	int ypos;
 	int zpos;
@@ -42,7 +42,7 @@ struct Node
 //==============================================================================
 // PROTOTYPES
 // 1.a Searches linearly for an element in the linked list and updates the element value
-void searchUpdate(struct Node ** head, struct Node * objAdd, int position);
+void searchUpdate(struct Node ** head, struct Node * objAdd, const size_t position);
 // 1.b Binary Search Function for a Linked list
 void binarySearchLinkedList(struct Node **head_ref, dataType newValue, size_t position);
 struct Node *middleNode(struct Node *startNode, struct Node *endNode);
