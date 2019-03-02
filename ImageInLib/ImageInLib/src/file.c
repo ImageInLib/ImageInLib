@@ -1,11 +1,9 @@
-#include "vtk_params.h"
 #include "file.h"
 #include "data_load.h"
-#include <stdbool.h>
 #include "data_storage.h"
 
 bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
-	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation)
+	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation, loadDataType dType, storageFlags flags)
 {
 	bool status = false; // Initial Status, only changed to true if the operation is successful
 	switch (operation)
@@ -13,8 +11,24 @@ bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
 	case LOAD_DATA_VTK:
 		status = load3dDataArrayVTK((unsigned char **)imageDataPtr, length, width, height, pathPtr, lines);
 		break;
+	case LOAD_DATA_RAW:
+		status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
+		break;
 	case STORE_DATA_VTK:
-		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines);
+		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines, flags);
+		break;
+	case STORE_DATA_RAW:
+		switch (dType)
+		{
+		case BINARY_DATA:
+			status = store3dDataArrayD(imageDataPtr, length, width, height, pathPtr, flags);
+			break;
+		case ASCII_DATA:
+			status = store3dDataArrayASCII(imageDataPtr, length, width, height, pathPtr, flags);
+			break;
+		default:
+			break;
+		}
 		break;
 	default:
 		break;
