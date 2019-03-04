@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTKHeaderLines * lines)
 {
@@ -139,9 +138,6 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 					}
 					else if (dType == ASCII_DATA)
 					{
-						// Old
-						//fscanf(file, "%d", &value);
-						// New
 						fscanf_s(file, "%d", &value);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
