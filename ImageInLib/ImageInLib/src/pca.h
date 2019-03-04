@@ -16,15 +16,15 @@
 // Macro
 #define SIGN(a, b) ( (b) < 0 ? -fabs(a) : fabs(a) ) // Changes the sign
 //==============================================================================
-dataType *vector(int n); // Allocation of vector storage
-dataType **matrix(int m, int n); // Allocation of float matrix storage
-void triDecomp(dataType **a, int n, dataType *d, dataType *e); // Reduce a real, symmetric matrix to a symmetric, tridiagonal matrix.
-void triDian(dataType d[], dataType e[], int n, dataType **z); // Tridiagonal QL algorithm -- Implicit
+dataType *vector(const size_t n); // Allocation of vector storage
+dataType **matrix(const size_t m, const size_t n); // Allocation of float matrix storage
+void triDecomp(dataType **a, const size_t n, dataType *d, dataType *e); // Reduce a real, symmetric matrix to a symmetric, tridiagonal matrix.
+void triDian(dataType d[], dataType e[], const size_t n, dataType **z); // Tridiagonal QL algorithm -- Implicit
 void erhand(char err_msg[]);// Error handler
-void free_vector(dataType *v, int n); //Deallocate vector storage allocated by vector()
-void free_matrix(dataType **mat, int n, int m); // Deallocate float matrix storage
-void covcol(dataType ** data, int n, int m, dataType ** symmat);
+void free_vector(dataType *v, const size_t n); //Deallocate vector storage allocated by vector()
+void free_matrix(dataType **mat, const size_t n, const size_t m); // Deallocate float matrix storage
+void covcol(dataType ** data, const size_t n, const size_t m, dataType ** symmat);
 //==============================================================================
-void eigenSort(dataType *eigval, dataType **eigvectors, int dim); // Sorts pointers in descending order of eigenvalues
+void eigenSort(dataType *eigval, dataType **eigvectors, const size_t dim); // Sorts pointers in descending order of eigenvalues
 //==============================================================================
 #endif // !PCA

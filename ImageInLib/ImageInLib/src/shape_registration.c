@@ -1,8 +1,9 @@
 //==============================================================================
 #include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
 //==============================================================================
 #include "shape_registration.h"
-#include <stdlib.h>
 //==============================================================================
 void run_registration(dataType **dPtr, dataType **sPtr, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, unsigned int gdescentMethod)
 {
@@ -81,7 +82,7 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			for (j = 0; j < imageWidth; j++)
 			{
 				// 2D to 1D representation for i, j
-				int x = x_new(i, j, imageLength);
+				size_t x = x_new(i, j, imageLength);
 				objectNthD[k][x].arrival = INFINITY;
 				objectNthD[k][x].state = UNKNOWN;
 				objectNthD[k][x].xpos = i;
@@ -105,9 +106,9 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 				if (dataSourcePtr[k][x] == objPixel) // Fill value for block
 				{
 					// Save the dimension with those values
-					shapePoints[loop].x = i;
-					shapePoints[loop].y = j;
-					shapePoints[loop].z = k;
+					shapePoints[loop].x = (dataType)i;
+					shapePoints[loop].y = (dataType)j;
+					shapePoints[loop].z = (dataType)k;
 					loop++;
 				}
 			}
@@ -150,7 +151,7 @@ void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHei
 			for (j = 0; j < imageWidth; j++)
 			{
 				// 2D to 1D representation for i, j
-				int xD = x_new(i, j, imageLength);
+				size_t xD = x_new(i, j, imageLength);
 				if (imageDataPtr[k][xD] != imageBackground)
 				{
 					x += i;
@@ -172,9 +173,9 @@ void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHei
 //==============================================================================
 int NFunction(dataType val1, dataType val2, dataType delta)
 {
-	if (abs(val1) < abs(val2))
+	if (fabs(val1) < fabs(val2))
 	{
-		if (abs(val1) > delta)
+		if (fabs(val1) > delta)
 		{
 			return 0;
 		}
@@ -185,7 +186,7 @@ int NFunction(dataType val1, dataType val2, dataType delta)
 	}
 	else
 	{
-		if (abs(val2) > delta)
+		if (fabs(val2) > delta)
 		{
 			return 0;
 		}
@@ -208,7 +209,7 @@ dataType energyFunction(dataType ** destination, dataType ** distTrans, size_t i
 			for (j = 0; j < imageWidth; j++)
 			{
 				// 2D to 1D representation for i, j
-				int x = x_new(i, j, imageLength);
+				size_t x = x_new(i, j, imageLength);
 				if (NFunction(destination[k][x], distTrans[k][x], NDelta) == 1)
 				{
 					energy += (destination[k][x] - distTrans[k][x])   * (destination[k][x] - distTrans[k][x]);
@@ -220,9 +221,8 @@ dataType energyFunction(dataType ** destination, dataType ** distTrans, size_t i
 	return ((h * energy) / (2 * counter));
 }
 //==============================================================================
-dataType finiteDifX(dataType ** distPtr, dataType h, unsigned int x, size_t k, size_t i, size_t imageLength)
+dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength)
 {
-	size_t x_n, x_p;
 	if (i == 0) // Apply Forward Difference
 	{
 		return (distPtr[k][x + 1] - distPtr[k][x]) / (h);
@@ -266,7 +266,7 @@ dataType finiteDifY(dataType ** distPtr, dataType h, size_t k, size_t i, size_t 
 	}
 }
 //==============================================================================
-dataType finiteDifZ(dataType ** distPtr, dataType h, unsigned int x, size_t k, size_t i, size_t imageLength, size_t imageHeight)
+dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight)
 {
 	if (k == 0) // Apply Forward Difference
 	{
@@ -286,7 +286,7 @@ AffineParameter gradientComponents(dataType ** destPtr, dataType ** distTrans, d
 {
 	AffineParameter results;
 	// Initialize the parameters
-	int k, i, j, x;
+	size_t k, i, j, x;
 
 	// Initialize the results
 	results.rotation.x = 0.0, results.rotation.y = 0.0, results.rotation.z = 0.0;
@@ -297,7 +297,7 @@ AffineParameter gradientComponents(dataType ** destPtr, dataType ** distTrans, d
 	dataType xFwd, yFwd, zFwd;
 
 	// Derivative component
-	dataType component, componentX, componentY, componentZ;
+	dataType componentX, componentY, componentZ;
 
 	// Stores the difference between two distance pointers
 	dataType distDifference;
@@ -404,7 +404,7 @@ AffineParameter gradientComponents(dataType ** destPtr, dataType ** distTrans, d
 AffineParameter registration3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params)
 {
 	//==============================================================================
-	size_t k, i, j, l, x, dim2D = imageLength * imageWidth;
+	size_t k, i, dim2D = imageLength * imageWidth;
 	int iteration = 0;
 	dataType firstCpuTime, secondCpuTime, regStartCpuTime, regStopCpuTime, regTotalCpuTimen = 0.;
 	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0.;
@@ -598,7 +598,8 @@ AffineParameter registration3D(dataType ** destination, dataType ** source, Affi
 //==============================================================================
 AffineParameter registrationStochastic3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params)
 {
-	size_t k, i, j, l, x, dim2D = imageLength * imageWidth, iteration = 0, h = 1.0;
+	size_t k, i, j, l, x, dim2D = imageLength * imageWidth, iteration = 0;
+	const dataType h = 1.0;
 	dataType firstCpuTime, secondCpuTime, regStartCpuTime, regStopCpuTime, regTotalCpuTimen = 0.;
 	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0.;
 	// Affine Parameters
@@ -703,7 +704,7 @@ AffineParameter registrationStochastic3D(dataType ** destination, dataType ** so
 		// Print Pre-evaluate affine values
 		if (params.displayRegistrationOutputs)
 		{
-			printf("Energy = %5.5lf, iteration %4d, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
+			printf("Energy = %5.5lf, iteration %4zd, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
 				energyTmp, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
 				affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
 		}
@@ -718,7 +719,7 @@ AffineParameter registrationStochastic3D(dataType ** destination, dataType ** so
 			printf("Total transformation Function calc. CPU Time is: %e secs\n", transformationTotalCpuTime);
 
 			// Print the Calculated Transformation Parameters At the End of Registration
-			printf("Energy = %5.2lf, iteration %4d, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
+			printf("Energy = %5.2lf, iteration %4zd, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
 				energyTmp, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
 				affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
 		}
@@ -741,7 +742,7 @@ AffineParameter registrationStochastic3D(dataType ** destination, dataType ** so
 			dataType xFwd, yFwd, zFwd;
 
 			// Derivative component
-			dataType component, componentX, componentY, componentZ;
+			dataType component;
 
 			// Stores the difference between two distance pointers
 			dataType distDifference;
