@@ -27,13 +27,11 @@ bool store3dDataArrayUC(unsigned char ** array3DPtr, const size_t xDim, const si
 		//writing binary data to file
 		if ((fopen_s(&cfPtr, pathPtr, "wb")) != 0)
 			return false;
-
 	}
 	for (k = 0; k < zDim; k++)
 	{
 		fwrite(array3DPtr[k], sizeof(unsigned char), dimXY, cfPtr);
 	}
-
 
 	fclose(cfPtr);
 
@@ -79,7 +77,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 
 //function for storage of data in 3D binary format.
 bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, unsigned char * pathPtr, const bool appendToFile, const bool revertDataBytes)
+	const size_t zDim, unsigned char * pathPtr, storageFlags flags)
 {
 	const size_t dimXY = xDim * yDim;
 	FILE *cfPtr;
@@ -88,7 +86,7 @@ bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDi
 	if (array3DPtr == NULL)
 		return false;
 
-	if (appendToFile == true)
+	if (flags.appendToFile == true)
 	{
 		//writing binary data to file
 		if ((fopen_s(&cfPtr, pathPtr, "ab")) != 0)
@@ -99,10 +97,9 @@ bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDi
 		//writing binary data to file
 		if ((fopen_s(&cfPtr, pathPtr, "wb")) != 0)
 			return false;
-
 	}
 
-	if (revertDataBytes)
+	if (flags.revertDataBytes)
 	{
 		for (size_t k = 0; k < zDim; k++)
 		{
@@ -129,7 +126,7 @@ bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDi
 
 //function for storage of data in 3D ASCII format.
 bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, unsigned char * pathPtr, const bool appendToFile, const bool revertDataBytes)
+	const size_t zDim, unsigned char * pathPtr, storageFlags flags)
 {
 	const size_t dim2D = xDim * yDim;
 	FILE *cfPtr;
@@ -138,7 +135,7 @@ bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t
 	if (array3DPtr == NULL)
 		return false;
 
-	if (appendToFile == true)
+	if (flags.appendToFile == true)
 	{
 		//writing binary data to file
 		if ((fopen_s(&cfPtr, pathPtr, "a")) != 0)
@@ -149,10 +146,9 @@ bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t
 		//writing binary data to file
 		if ((fopen_s(&cfPtr, pathPtr, "w")) != 0)
 			return false;
-
 	}
 
-	if (revertDataBytes)
+	if (flags.revertDataBytes)
 	{
 		for (size_t k = 0; k < zDim; k++)
 		{
@@ -168,7 +164,6 @@ bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t
 	{
 		for (size_t k = 0; k < zDim; k++)
 		{
-
 			for (size_t i = 0; i < dim2D; i++)
 			{
 				fprintf(cfPtr, "%.16lf \n", array3DPtr[k][i]);
@@ -181,11 +176,10 @@ bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t
 	return true;
 }
 
-
 //xDim is the x dimension, yDim is the y dimension and zDim is the z dimension
 //value is the initial constant value
 bool store3dDataVtkD(double ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, unsigned char * pathPtr, double h)
+	const size_t zDim, unsigned char * pathPtr, double h, storageFlags flags)
 {
 	FILE * outputfile; //file stream
 	size_t dimXYZ = xDim * yDim * zDim;
@@ -214,12 +208,12 @@ bool store3dDataVtkD(double ** array3DPtr, const size_t xDim, const size_t yDim,
 	}
 	fclose(outputfile);
 	// writing data to vtk file
-	store3dDataArrayD(array3DPtr, xDim, yDim, zDim, pathPtr, true, true);
+	store3dDataArrayD(array3DPtr, xDim, yDim, zDim, pathPtr, flags);
 	return true;
 }
 
 bool store3dRealDataVtkD(double ** array3DPtr, const size_t imageLength, const size_t imageWidth,
-	const size_t imageHeight, unsigned char * pathPtr, VTKHeaderLines * lines)
+	const size_t imageHeight, unsigned char * pathPtr, VTKHeaderLines * lines, storageFlags flags)
 {
 	//checks if the memory was allocated
 	if (array3DPtr == NULL)
@@ -250,7 +244,7 @@ bool store3dRealDataVtkD(double ** array3DPtr, const size_t imageLength, const s
 	}
 	fclose(outputfile);
 	// writing data to vtk file
-	store3dDataArrayD(array3DPtr, imageLength, imageWidth, imageHeight, pathPtr, true, true);
+	store3dDataArrayD(array3DPtr, imageLength, imageWidth, imageHeight, pathPtr, flags);
 	return true;
 }
 
