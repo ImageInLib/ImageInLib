@@ -22,10 +22,10 @@ typedef struct
 {
 	enum cellState state;
 	dataType arrival;
-	int position;
-	int xpos;
-	int ypos;
-	int zpos;
+	size_t position;
+	size_t xpos;
+	size_t ypos;
+	size_t zpos;
 } objStructure;
 //==============================================================================
 // Linked List
@@ -33,16 +33,16 @@ struct Node
 {
 	enum cellState state;
 	dataType arrival;
-	int position;
-	int xpos;
-	int ypos;
-	int zpos;
+	size_t position;
+	size_t xpos;
+	size_t ypos;
+	size_t zpos;
 	struct Node* next;
 };
 //==============================================================================
 // PROTOTYPES
 // 1.a Searches linearly for an element in the linked list and updates the element value
-void searchUpdate(struct Node ** head, struct Node * objAdd, int position);
+void searchUpdate(struct Node ** head, struct Node * objAdd, const size_t position);
 // 1.b Binary Search Function for a Linked list
 void binarySearchLinkedList(struct Node **head_ref, dataType newValue, size_t position);
 struct Node *middleNode(struct Node *startNode, struct Node *endNode);
@@ -51,11 +51,11 @@ struct Node *middleNode(struct Node *startNode, struct Node *endNode);
 struct MaxHeap
 {
 	int size;
-	int** metadata;
+	size_t ** metadata;
 	dataType* array;
 };
 void swap(dataType* a, dataType* b);
-void swapMeta(int** a, int** b);
+void swapMeta(size_t ** a, size_t ** b);
 void maxHeapify(struct MaxHeap* maxHeap, int idx);
 struct MaxHeap* createAndBuildHeap(struct Node *head);
 void heap_sort(struct Node **head);

@@ -54,7 +54,7 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 			for (j = 0; j < imageWidth; j++)
 			{
 				// 2D to 1D representation for i, j
-				int x = x_new(i, j, imageLength);
+				size_t x = x_new(i, j, imageLength);
 
 				j_a = j - cy; // Move to origin Y
 
@@ -88,13 +88,13 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 				// Use Interpolation to get the values
 				// Locations for Tri-linear Interpolation
 				// Z
-				int bottom = floor(k_t);
+				int bottom = (int)floor(k_t);
 				int top = bottom + 1;
 				// X
-				int left = floor(i_t);
+				int left = (int)floor(i_t);
 				int right = left + 1;
 				// Y
-				int begin = floor(j_t);
+				int begin = (int)floor(j_t);
 				int end = begin + 1;
 				// Check if within limits
 				if (bottom >= 0 && top < imageHeight && left >= 0 && right < imageLength && begin >= 0 && end < imageWidth)
@@ -164,7 +164,7 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 			for (j = 0; j < imageWidth; j++)
 			{
 				// 2D to 1D representation for i, j
-				int x = x_new(i, j, imageLength);
+				size_t x = x_new(i, j, imageLength);
 
 				j_a = j - cy; // Move to origin Y
 
@@ -198,13 +198,13 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 				// Use Interpolation to get the values
 				// Locations for Tri-linear Interpolation
 				// Z
-				int bottom = floor(k_t);
+				int bottom = (int)floor(k_t);
 				int top = bottom + 1;
 				// X
-				int left = floor(i_t);
+				int left = (int)floor(i_t);
 				int right = left + 1;
 				// Y
-				int begin = floor(j_t);
+				int begin = (int)floor(j_t);
 				int end = begin + 1;
 				// Check if within limits
 				if (bottom >= 0 && top < imageHeight && left >= 0 && right < imageLength && begin >= 0 && end < imageWidth)

@@ -12,7 +12,7 @@ bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
 		status = load3dDataArrayVTK((unsigned char **)imageDataPtr, length, width, height, pathPtr, lines);
 		break;
 	case LOAD_DATA_RAW:
-		status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
+		status = load3dDataArrayRAW((dataType **)imageDataPtr, length, width, height, pathPtr, dType);
 		break;
 	case STORE_DATA_VTK:
 		status = store3dRealDataVtkD((double **)imageDataPtr, length, width, height, pathPtr, lines, flags);
@@ -21,10 +21,10 @@ bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
 		switch (dType)
 		{
 		case BINARY_DATA:
-			status = store3dDataArrayD(imageDataPtr, length, width, height, pathPtr, flags);
+			status = store3dDataArrayD((double **)imageDataPtr, length, width, height, pathPtr, flags);
 			break;
 		case ASCII_DATA:
-			status = store3dDataArrayASCII(imageDataPtr, length, width, height, pathPtr, flags);
+			status = store3dDataArrayASCII((double **)imageDataPtr, length, width, height, pathPtr, flags);
 			break;
 		default:
 			break;
