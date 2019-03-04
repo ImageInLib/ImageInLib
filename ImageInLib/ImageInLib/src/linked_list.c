@@ -1,12 +1,13 @@
-#include <stdlib.h>
-#include <math.h>
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "linked_list.h"
 
 // 1.a Searches linearly for an element in the linked list and updates the element value
-void searchUpdate(struct Node ** head, struct Node * objAdd, int position)
+void searchUpdate(struct Node ** head, struct Node * objAdd, const size_t position)
 {
 	struct Node *current = (*head);
 
@@ -89,9 +90,9 @@ void swap(dataType* a, dataType* b)
 	*a = *b;
 	*b = t;
 }
-void swapMeta(int** a, int** b)
+void swapMeta(size_t ** a, size_t ** b)
 {
-	int* t = *a;
+	size_t * t = *a;
 	*a = *b;
 	*b = t;
 }
@@ -130,7 +131,7 @@ struct MaxHeap* createAndBuildHeap(struct Node *head)
 	struct MaxHeap* maxHeap = (struct MaxHeap*) malloc(sizeof(struct MaxHeap));
 	// Temp array for arrivals
 	dataType* tmpPtr = malloc(sizeof(dataType)*size);
-	int **meta = malloc(sizeof(dataType)*size);
+	size_t **meta = malloc(sizeof(dataType)*size);
 	for (i = 0; i < size; i++)
 	{
 		meta[i] = malloc(sizeof(dataType) * 5);
@@ -139,10 +140,10 @@ struct MaxHeap* createAndBuildHeap(struct Node *head)
 	while (current != NULL)
 	{
 		tmpPtr[count] = current->arrival;
-		int data[5] = { current->xpos,current->ypos,current->zpos,1,current->position };
+		size_t position[5] = { current->xpos,current->ypos,current->zpos,1,current->position };
 		for (i = 0; i < 5; i++)
 		{
-			meta[count][i] = data[i];
+			meta[count][i] = position[i];
 		}
 		current = current->next;
 		count++;
@@ -343,17 +344,16 @@ void pushNode(struct Node** head_ref, struct Node * objsBand)
 // 5 Pops/Removes the first element from a linked list
 int pop(struct Node ** head)
 {
-	int retval = -1;
 	struct Node * next_node = NULL;
 
 	if (*head == NULL) {
 		return -1;
 	}
 	next_node = (*head)->next;
-	retval = (*head)->position; // Removes by position
+	size_t retval = (*head)->position; // Removes by position
 	free(*head);
 	*head = next_node;
-	return retval;
+	return 0;
 	//free(next_node); // <-- Memory watchers!
 }
 // 6 Prints the elements of the list
@@ -361,7 +361,8 @@ void printList(struct Node *node)
 {
 	while (node != NULL)
 	{
-		printf("T = %6.4lf state = %2d xPos = %2d yPos = %2d zpos = %2d position = %6d \n", node->arrival, node->state, node->xpos, node->ypos, node->zpos, node->position);
+		printf("T = %6.4lf state = %2d xPos = %2zd yPos = %2zd zpos = %2zd position = %6zd \n", 
+			node->arrival, node->state, node->xpos, node->ypos, node->zpos, node->position);
 		node = node->next;
 	}
 }
