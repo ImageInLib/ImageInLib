@@ -391,9 +391,6 @@
     <ClInclude Include="src\vtk_params.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="src\distanceMaps.h">
-      <Filter>Header Files\Interfaces\Distance Functions</Filter>
-    </ClInclude>
     <ClInclude Include="include\file.h">
       <Filter>Header Files\Interfaces\File Management</Filter>
     </ClInclude>
@@ -417,6 +414,9 @@
     </ClInclude>
     <ClInclude Include="include\statistics.h">
       <Filter>Header Files\Interfaces\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\distanceMaps.h">
+      <Filter>Header Files\Interfaces\Distance Functions</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

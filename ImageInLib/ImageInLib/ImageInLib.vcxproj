@@ -68,6 +68,7 @@
     <ClCompile Include="src\vtk_format_ascii.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
     <ClInclude Include="include\filtering.h" />
     <ClInclude Include="include\noiseGeneration.h" />
@@ -81,7 +82,6 @@
     <ClInclude Include="src\data_initialization.h" />
     <ClInclude Include="src\data_load.h" />
     <ClInclude Include="src\data_storage.h" />
-    <ClInclude Include="src\distanceMaps.h" />
     <ClInclude Include="src\distance_function.h" />
     <ClInclude Include="src\edgedetection.h" />
     <ClInclude Include="src\endianity_bl.h" />
