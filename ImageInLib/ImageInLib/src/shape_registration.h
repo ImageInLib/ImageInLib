@@ -49,11 +49,11 @@ inline int NFunction(dataType val1, dataType val2, dataType delta);
 // Calc. the distance differences
 dataType energyFunction(dataType ** destination, dataType **distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h);
 // Calc. Finite difference X direction
-inline dataType finiteDifX(dataType ** distPtr, dataType h, unsigned int x, size_t k, size_t i, size_t imageLength);
+inline dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength);
 // Calc. Finite difference Y direction
 inline dataType finiteDifY(dataType ** distPtr, dataType h, size_t k, size_t i, size_t j, size_t imageLength, size_t imageWidth);
 // Calc. Finite difference Z direction
-inline dataType finiteDifZ(dataType ** distPtr, dataType h, unsigned int x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
+inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
 // Calc. and return the gradient descent components
 AffineParameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, AffineParameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
 // Calc the transformation parameters from Registration of two images using Simple GD method

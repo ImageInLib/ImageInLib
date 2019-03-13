@@ -1,5 +1,5 @@
 #pragma once
-#include "common_functions.h"
+#include "..\src\common_functions.h"
 
 typedef enum
 {

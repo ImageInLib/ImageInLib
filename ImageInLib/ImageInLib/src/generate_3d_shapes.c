@@ -76,10 +76,9 @@ void fillBall3D(double **inputDataArrayPtr, size_t inputHeight, size_t inputLeng
 			}
 		}
 	}
-
 }
 
-bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height, 
+bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
 	dataType sphereRadius, dataType smallRadius, dataType fillValue, unsigned char * outputPathPtr)
 {
 	//checks if the memory was allocated
@@ -103,8 +102,6 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 	{
 		initialize3dArrayD(dataArray3D, length, width, height, 255.);
 	}
-
-	
 
 	double step = M_PI / 1000.0;
 	for (phi = 0.0; phi < 2 * M_PI; phi += step) {
@@ -138,11 +135,11 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 	}
 
 	// Store generated object to file
-	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)));
+	storageFlags flags = { true, true };
+	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
 }
-
 
 bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
 	dataType sphereRadius, dataType fillValue, unsigned char * outputPathPtr)
@@ -158,7 +155,6 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	center.y = (dataType)(width / 2);
 	center.z = (dataType)(height / 2);
 
-
 	//Initialization of arrays
 	if (fillValue == 255)
 	{
@@ -168,8 +164,6 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	{
 		initialize3dArrayD(dataArray3D, length, width, height, 255.);
 	}
-
-
 
 	double step = M_PI / 1000.0;
 	for (phi = 0.0; phi < 2 * M_PI; phi += step) {
@@ -186,7 +180,8 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	}
 
 	// Store generated object to file
-	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)));
+	storageFlags flags = { true, true };
+	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
 }
