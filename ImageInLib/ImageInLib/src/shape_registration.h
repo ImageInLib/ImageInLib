@@ -1,14 +1,18 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #pragma once
 #ifndef SHAPE_REGISTRATION
 #define SHAPE_REGISTRATION
-//==============================================================================
-/*
-* Header file to contain general functions, variables, structs
-* These can be used in different shape registration algorithms
-* Avoids redefinitions elsewhere
-*/
-//==============================================================================
-// Includes
+	//==============================================================================
+	/*
+	* Header file to contain general functions, variables, structs
+	* These can be used in different shape registration algorithms
+	* Avoids redefinitions elsewhere
+	*/
+	//==============================================================================
+	// Includes
 #include "common_functions.h"
 #include "generate_3d_shapes.h"
 #include "transformations.h"
@@ -43,22 +47,26 @@
 * gDescentMethod - choice of 1 for Simple, 2 for Stochastic GD method
 * pathResults - path to where a vtk file for the resulting registered data
 */
-void run_registration(dataType **dPtr, dataType **sPtr, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, unsigned int gdescentMethod);
-// Cla. if the distance is within delta
-inline int NFunction(dataType val1, dataType val2, dataType delta);
-// Calc. the distance differences
-dataType energyFunction(dataType ** destination, dataType **distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h);
-// Calc. Finite difference X direction
-inline dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength);
-// Calc. Finite difference Y direction
-inline dataType finiteDifY(dataType ** distPtr, dataType h, size_t k, size_t i, size_t j, size_t imageLength, size_t imageWidth);
-// Calc. Finite difference Z direction
-inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
-// Calc. and return the gradient descent components
-AffineParameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, AffineParameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
-// Calc the transformation parameters from Registration of two images using Simple GD method
-AffineParameter registration3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
-// Cals Registration using Stochastic GD method
-AffineParameter registrationStochastic3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
-//==============================================================================
+	void run_registration(dataType **dPtr, dataType **sPtr, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, unsigned int gdescentMethod);
+	// Cla. if the distance is within delta
+	inline int NFunction(dataType val1, dataType val2, dataType delta);
+	// Calc. the distance differences
+	dataType energyFunction(dataType ** destination, dataType **distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h);
+	// Calc. Finite difference X direction
+	inline dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength);
+	// Calc. Finite difference Y direction
+	inline dataType finiteDifY(dataType ** distPtr, dataType h, size_t k, size_t i, size_t j, size_t imageLength, size_t imageWidth);
+	// Calc. Finite difference Z direction
+	inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
+	// Calc. and return the gradient descent components
+	AffineParameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, AffineParameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	// Calc the transformation parameters from Registration of two images using Simple GD method
+	AffineParameter registration3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
+	// Cals Registration using Stochastic GD method
+	AffineParameter registrationStochastic3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
+	//==============================================================================
 #endif // !SHAPE_REGISTRATION
+
+#ifdef __cplusplus
+}
+#endif
