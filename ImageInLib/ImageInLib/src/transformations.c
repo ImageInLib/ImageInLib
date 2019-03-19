@@ -100,14 +100,6 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 				if (bottom >= 0 && top < imageHeight && left >= 0 && right < imageLength && begin >= 0 && end < imageWidth)
 				{
 					tmp = interpolated(k_t, i_t, j_t, top, bottom, left, right, begin, end, sourceDataPtr, imageLength);
-					if (tmp > (bgValue / 2))
-					{
-						tmp = bgValue;
-					}
-					else
-					{
-						tmp = 0;
-					}
 					transformPointsPtr[k][x] = tmp;
 				}
 				else
@@ -210,14 +202,6 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 				if (bottom >= 0 && top < imageHeight && left >= 0 && right < imageLength && begin >= 0 && end < imageWidth)
 				{
 					tmp = interpolated(k_t, i_t, j_t, top, bottom, left, right, begin, end, sourceDataPtr, imageLength);
-					if (tmp > (bgValue / 2))
-					{
-						tmp = bgValue;
-					}
-					else
-					{
-						tmp = 0;
-					}
 					transformPointsPtr[k][x] = tmp;
 				}
 				else
