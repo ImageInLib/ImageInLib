@@ -1,10 +1,14 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #pragma once
 #ifndef COMMON_MATH
 #define COMMON_MATH
 
-// INCLUDEs
+	// INCLUDEs
 
-// MACROs
+	// MACROs
 #define M_PI 3.14159265358979323846
 
 //STRUCTs
@@ -13,3 +17,6 @@
 
 #endif // !COMMON_MATH
 
+#ifdef __cplusplus
+}
+#endif
