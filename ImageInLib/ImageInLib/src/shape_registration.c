@@ -92,7 +92,7 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			}
 		}
 	}
-	Point3D *shapePoints = malloc(sizeof(Point3D)*(imageHeight*imageLength*imageWidth));
+	Point3D *shapePoints = (Point3D *)malloc(sizeof(Point3D)*(imageHeight*imageLength*imageWidth));
 	int loop = 0;
 	// Derive the points
 	for (k = 0; k < imageHeight; k++)
@@ -115,7 +115,7 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 		}
 	}
 	// Arrival times
-	ArrivalTime *shapeArrival = malloc(sizeof(ArrivalTime)*loop);
+	ArrivalTime *shapeArrival = (ArrivalTime *)malloc(sizeof(ArrivalTime)*loop);
 	for (i = 0; i < loop; i++)
 	{
 		shapeArrival[i].T = 0.0;
@@ -453,8 +453,8 @@ AffineParameter registration3D(dataType ** destination, dataType ** source, Affi
 		dataType ** distTransPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
 		for (i = 0; i < imageHeight; i++)
 		{
-			transPtr[i] = malloc(sizeof(dataType) * dim2D);
-			distTransPtr[i] = malloc(sizeof(dataType) * dim2D);
+			transPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+			distTransPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
 		}
 		initialize3dArrayD(transPtr, imageLength, imageWidth, imageHeight, params.imageBackground);
 		initialize3dArrayD(distTransPtr, imageLength, imageWidth, imageHeight, 0);
