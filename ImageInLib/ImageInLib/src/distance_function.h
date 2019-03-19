@@ -29,8 +29,8 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 bool fastSweepingFunction_2D(dataType * distance2DPtr, dataType * curve2DPtr, const size_t xDim, const size_t yDim,
 	const dataType h, const dataType largeValue, const dataType fgroundValue);
 
-double compute2dDistance(size_t i_n, const size_t xDim, const size_t yDim, dataType *distance2DPtr, dataType *temp2dPtr, const size_t dim2D,
+dataType compute2dDistance(size_t i_n, const size_t xDim, const size_t yDim, dataType *distance2DPtr, dataType *temp2dPtr, const size_t dim2D,
 	const dataType h);
 
-double compute3dDistance(size_t i_n, size_t k, const size_t xDim, const size_t yDim, const size_t zDim, dataType **distance3DPtr,
+dataType compute3dDistance(size_t i_n, size_t k, const size_t xDim, const size_t yDim, const size_t zDim, dataType **distance3DPtr,
 	dataType **temp3dPtr, const size_t dim2D, const dataType h);

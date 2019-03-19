@@ -27,7 +27,7 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 {
 	size_t k, i, j;
 	// Creates a new Pointer to fill the transformed values
-	dataType ** transformPointsPtr = malloc(imageHeight * sizeof(dataType));
+	dataType ** transformPointsPtr = (dataType **)malloc(imageHeight * sizeof(dataType *));
 
 	dataType k_a, i_a, j_a; // Affine indices
 						  // Rotation Angles -
@@ -46,7 +46,7 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 	dataType k_t, i_t, j_t; // Transformed indices
 	for (k = 0; k < imageHeight; k++)
 	{
-		transformPointsPtr[k] = malloc(dimWidth * sizeof(dataType));
+		transformPointsPtr[k] = (dataType *)malloc(dimWidth * sizeof(dataType));
 		k_a = k - cz; // Move to origin Z
 		for (i = 0; i < imageLength; i++)
 		{
@@ -130,7 +130,7 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 {
 	size_t k, i, j;
 	// Creates a new Pointer to fill the transformed values
-	dataType ** transformPointsPtr = malloc(imageHeight * sizeof(dataType));
+	dataType ** transformPointsPtr = (dataType **)malloc(imageHeight * sizeof(dataType *));
 
 	dataType k_a, i_a, j_a; // Affine indices
 						  // Rotation Angles -
@@ -148,7 +148,7 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 	dataType k_t, i_t, j_t; // Transformed indices
 	for (k = 0; k < imageHeight; k++)
 	{
-		transformPointsPtr[k] = malloc(dimWidth * sizeof(dataType));
+		transformPointsPtr[k] = (dataType *)malloc(dimWidth * sizeof(dataType));
 		k_a = k - cz; // Move to origin Z
 		for (i = 0; i < imageLength; i++)
 		{
