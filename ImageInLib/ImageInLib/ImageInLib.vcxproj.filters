@@ -138,7 +138,7 @@
     <Filter Include="Source Files\Interfaces\Transformation">
       <UniqueIdentifier>{8201d67c-8a94-4a8d-adf5-ab933b35ba98}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\File Management\Distance Function">
+    <Filter Include="Source Files\Distance Function">
       <UniqueIdentifier>{529cb28c-1d6e-4db1-b6e6-3b2fe6d8cc75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -228,19 +228,19 @@
       <Filter>Source Files\File Management</Filter>
     </ClCompile>
     <ClCompile Include="src\brute_force_algorithm.c">
-      <Filter>Source Files\File Management\Distance Function</Filter>
+      <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
     <ClCompile Include="src\fast_marching.c">
-      <Filter>Source Files\File Management\Distance Function</Filter>
+      <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
     <ClCompile Include="src\fast_sweeping_method.c">
-      <Filter>Source Files\File Management\Distance Function</Filter>
+      <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
     <ClCompile Include="src\procrustrates_dist.c">
-      <Filter>Source Files\File Management\Distance Function</Filter>
+      <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
     <ClCompile Include="src\rouy_tourin_function.c">
-      <Filter>Source Files\File Management\Distance Function</Filter>
+      <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
     <ClCompile Include="src\linked_list.c">
       <Filter>Source Files\Data Structures</Filter>
