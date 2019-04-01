@@ -146,6 +146,8 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 						}
 					}
 				}
+				if (k == 0) //because if k is unsigned type, then k(0) - 1 == type maximum value
+					break;
 			}
 			sweepNumber++;
 			break;
