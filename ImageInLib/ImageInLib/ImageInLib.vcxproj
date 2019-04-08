@@ -24,6 +24,7 @@
     <ClCompile Include="src\brute_force_algorithm.c" />
     <ClCompile Include="src\common_functions.c" />
     <ClCompile Include="src\common_math.c" />
+    <ClCompile Include="src\common_vtk.cpp" />
     <ClCompile Include="src\data initialization version2.c" />
     <ClCompile Include="src\data_initialization.c" />
     <ClCompile Include="src\data_load.c" />
@@ -79,6 +80,7 @@
     <ClInclude Include="include\transformation.h" />
     <ClInclude Include="src\common_functions.h" />
     <ClInclude Include="src\common_math.h" />
+    <ClInclude Include="src\common_vtk.h" />
     <ClInclude Include="src\data_initialization.h" />
     <ClInclude Include="src\data_load.h" />
     <ClInclude Include="src\data_storage.h" />
@@ -141,7 +143,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
