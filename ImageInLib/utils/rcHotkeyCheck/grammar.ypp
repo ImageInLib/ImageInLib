@@ -1,0 +1,879 @@
+//
+// BISON grammar for parsing .RC files
+//
+// bison --output-file=grammar.cpp --defines=grammar.h grammar.ypp
+//
+// Tested with GNU bison 1.24
+//
+
+
+%{
+
+#include "headers.h"
+#include "grammar.h"
+#include "parse.h"
+#include "rcfile.h"
+#include "malloc.h"
+
+extern wchar_t *yytext;
+extern int yylex(int *yylval, void *yyinput);
+
+#ifdef _DEBUG
+#define YYDEBUG 1
+#endif
+
+#define YYPURE 1
+#define YYLEX_PARAM yyparam
+#define YYPARSE_PARAM yyparam
+#define state ((yy_parse_state*)yyparam)
+#define yyerror(msg) parseError((yy_parse_state*)yyparam, (msg))
+
+%}
+
+
+// ============================================================================
+// DECLARATIONS
+// ============================================================================
+
+%token	DEFINE_DIRECTIVE, ELIF_DIRECTIVE, ELSE_DIRECTIVE, ENDIF_DIRECTIVE,
+		IF_DIRECTIVE, IFDEF_DIRECTIVE, IFNDEF_DIRECTIVE, INCLUDE_DIRECTIVE,
+		PRAGMA_DIRECTIVE, UNDEF_DIRECTIVE, DIRECTIVE_PARAM, DIRECTIVE_END
+
+%token	IDENTIFIER,	CONSTANT, STRING
+
+%token	BLOCK_BEGIN, BLOCK_END
+
+%token	STM_ACCELERATORS, STM_BITMAP, STM_CURSOR, STM_DIALOG, STM_DIALOGEX, 
+        STM_FONT, STM_ICON, STM_MENU, STM_MENUEX, STM_MESSAGETABLE, STM_RCDATA, 
+        STM_STRINGTABLE, STM_VERSIONINFO, STM_LANGUAGE, STM_TOOLBAR
+
+%token	DESIGNINFO, DLGINIT
+
+%token	AUTO3STATE, AUTOCHECKBOX, AUTORADIOBUTTON, CHECKBOX, COMBOBOX, CONTROL,
+        CTEXT, DEFPUSHBUTTON, EDITTEXT, GROUPBOX, LISTBOX, LTEXT, PUSHBOX, POPUP,
+        PUSHBUTTON, RADIOBUTTON, RTEXT, SCROLLBAR, STATE3, MENUITEM, BLOCK, VALUE,
+		SEPARATOR, MFTSEPARATOR, BUTTON
+
+%token	RIGHT_OP, LEFT_OP, AND_OP, OR_OP, LE_OP, GE_OP, EQ_OP, NE_OP, NOT_OP
+
+%token	MOVEABLE_FLAG, FIXED_FLAG, PURE_FLAG, IMPURE_FLAG, PRELOAD_FLAG, LOADONCALL_FLAG, DISCARDABLE_FLAG
+
+%token	SCANERR
+
+%start rc_file
+%%
+
+// ============================================================================
+// GRAMMAR RULES
+// ============================================================================
+
+rc_file
+	: rc_file statement
+	| end_of_input
+	;
+
+statement
+	: languageStatement
+	| acceleratorsStatement
+	| bitmapStatement
+	| cursorStatement
+	| dialogStatement
+	| userdefStatement
+	| designinfoStatement
+	| menuStatement
+	| rcdataStatement
+	| fontStatement
+	| stringtableStatement
+	| versioninfoStatement
+	| toolbarStatement
+	| dlginitStatement
+	;
+
+end_of_input
+	: /* empty */
+	;
+
+memory_flag
+	: MOVEABLE_FLAG 
+	| FIXED_FLAG 
+	| PURE_FLAG 
+	| IMPURE_FLAG 
+	| PRELOAD_FLAG 
+	| LOADONCALL_FLAG 
+	| DISCARDABLE_FLAG
+	;
+
+memory_flags
+	: /* empty */
+	| memory_flags memory_flag
+	;
+
+tokens
+	: STM_ACCELERATORS | STM_BITMAP	| STM_CURSOR | STM_DIALOG | STM_DIALOGEX
+	| STM_FONT | STM_ICON | STM_MENU | STM_MENUEX | STM_MESSAGETABLE
+	| STM_RCDATA | STM_STRINGTABLE | STM_VERSIONINFO | STM_LANGUAGE
+	| AUTO3STATE | AUTOCHECKBOX | AUTORADIOBUTTON | CHECKBOX | COMBOBOX
+	| CONTROL | CTEXT | DEFPUSHBUTTON | EDITTEXT | GROUPBOX | LISTBOX | LTEXT
+	| PUSHBOX | POPUP | PUSHBUTTON | RADIOBUTTON | RTEXT | SCROLLBAR | STATE3
+	| MENUITEM | BLOCK | VALUE | STM_TOOLBAR | SEPARATOR | MFTSEPARATOR | BUTTON 
+	| DESIGNINFO | DLGINIT
+	;
+
+tokens1
+	: STM_ACCELERATORS | STM_BITMAP	| STM_CURSOR | STM_DIALOG | STM_DIALOGEX
+	| STM_FONT | STM_ICON | STM_MENU | STM_MENUEX | STM_MESSAGETABLE
+	| STM_RCDATA | STM_VERSIONINFO
+	| AUTO3STATE | AUTOCHECKBOX | AUTORADIOBUTTON | CHECKBOX | COMBOBOX
+	| CONTROL | CTEXT | DEFPUSHBUTTON | EDITTEXT | GROUPBOX | LISTBOX | LTEXT
+	| PUSHBOX | POPUP | PUSHBUTTON | RADIOBUTTON | RTEXT | SCROLLBAR | STATE3
+	| MENUITEM | BLOCK | VALUE | STM_TOOLBAR | SEPARATOR | MFTSEPARATOR | BUTTON 
+	| DESIGNINFO | DLGINIT
+	;
+
+controls
+	: AUTO3STATE | AUTOCHECKBOX | AUTORADIOBUTTON | CHECKBOX | COMBOBOX
+	| CONTROL | CTEXT | DEFPUSHBUTTON | EDITTEXT | GROUPBOX | LISTBOX | LTEXT
+	| PUSHBOX | POPUP | PUSHBUTTON | RADIOBUTTON | RTEXT | SCROLLBAR | STATE3
+	| MENUITEM | BLOCK | VALUE | SEPARATOR | BUTTON
+	;
+
+id	
+    : tokens
+	| IDENTIFIER 
+	| STRING 
+	| CONSTANT 
+	;
+
+resource_name
+	: resource_name_base
+	| resource_name_base '$' '(' resource_name_condition ')'
+	;
+
+resource_name_base
+    : tokens1 
+		{ state->resourceName = yytext; } 
+    | IDENTIFIER 
+		{ state->resourceName = yytext; } 
+    | STRING 
+		{ state->resourceName = yytext; } 
+    | CONSTANT 
+		{ state->resourceName = yytext; } 
+	;
+
+resource_name_condition
+    : id 
+		{
+		  state->resourceName += L"$(";
+		  state->resourceName += yytext;
+		  state->resourceName += L")";
+		} 
+	;
+
+resource_options
+    : 
+		{ state->resourceOptions = L""; } 
+	  resource_options_list
+	;
+
+resource_options_list
+	: /* empty */
+	| resource_options_list resource_options_list_item
+	;
+
+resource_options_list_item
+	: ','
+		{
+			state->resourceOptions += L", ";
+		}
+	| '|'
+		{
+			state->resourceOptions += L"| ";
+		}
+	| id
+		{
+			state->resourceOptions += yytext;
+			state->resourceOptions += L" ";
+		}
+	;
+
+filename
+	: filename '.' id
+		{
+			state->resourceOptions += L".";
+			state->resourceOptions += yytext;
+		}
+	| id
+		{
+			state->resourceOptions = yytext;
+		}
+	;
+
+//----------------------------------------------------------------------------
+// LANGUAGE
+//----------------------------------------------------------------------------
+
+languageStatement
+	: STM_LANGUAGE language_def
+	;
+
+language_def
+	: language_param ',' language_param
+	;
+
+language_param
+	: IDENTIFIER
+	| CONSTANT
+	;
+
+//----------------------------------------------------------------------------
+// ACCELERATORS
+//----------------------------------------------------------------------------
+
+acceleratorsStatement
+	: resource_name STM_ACCELERATORS memory_flags resource_options
+		{
+			Accelerators_C *pRes = new Accelerators_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	  BLOCK_BEGIN 
+	  accelerators
+	  BLOCK_END
+	;
+
+accelerators
+	: /* empty */
+	| accelerators accelerator
+		{
+			Accelerators_C *pRes = (Accelerators_C*)state->resource;
+			pRes->AddAccelerator(state->resourceItem.c_str());
+		}	  
+	;
+
+accelerator
+	: accelerator ',' id
+		{
+		    state->resourceItem += L",";
+		    state->resourceItem += yytext;
+		}	  
+	| id
+		{
+		    state->resourceItem = yytext;
+		}	  
+	;
+
+//----------------------------------------------------------------------------
+// BITMAP
+//----------------------------------------------------------------------------
+
+bitmapStatement
+	: resource_name STM_BITMAP memory_flags filename
+		{
+			Bitmap_C *pRes = new Bitmap_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	;
+
+//----------------------------------------------------------------------------
+// CURSOR
+//----------------------------------------------------------------------------
+
+cursorStatement
+	: resource_name STM_CURSOR memory_flags filename
+		{
+			Cursor_C *pRes = new Cursor_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	;
+
+//----------------------------------------------------------------------------
+// FONT
+//----------------------------------------------------------------------------
+
+fontStatement
+	: resource_name STM_FONT memory_flags filename
+		{
+			Font_C *pRes = new Font_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	;
+
+//----------------------------------------------------------------------------
+// ICON
+//----------------------------------------------------------------------------
+
+cursorStatement
+	: resource_name STM_ICON memory_flags filename
+		{
+			Icon_C *pRes = new Icon_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	;
+
+//----------------------------------------------------------------------------
+// RCDATA
+//----------------------------------------------------------------------------
+
+rcdataStatement
+	: resource_name STM_RCDATA filename
+		{
+			RCData_C *pRes = new RCData_C(state->resourceName.c_str());
+			pRes->SetFileName(state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	| resource_name STM_RCDATA  
+		{
+			RCData_C *pRes = new RCData_C(state->resourceName.c_str());
+			pRes->SetOptions(state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}
+	  BLOCK_BEGIN resource_options BLOCK_END	 
+		{
+			RCData_C *pRes = (RCData_C*)state->resource;
+			pRes->SetRawData(state->resourceOptions.c_str());
+		}
+	;
+
+//----------------------------------------------------------------------------
+// DIALOG, DIALOGEX
+//----------------------------------------------------------------------------
+
+dialogStatement
+	: resource_name dialog_type memory_flags resource_options
+		{
+			Dialog_C *pRes = new Dialog_C(state->resourceName.c_str(), state->resourceType.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	  BLOCK_BEGIN 
+	  controls_list
+	  BLOCK_END
+	;
+
+dialog_type
+	: STM_DIALOG
+		{
+		    state->resourceType = L"DIALOG";
+		}	  
+	| STM_DIALOGEX
+		{
+		    state->resourceType = L"DIALOGEX";
+		}	  
+	;
+
+controls_list
+	: /* empty */
+	| controls_list control
+		{
+			Control_C *pCtrl = new Control_C(state->controlType.c_str(), state->controlText.c_str(), state->controlID.c_str(), state->controlOptions.c_str());
+			Dialog_C *pRes = (Dialog_C*)state->resource;
+			pRes->AddControl(pCtrl);
+		}	  
+	;
+
+control
+	: control_type
+		{
+		    state->resourceItem += L",";
+		    state->resourceItem += yytext;
+		}	  
+	| control_type ',' control_options
+		{
+		    state->resourceItem += L",";
+		    state->resourceItem += yytext;
+		}	  
+	;
+
+control_type
+	: AUTO3STATE control_text ',' control_id 
+		{ state->controlType = L"AUTO3STATE"; }
+	| AUTOCHECKBOX control_text ',' control_id  
+		{ state->controlType = L"AUTOCHECKBOX"; }
+	| AUTORADIOBUTTON control_text ',' control_id  
+		{ state->controlType = L"AUTORADIOBUTTON"; }
+	| CHECKBOX control_text ',' control_id  
+		{ state->controlType = L"CHECKBOX"; }
+	| COMBOBOX control_id  
+		{ state->controlType = L"COMBOBOX"; state->controlText = L""; }
+	| CONTROL control_id_text ',' control_id  
+		{ state->controlType = L"CONTROL"; }
+	| CTEXT control_text ',' control_id  
+		{ state->controlType = L"CTEXT"; }
+	| DEFPUSHBUTTON control_text ',' control_id  
+		{ state->controlType = L"DEFPUSHBUTTON"; }
+	| EDITTEXT control_id
+		{ state->controlType = L"EDITTEXT"; state->controlText = L""; }
+	| GROUPBOX control_text ',' control_id  
+		{ state->controlType = L"GROUPBOX"; }
+	| STM_ICON control_id  
+		{ state->controlType = L"ICON"; state->controlText = L""; }
+	| LISTBOX control_id
+		{ state->controlType = L"LISTBOX"; state->controlText = L""; }
+	| LTEXT control_text ',' control_id  
+		{ state->controlType = L"LTEXT"; }
+	| PUSHBOX control_text ',' control_id  
+		{ state->controlType = L"PUSHBOX"; }
+	| PUSHBUTTON control_text ',' control_id  
+		{ state->controlType = L"PUSHBUTTON"; }
+	| RADIOBUTTON control_text ',' control_id  
+		{ state->controlType = L"RADIOBUTTON"; }
+	| RTEXT control_text ',' control_id  
+		{ state->controlType = L"RTEXT"; }
+	| SCROLLBAR control_id  
+		{ state->controlType = L"SCROLLBAR"; state->controlText = L""; }
+	| STATE3 control_text ',' control_id  
+		{ state->controlType = L"STATE3"; }
+	;
+
+control_id_text
+	: id
+		{ state->controlText = yytext; }
+	;
+	
+control_text
+	: STRING
+		{ state->controlText = yytext; }
+	| CONSTANT
+		{ state->controlText = yytext; }
+	;
+
+control_id
+	: id
+		{ state->controlID = yytext; }
+	;
+
+control_options
+	: control_options ',' id
+		{
+		    state->controlOptions += L",";
+		    state->controlOptions += yytext;
+		}
+	| control_options ',' NOT_OP id
+		{
+		    state->controlOptions += L", NOT";
+		    state->controlOptions += yytext;
+		}
+	| control_options '|' id
+		{
+		    state->controlOptions += L"|";
+		    state->controlOptions += yytext;
+		}	  
+	| control_options '|' NOT_OP id
+		{
+		    state->controlOptions += L"| NOT ";
+		    state->controlOptions += yytext;
+		}	  
+	| control_options NOT_OP id
+		{
+		    state->controlOptions += L" NOT ";
+		    state->controlOptions += yytext;
+		}	  
+	| NOT_OP id
+		{
+		    state->controlOptions += L" NOT ";
+		    state->controlOptions = yytext;
+		}	  
+	| id
+		{
+		    state->controlOptions = yytext;
+		}	  
+	;
+
+//----------------------------------------------------------------------------
+// user defined resource
+//----------------------------------------------------------------------------
+
+userdefStatement
+	: resource_name userdef_type memory_flags filename
+		{
+			UserDef_C *pRes = new UserDef_C(state->resourceName.c_str(), state->resourceType.c_str());
+			pRes->SetFileName(state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}	 
+	| resource_name userdef_type memory_flags BLOCK_BEGIN resource_options BLOCK_END	 
+		{
+			UserDef_C *pRes = new UserDef_C(state->resourceName.c_str(), state->resourceType.c_str());
+			pRes->SetOptions(state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}
+	;
+
+userdef_type
+	: controls 
+		{
+		    state->resourceType = yytext;
+		}	  
+	| STM_LANGUAGE
+		{
+		    state->resourceType = yytext;
+		}	  
+	| STRING
+		{
+		    state->resourceType = yytext;
+		}	  
+	| IDENTIFIER
+		{
+		    state->resourceType = yytext;
+		}	  
+	| CONSTANT
+		{
+		    state->resourceType = yytext;
+		}	  
+	;
+
+//----------------------------------------------------------------------------
+// DESIGNINFO
+//----------------------------------------------------------------------------
+
+designinfoStatement
+	: resource_name DESIGNINFO memory_flags
+	  BLOCK_BEGIN 
+	  designinfo
+	  BLOCK_END
+	;
+
+designinfo
+	: /* empty */
+	| designinfo id ',' STM_DIALOG 
+	  BLOCK_BEGIN
+		designinfo_pos 
+	  BLOCK_END
+	;
+
+designinfo_pos
+	: /* empty */
+	| designinfo_pos 
+	  IDENTIFIER ',' CONSTANT
+	;
+
+//----------------------------------------------------------------------------
+// MENU
+//----------------------------------------------------------------------------
+
+menuStatement
+	: resource_name menu_type memory_flags resource_options
+		{
+			Menu_C *pRes = new Menu_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->popup = NULL;
+			state->rc->AddResource(pRes);
+		}
+	  BLOCK_BEGIN 
+		menuitems
+	  BLOCK_END
+	;
+
+menu_type
+	: STM_MENU
+	| STM_MENUEX
+	;
+
+menuitems
+	: /* empty */
+	| menuitems menuitem
+	;
+
+menuitem
+	: MENUITEM menuitem_text ',' menuitem_id
+		{
+			MenuItem_C *pItem = new MenuItem_C(state->controlText.c_str(), state->controlID.c_str(), L"");
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| MENUITEM menuitem_text ',' menuitem_id ',' menuitem_options
+		{
+			MenuItem_C *pItem = new MenuItem_C(state->controlText.c_str(), state->controlID.c_str(), state->controlOptions.c_str());
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| MENUITEM MFTSEPARATOR
+		{
+			MenuItem_C *pItem = new MenuItem_C(L"", L"MFT_SEPARATOR", L"");
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| MENUITEM MFTSEPARATOR ',' menuitem_options
+		{
+			MenuItem_C *pItem = new MenuItem_C(L"", L"MFT_SEPARATOR", state->controlOptions.c_str());
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| MENUITEM SEPARATOR
+		{
+			MenuItem_C *pItem = new MenuItem_C(L"", L"SEPARATOR", L"");
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| MENUITEM SEPARATOR ',' menuitem_options
+		{
+			MenuItem_C *pItem = new MenuItem_C(L"", L"SEPARATOR", state->controlOptions.c_str());
+			if (state->popup)
+				state->popup->AddItem(pItem);
+			else
+				((Menu_C*)state->resource)->AddItem(pItem);
+		}
+	| POPUP menuitem_text
+		{
+			MenuPopup_C *pPopup = new MenuPopup_C(state->popup, state->controlText.c_str(), L"", L"");
+			if (state->popup)
+				state->popup->AddItem(pPopup);
+			else
+				((Menu_C*)state->resource)->AddItem(pPopup);
+			state->popup = pPopup;
+		}
+	  BLOCK_BEGIN
+		menuitems 
+	  BLOCK_END
+		{
+			state->popup = state->popup->GetOwner();
+		}
+	| POPUP menuitem_text ',' menuitem_id
+		{
+			MenuPopup_C *pPopup = new MenuPopup_C(state->popup, state->controlText.c_str(), state->controlID.c_str(), L"");
+			if (state->popup)
+				state->popup->AddItem(pPopup);
+			else
+				((Menu_C*)state->resource)->AddItem(pPopup);
+			state->popup = pPopup;
+		}
+	  BLOCK_BEGIN
+		menuitems 
+	  BLOCK_END
+		{
+			state->popup = state->popup->GetOwner();
+		}
+	| POPUP menuitem_text ',' menuitem_id ',' menuitem_options
+		{
+			MenuPopup_C *pPopup = new MenuPopup_C(state->popup, state->controlText.c_str(), state->controlID.c_str(), state->controlOptions.c_str());
+			if (state->popup)
+				state->popup->AddItem(pPopup);
+			else
+				((Menu_C*)state->resource)->AddItem(pPopup);
+			state->popup = pPopup;
+		}
+	  BLOCK_BEGIN
+		menuitems 
+	  BLOCK_END
+		{
+			state->popup = state->popup->GetOwner();
+		}
+	;
+
+menuitem_text
+	: STRING
+		{ state->controlText = yytext; }
+	| CONSTANT
+		{ state->controlText = yytext; }
+	;
+
+menuitem_id
+	: id
+		{ state->controlID = yytext; }
+	;
+
+menuitem_options
+	: menuitem_options ',' id
+		{
+		    state->controlOptions += L",";
+		    state->controlOptions += yytext;
+		}
+	| menuitem_options ',' NOT_OP id
+		{
+		    state->controlOptions += L", NOT";
+		    state->controlOptions += yytext;
+		}
+	| menuitem_options '|' id
+		{
+		    state->controlOptions += L"|";
+		    state->controlOptions += yytext;
+		}	  
+	| menuitem_options '|' NOT_OP id
+		{
+		    state->controlOptions += L"| NOT ";
+		    state->controlOptions += yytext;
+		}	  
+	| menuitem_options NOT_OP id
+		{
+		    state->controlOptions += L" NOT ";
+		    state->controlOptions += yytext;
+		}	  
+	| NOT_OP id
+		{
+		    state->controlOptions += L" NOT ";
+		    state->controlOptions = yytext;
+		}	  
+	| id
+		{
+		    state->controlOptions = yytext;
+		}	  
+	;
+
+//----------------------------------------------------------------------------
+// STRINGTABLE
+//----------------------------------------------------------------------------
+
+stringtableStatement
+	: STM_STRINGTABLE memory_flags resource_options 
+		{
+			if (state->stringtable == NULL) {
+				StringTable_C *pRes = new StringTable_C(state->resourceOptions.c_str());
+				state->stringtable = pRes;
+				state->rc->AddResource(pRes);
+			}
+		}
+	  BLOCK_BEGIN strings BLOCK_END	 
+	;
+
+strings
+	: /* empty */
+	| strings string
+	;
+
+string
+	: string_id string_text
+	{
+		String_C *pString = new String_C(state->controlID.c_str(), state->controlText.c_str());
+		((StringTable_C*)state->stringtable)->AddString(pString);
+	}
+
+string_text
+	: STRING
+		{ state->controlText = yytext; }
+	;
+
+string_id
+	: id
+		{ state->controlID = yytext; }
+	;
+
+//----------------------------------------------------------------------------
+// VERSIONINFO
+//----------------------------------------------------------------------------
+
+versioninfoStatement
+	: resource_name STM_VERSIONINFO memory_flags resource_options
+		{
+			VersionInfo_C *pRes = new VersionInfo_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->infoblock = NULL;
+			state->rc->AddResource(pRes);
+		}
+	  BLOCK_BEGIN 
+		versioninfos
+	  BLOCK_END
+	;
+
+versioninfos
+	: /* empty */
+	| versioninfos versioninfo
+	;
+
+versioninfo
+	: VALUE versioninfo_id ',' versioninfo_text
+		{
+			VersionInfoValue_C *pValue = new VersionInfoValue_C(state->controlID.c_str(), state->controlText.c_str());
+			if (state->infoblock)
+				state->infoblock->AddValue(pValue);
+			else {
+				yyerror("unexpected VALUE at this level");
+				return -1;
+			}
+		}
+	| BLOCK versioninfo_id
+		{
+			VersionInfoBlock_C *pBlock = new VersionInfoBlock_C(state->infoblock, state->controlID.c_str());
+			if (state->infoblock)
+				state->infoblock->AddBlock(pBlock);
+			else
+				((VersionInfo_C*)state->resource)->AddBlock(pBlock);
+			state->infoblock = pBlock;
+		}
+	  BLOCK_BEGIN
+		versioninfos
+	  BLOCK_END
+		{
+			state->infoblock = state->infoblock->GetOwner();
+		}
+	;
+
+versioninfo_id
+	: id
+		{ state->controlID = yytext; }
+	;
+
+versioninfo_text
+	: versioninfo_text ',' id
+		{
+		    state->controlText += L",";
+		    state->controlText += yytext;
+		}
+	| id
+		{
+		    state->controlText = yytext;
+		}	  
+	;
+	
+//----------------------------------------------------------------------------
+// TOOLBAR
+//----------------------------------------------------------------------------
+
+toolbarStatement
+	: resource_name STM_TOOLBAR memory_flags resource_options 
+		{
+			Toolbar_C *pRes = new Toolbar_C(state->resourceName.c_str(), state->resourceOptions.c_str());
+			state->resource = pRes;
+			state->rc->AddResource(pRes);
+		}
+	  BLOCK_BEGIN toolbar_items BLOCK_END	 
+	;
+
+toolbar_items
+	: /* empty */
+	| toolbar_items toolbar_item
+	;
+
+toolbar_item
+	: BUTTON id
+	{
+		std::wstring s;
+		s += L"BUTTON ";
+		s += yytext;
+		((Toolbar_C*)state->resource)->AddItem(s.c_str());
+	}
+	| SEPARATOR
+	{
+		((Toolbar_C*)state->resource)->AddItem(L"SEPARATOR");
+	}
+	;
+
+//----------------------------------------------------------------------------
+// DLGINIT
+//----------------------------------------------------------------------------
+
+dlginitStatement
+	: resource_name DLGINIT memory_flags
+	  BLOCK_BEGIN 
+		resource_options
+	  BLOCK_END
+	;
+
+
+%%

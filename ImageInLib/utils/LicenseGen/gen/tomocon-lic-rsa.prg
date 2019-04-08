@@ -1,0 +1,3 @@
+- openssl.exe genrsa -aes256 -out tomocon-lic-rsa.pri 4096
+- openssl req -new -x509 -key tomocon-lic-rsa.pri -out tomocon-lic-rsa.cer -days 10199999 -text -config tomocon-lic-rsa.cnf
+- openssl x509 -in tomocon-lic-rsa.cer -noout -pubkey >tomocon-lic-rsa.pub

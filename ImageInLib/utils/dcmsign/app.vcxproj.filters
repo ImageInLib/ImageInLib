@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="OpenSSL">
+      <UniqueIdentifier>{37a74414-44c1-4305-a4c6-5d3ff740f3fc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\external_libs\dcmtk\dcmsign\apps\dcmsign.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\external_libs\OpenSSL\x86\lib\libeay32mt.lib">
+      <Filter>OpenSSL</Filter>
+    </Library>
+    <Library Include="..\..\external_libs\OpenSSL\x86\lib\libeay32mtd.lib">
+      <Filter>OpenSSL</Filter>
+    </Library>
+    <Library Include="..\..\external_libs\OpenSSL\x86\lib\ssleay32mt.lib">
+      <Filter>OpenSSL</Filter>
+    </Library>
+    <Library Include="..\..\external_libs\OpenSSL\x86\lib\ssleay32mtd.lib">
+      <Filter>OpenSSL</Filter>
+    </Library>
+  </ItemGroup>
+</Project>

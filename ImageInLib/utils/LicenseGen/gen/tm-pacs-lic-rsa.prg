@@ -1,0 +1,3 @@
+- openssl.exe genrsa -aes256 -out tm-pacs-lic-rsa.pri 4096
+- openssl req -new -x509 -key tm-pacs-lic-rsa.pri -out tm-pacs-lic-rsa.cer -days 10199999 -text -config tm-pacs-lic-rsa.cnf
+- openssl x509 -in tm-pacs-lic-rsa.cer -noout -pubkey >tm-pacs-lic-rsa.pub

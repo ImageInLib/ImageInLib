@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LicenseGen", "LicenseGen.vcproj", "{079E9021-CF9E-4BE5-B032-F01E277277B3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F3C19EC0-90F2-4AE3-BF0C-3B5F92501B26} = {F3C19EC0-90F2-4AE3-BF0C-3B5F92501B26}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crypto", "..\..\..\external_libs\crypto\crypto.vcproj", "{F3C19EC0-90F2-4AE3-BF0C-3B5F92501B26}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mkfeature", "mkfeature.vcproj", "{8F53B850-7072-4D64-B55C-F89C897DA291}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://tfs.fox.tatramed.sk:8080/tfs/TatraMed
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = ..\\..\\..\\libs\\crypto\\crypto.vcproj
+		SccProjectName1 = ../../../libs/crypto
+		SccLocalPath1 = ..\\..\\..\\libs\\crypto
+		SccProjectUniqueName2 = LicenseGen.vcproj
+		SccLocalPath2 = .
+		SccProjectUniqueName3 = mkfeature.vcproj
+		SccLocalPath3 = .
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{079E9021-CF9E-4BE5-B032-F01E277277B3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{079E9021-CF9E-4BE5-B032-F01E277277B3}.Debug|Win32.Build.0 = Debug|Win32
+		{079E9021-CF9E-4BE5-B032-F01E277277B3}.Release|Win32.ActiveCfg = Release|Win32
+		{079E9021-CF9E-4BE5-B032-F01E277277B3}.Release|Win32.Build.0 = Release|Win32
+		{F3C19EC0-90F2-4AE3-BF0C-3B5F92501B26}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3C19EC0-90F2-4AE3-BF0C-3B5F92501B26}.Release|Win32.ActiveCfg = Release|Win32
+		{8F53B850-7072-4D64-B55C-F89C897DA291}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8F53B850-7072-4D64-B55C-F89C897DA291}.Debug|Win32.Build.0 = Debug|Win32
+		{8F53B850-7072-4D64-B55C-F89C897DA291}.Release|Win32.ActiveCfg = Release|Win32
+		{8F53B850-7072-4D64-B55C-F89C897DA291}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

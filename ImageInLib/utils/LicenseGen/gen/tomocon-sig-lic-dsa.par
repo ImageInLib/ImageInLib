@@ -1,0 +1,103 @@
+DSA-Parameters: (4096 bit)
+    p:
+        00:a5:ef:f8:0d:61:af:6d:3d:e5:2c:67:e6:d5:bb:
+        d1:fd:88:a7:d7:3d:d3:16:cc:83:b7:30:12:95:8e:
+        80:db:55:07:7b:60:24:1a:94:ce:d4:db:35:d2:61:
+        9e:ff:b6:20:c8:a6:63:0b:71:87:cf:42:bf:53:ca:
+        4a:5b:5e:f8:ae:6d:a3:09:c0:49:3a:08:d9:36:55:
+        7b:80:be:a6:66:94:a1:ea:9d:c6:db:96:32:7c:ea:
+        c9:c6:3c:d8:85:75:b7:88:c7:98:b0:4c:45:05:8a:
+        57:46:f2:da:97:c7:4a:f8:c8:cb:63:98:b1:30:3b:
+        0f:12:3e:c5:9c:a5:7a:b1:26:f0:93:4a:81:05:af:
+        eb:33:13:aa:af:2b:00:c0:f4:a8:2a:6c:8a:40:34:
+        e9:a7:6f:e2:f7:7f:44:1f:cd:8b:7a:0e:39:be:43:
+        3a:7e:f1:46:57:86:9d:47:29:1e:62:10:af:e0:1e:
+        64:f5:39:4c:32:ae:57:37:57:07:43:fe:dc:02:00:
+        d6:bf:b8:91:55:9f:67:15:c2:3a:bb:d5:db:6a:1a:
+        3e:fa:b1:63:46:fa:7d:b6:c0:e6:dc:f7:75:90:f8:
+        6c:a4:21:32:5c:18:5b:a1:5f:a3:15:63:81:d7:68:
+        0a:33:d4:1f:cd:c2:77:b0:14:03:e9:7a:03:e7:b6:
+        a9:e2:95:fc:61:77:34:12:66:49:eb:db:dc:d8:63:
+        e7:5c:78:c7:c0:ba:0e:50:2e:c7:d6:bb:02:f2:2b:
+        5e:a6:bd:55:ad:38:67:b8:4b:a7:1a:a7:c5:3c:b5:
+        7f:84:8c:8a:03:84:17:1f:88:e1:ae:2f:10:2b:eb:
+        03:4f:6a:4a:b7:c0:ff:d4:f4:f1:27:9c:21:92:1a:
+        70:d9:32:2c:1c:65:74:0d:da:24:a0:73:10:a9:7b:
+        8e:4f:b0:2a:1c:97:21:eb:e2:8f:e8:8e:11:73:eb:
+        dc:15:0f:db:14:b3:67:8d:c0:e1:06:51:c9:bf:c0:
+        f5:1e:36:73:05:c9:27:09:2f:11:79:66:e0:0d:51:
+        83:82:eb:ae:11:77:cd:98:3a:82:22:d8:f4:19:cb:
+        65:74:19:3d:40:d5:da:86:67:c9:30:fd:18:67:5c:
+        72:25:95:27:48:ac:24:df:3a:34:a7:13:b2:7c:31:
+        06:5a:2f:8e:1c:3b:a2:46:5a:83:4f:d6:47:fe:f0:
+        4b:d2:ca:af:76:51:08:71:0a:70:7d:0a:de:d7:46:
+        d7:3b:ab:f0:65:85:fd:9b:e6:27:22:8f:83:cc:5d:
+        74:12:2c:5b:a1:24:0e:66:9a:c0:d1:47:35:6c:b2:
+        f6:06:be:f5:2b:65:86:c7:06:e7:c7:a5:ba:4e:63:
+        88:b7:e3
+    q:
+        00:c2:43:7d:52:03:9d:f1:7d:48:02:e2:4c:ee:20:
+        63:d9:61:82:eb:5f
+    g:
+        5e:f6:71:0f:ec:aa:bf:b9:f0:12:74:7c:8c:c5:c4:
+        4a:32:ed:66:55:1a:e7:3b:81:41:1a:63:ae:50:4e:
+        c0:9a:50:b9:79:36:6b:3a:30:ac:04:7a:d3:d6:fe:
+        97:35:28:fd:54:c7:35:7d:1e:0a:bf:40:5d:cd:dc:
+        ee:0a:9e:86:2f:25:26:e6:d3:c9:14:58:24:45:72:
+        54:d3:1e:08:b1:e7:53:ab:1c:29:bc:c9:b3:2a:f5:
+        73:c6:ef:26:5a:51:5d:27:a2:cb:7d:8a:22:80:8b:
+        6e:3c:73:6f:2f:43:e1:91:67:ce:c5:bc:24:d7:3e:
+        96:2e:1b:42:51:b6:e8:15:8d:5d:13:6c:de:fe:a1:
+        63:af:9c:28:29:61:d2:74:cd:fd:eb:3e:da:ef:44:
+        74:3d:a4:c7:6a:88:bb:23:75:4a:c4:0c:a4:fb:4b:
+        f3:de:7a:39:f9:86:98:e4:7d:e8:d2:85:e3:34:62:
+        e0:7d:c5:77:b8:3e:17:28:ba:fa:a4:24:d9:54:97:
+        5d:0d:25:8c:42:6d:5f:1c:30:31:dd:63:b1:94:76:
+        29:14:98:f4:6a:2d:fb:a7:d8:b2:b3:dc:0e:de:b5:
+        26:20:73:bf:a9:19:a5:84:7c:4e:73:67:de:5f:52:
+        5d:84:33:6e:0e:33:3d:2a:1d:ce:86:f3:ad:25:19:
+        ff:86:2d:0b:d3:31:e2:51:16:e6:d6:89:ba:9b:c7:
+        0d:69:28:a1:77:99:79:1d:46:02:c8:8f:63:dc:7c:
+        b8:94:20:c6:a9:73:58:e4:66:c5:b5:3d:37:73:6b:
+        5c:e9:3e:cf:6b:0c:b9:51:35:b5:30:f6:e6:03:05:
+        db:59:5b:4e:e0:50:10:3a:0b:25:3e:ad:ad:8a:44:
+        30:85:41:bd:bf:0a:48:27:88:b5:38:5f:b6:15:41:
+        c7:e0:39:b4:7e:e9:f4:4c:45:24:00:cc:b5:81:6e:
+        f6:ed:b2:46:65:04:f6:a7:fe:ba:72:1e:50:f4:41:
+        15:8f:88:4b:9f:15:61:40:d0:06:cd:af:e0:7d:7a:
+        85:31:21:99:57:ad:97:9f:24:85:68:1f:64:0f:c0:
+        4b:02:6a:6d:34:5b:f5:35:ff:18:63:3f:f5:b7:bf:
+        b0:1e:ba:ae:fd:ef:6c:54:94:61:3d:8c:3a:37:fa:
+        a0:6e:17:0a:88:a9:fa:35:9d:e4:0c:3f:3b:c0:f2:
+        4e:6f:e3:0d:1d:b9:7c:7f:ab:38:de:b9:03:3e:0d:
+        db:9c:f8:04:ef:3a:5a:8c:31:83:20:b8:b2:9b:2c:
+        7d:00:d0:4f:22:b5:b8:4d:d6:f0:3c:e0:b3:6f:21:
+        9d:a8:10:b7:a5:84:ab:7d:db:b0:2d:73:44:6a:e7:
+        de:75
+    bubblebabble:
+        NezobTolebGyvilZafylSosamBolazDisuzZusumDefyl
+-----BEGIN DSA PARAMETERS-----
+MIIEIAKCAgEApe/4DWGvbT3lLGfm1bvR/Yin1z3TFsyDtzASlY6A21UHe2AkGpTO
+1Ns10mGe/7YgyKZjC3GHz0K/U8pKW174rm2jCcBJOgjZNlV7gL6mZpSh6p3G25Yy
+fOrJxjzYhXW3iMeYsExFBYpXRvLal8dK+MjLY5ixMDsPEj7FnKV6sSbwk0qBBa/r
+MxOqrysAwPSoKmyKQDTpp2/i939EH82Leg45vkM6fvFGV4adRykeYhCv4B5k9TlM
+Mq5XN1cHQ/7cAgDWv7iRVZ9nFcI6u9Xbaho++rFjRvp9tsDm3Pd1kPhspCEyXBhb
+oV+jFWOB12gKM9QfzcJ3sBQD6XoD57ap4pX8YXc0EmZJ69vc2GPnXHjHwLoOUC7H
+1rsC8itepr1VrThnuEunGqfFPLV/hIyKA4QXH4jhri8QK+sDT2pKt8D/1PTxJ5wh
+khpw2TIsHGV0DdokoHMQqXuOT7AqHJch6+KP6I4Rc+vcFQ/bFLNnjcDhBlHJv8D1
+HjZzBcknCS8ReWbgDVGDguuuEXfNmDqCItj0GctldBk9QNXahmfJMP0YZ1xyJZUn
+SKwk3zo0pxOyfDEGWi+OHDuiRlqDT9ZH/vBL0sqvdlEIcQpwfQre10bXO6vwZYX9
+m+YnIo+DzF10EixboSQOZprA0Uc1bLL2Br71K2WGxwbnx6W6TmOIt+MCFQDCQ31S
+A53xfUgC4kzuIGPZYYLrXwKCAgBe9nEP7Kq/ufASdHyMxcRKMu1mVRrnO4FBGmOu
+UE7AmlC5eTZrOjCsBHrT1v6XNSj9VMc1fR4Kv0BdzdzuCp6GLyUm5tPJFFgkRXJU
+0x4IsedTqxwpvMmzKvVzxu8mWlFdJ6LLfYoigItuPHNvL0PhkWfOxbwk1z6WLhtC
+UbboFY1dE2ze/qFjr5woKWHSdM396z7a70R0PaTHaoi7I3VKxAyk+0vz3no5+YaY
+5H3o0oXjNGLgfcV3uD4XKLr6pCTZVJddDSWMQm1fHDAx3WOxlHYpFJj0ai37p9iy
+s9wO3rUmIHO/qRmlhHxOc2feX1JdhDNuDjM9Kh3OhvOtJRn/hi0L0zHiURbm1om6
+m8cNaSihd5l5HUYCyI9j3Hy4lCDGqXNY5GbFtT03c2tc6T7Pawy5UTW1MPbmAwXb
+WVtO4FAQOgslPq2tikQwhUG9vwpIJ4i1OF+2FUHH4Dm0fun0TEUkAMy1gW727bJG
+ZQT2p/66ch5Q9EEVj4hLnxVhQNAGza/gfXqFMSGZV62XnySFaB9kD8BLAmptNFv1
+Nf8YYz/1t7+wHrqu/e9sVJRhPYw6N/qgbhcKiKn6NZ3kDD87wPJOb+MNHbl8f6s4
+3rkDPg3bnPgE7zpajDGDILiymyx9ANBPIrW4TdbwPOCzbyGdqBC3pYSrfduwLXNE
+aufedQ==
+-----END DSA PARAMETERS-----

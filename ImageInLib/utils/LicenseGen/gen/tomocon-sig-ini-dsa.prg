@@ -1,0 +1,4 @@
+- openssl.exe dsaparam -out tomocon-sig-ini-dsa.par -text 4096
+- openssl.exe gendsa -aes256 -out tomocon-sig-ini-dsa.pri tomocon-sig-ini-dsa.par
+- openssl req -new -x509 -key tomocon-sig-ini-dsa.pri -out tomocon-sig-ini-dsa.cer -days 10199999 -text -config tomocon-sig-ini-dsa.cnf
+- openssl x509 -in tomocon-sig-ini-dsa.cer -noout -pubkey >tomocon-sig-ini-dsa.pub

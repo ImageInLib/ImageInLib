@@ -1,0 +1,4 @@
+- openssl.exe dsaparam -out tm-pacs-sig-lic-dsa.par -text 4096
+- openssl.exe gendsa -aes256 -out tm-pacs-sig-lic-dsa.pri tm-pacs-sig-lic-dsa.par
+- openssl req -new -x509 -key tm-pacs-sig-lic-dsa.pri -out tm-pacs-sig-lic-dsa.cer -days 10199999 -text -config tm-pacs-sig-lic-dsa.cnf
+- openssl x509 -in tm-pacs-sig-lic-dsa.cer -noout -pubkey >tm-pacs-sig-lic-dsa.pub
