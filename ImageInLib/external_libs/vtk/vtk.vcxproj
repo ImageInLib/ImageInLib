@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Deploy|x64">
+      <Configuration>Deploy</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{C309D017-118D-4C67-B42F-F43FAC6D5920}</ProjectGuid>
+    <RootNamespace>vtk</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>
+    </CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>
+    </CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <PropertyGroup>
+    <TargetName>tkCommonCore-8.1d</TargetName>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">$(ProjectDir)lib64\</OutDir>
+    <TargetExt>.lib</TargetExt>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">$(ProjectDir).build\lib64\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="vtk_8.zip">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">IF NOT EXIST .\lib64\vtkCommonCore-8.1d.lib ..\..\utils\unzip.exe -u -o "%(FullPath)"</Command>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">false</LinkObjects>
+	  <Outputs Condition="'$(Configuration)|$(Platform)'=='Deploy|x64'">$(OutDir)vtkalglib-8.1.lib;$(OutDir)vtkalglib-8.1d.lib;$(OutDir)vtkCommonColor-8.1.lib;$(OutDir)vtkCommonColor-8.1d.lib;$(OutDir)vtkCommonComputationalGeometry-8.1.lib;$(OutDir)vtkCommonComputationalGeometry-8.1d.lib;$(OutDir)vtkCommonCore-8.1.lib;$(OutDir)vtkCommonCore-8.1d.lib;$(OutDir)vtkCommonDataModel-8.1.lib;$(OutDir)vtkCommonDataModel-8.1d.lib;$(OutDir)vtkCommonExecutionModel-8.1.lib;$(OutDir)vtkCommonExecutionModel-8.1d.lib;$(OutDir)vtkCommonMath-8.1.lib;$(OutDir)vtkCommonMath-8.1d.lib;$(OutDir)vtkCommonMisc-8.1.lib;$(OutDir)vtkCommonMisc-8.1d.lib;$(OutDir)vtkCommonSystem-8.1.lib;$(OutDir)vtkCommonSystem-8.1d.lib;$(OutDir)vtkCommonTransforms-8.1.lib;$(OutDir)vtkCommonTransforms-8.1d.lib;$(OutDir)vtkIOCore-8.1.lib;$(OutDir)vtkIOCore-8.1d.lib;$(OutDir)vtkIOLegacy-8.1.lib;$(OutDir)vtkIOLegacy-8.1d.lib;$(OutDir)vtksys-8.1.lib;$(OutDir)vtksys-8.1d.lib</Outputs>
+    </CustomBuild>
+    <None Include="!cmake-changes" />
+    <None Include="..\..\utils\unzip.exe">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -4,26 +4,39 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageInLib", "ImageInLib\ImageInLib.vcxproj", "{BAF94866-0AD8-4B12-828F-1B1588C64930}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C309D017-118D-4C67-B42F-F43FAC6D5920} = {C309D017-118D-4C67-B42F-F43FAC6D5920}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external_libs", "external_libs", "{2BAB4B81-76E8-47AC-8895-2DAF62B3EE1B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vtk", "external_libs\vtk\vtk.vcxproj", "{C309D017-118D-4C67-B42F-F43FAC6D5920}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
+		Deploy|x64 = Deploy|x64
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Debug|x64.ActiveCfg = Debug|x64
 		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Debug|x64.Build.0 = Debug|x64
-		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Debug|x86.ActiveCfg = Debug|Win32
-		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Debug|x86.Build.0 = Debug|Win32
+		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Deploy|x64.ActiveCfg = Debug|x64
+		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Deploy|x64.Build.0 = Debug|x64
 		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Release|x64.ActiveCfg = Release|x64
 		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Release|x64.Build.0 = Release|x64
-		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Release|x86.ActiveCfg = Release|Win32
-		{BAF94866-0AD8-4B12-828F-1B1588C64930}.Release|x86.Build.0 = Release|Win32
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Debug|x64.ActiveCfg = Deploy|x64
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Debug|x64.Build.0 = Deploy|x64
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Deploy|x64.ActiveCfg = Deploy|x64
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Deploy|x64.Build.0 = Deploy|x64
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Release|x64.ActiveCfg = Deploy|x64
+		{C309D017-118D-4C67-B42F-F43FAC6D5920}.Release|x64.Build.0 = Deploy|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C309D017-118D-4C67-B42F-F43FAC6D5920} = {2BAB4B81-76E8-47AC-8895-2DAF62B3EE1B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {945FF936-C62B-468B-B8E7-4BEEA0602159}
