@@ -30,8 +30,9 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr, Point
 	dataType ** transformPointsPtr = (dataType **)malloc(imageHeight * sizeof(dataType *));
 
 	dataType k_a, i_a, j_a; // Affine indices
-						  // Rotation Angles -
-	dataType theta = (rotation.y*M_PI) / 180, psi = (rotation.z*M_PI) / 180, phi = (rotation.x*M_PI) / 180;
+	// Rotation Angles -
+	//dataType theta = (rotation.y*M_PI) / 180, psi = (rotation.z*M_PI) / 180, phi = (rotation.x*M_PI) / 180;
+	dataType theta = (rotation.y), psi = (rotation.z), phi = (rotation.x);
 	// Center Points
 	//int hcenter = floor(imageHeight / 2), lcenter = floor(imageLength / 2), wcenter = floor(imageWidth / 2);
 	dataType cz = centroid[2], cx = centroid[0], cy = centroid[1];
@@ -271,7 +272,7 @@ dataType interpolated(dataType k_t, dataType i_t, dataType j_t, int top, int bot
 	dataType c100 = imageDataPtr[top][x_new(right, begin, imageLength)];
 	dataType c101 = imageDataPtr[bottom][x_new(right, begin, imageLength)];
 	dataType c110 = imageDataPtr[top][x_new(right, end, imageLength)];
-	dataType c111 = imageDataPtr[bottom][x_new(right, end, imageLength)];;
+	dataType c111 = imageDataPtr[bottom][x_new(right, end, imageLength)];
 
 	return trilinearInterpolation(i_t, left, right, j_t, begin, end, c000, c001, c010, c011, c100, c101, c110, c111, k_t, bottom, top);
 }
