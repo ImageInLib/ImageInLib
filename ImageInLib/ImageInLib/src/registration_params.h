@@ -23,9 +23,12 @@ extern "C" {
 		dataType translation_weight;
 		dataType h;
 		size_t max_iterations;
+		size_t rand_points;
 		AffineParameter affineResults;
 		dataType imageBackground;
+		dataType imageForeground;
 		bool displayRegistrationOutputs;
+		char fPathname[100];
 	} registrationParams;
 
 	typedef enum
