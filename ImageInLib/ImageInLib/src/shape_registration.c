@@ -7,32 +7,39 @@
 //==============================================================================
 void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, optimizationMethod gdescentMethod)
 {
+	//==============================================================================
 	// Variable definition
 	dataType  step_size = params.step_size;
 	dataType tol = params.tolerance;
-
+	//==============================================================================
 	dataType firstCpuTime, secondCpuTime;
+	//==============================================================================
 	// Centroid Parameters
 	dataType fixedCentroid[3], movingCentroid[3];
 	// Centroid Method Fixed/Destination Data
 	centroidImage(fixedData, fixedCentroid, zDim, xDim, yDim, params.imageBackground);
 	// Centroid Method Moving/Source Data
 	centroidImage(movingData, movingCentroid, zDim, xDim, yDim, params.imageBackground);
+	//==============================================================================
 	// Set the Translation approximation
 	Point3D translationTran;
 	translationTran.x = fixedCentroid[0] - movingCentroid[0];
 	translationTran.y = fixedCentroid[1] - movingCentroid[1];
 	translationTran.z = fixedCentroid[2] - movingCentroid[2];
+	//==============================================================================
 	// Sets Transformation Parameters to be used in Registration
 	AffineParameter finalResults;
 	Point3D rotationTran = { 0.0, 0.0, 0.0 };
 	Point3D scalingTran = { 1.0, 1.0, 1.0 };
 	finalResults.rotation = rotationTran, finalResults.scaling = scalingTran, finalResults.translation = translationTran;
+	//==============================================================================
 	// Call the registration Function
+	//==============================================================================
 	// Begin Record Time
 #ifdef MEASURE_TIME
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
+	//==============================================================================
 	if (gdescentMethod == GRADIENT_DESCENT)
 	{
 		finalResults = registration3D(fixedData, movingData, finalResults, step_size, tol, zDim, xDim, yDim, movingCentroid, params);
@@ -41,27 +48,32 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	{
 		finalResults = registrationStochastic3D(fixedData, movingData, finalResults, step_size, tol, zDim, xDim, yDim, movingCentroid, params);
 	}
-
+	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
-
+	//==============================================================================
 	printf("Total Registration CPU time: %e secs\n", secondCpuTime - firstCpuTime);
-
+	//==============================================================================
 	// Apply transformation results to destination - Expect same as source~approximately
 	// Begin Record Time
 #ifdef MEASURE_TIME
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
+	//==============================================================================
 	transform3DImage(movingData, resultPtr, finalResults.translation, finalResults.scaling, finalResults.rotation, zDim, xDim, yDim, params.imageBackground, movingCentroid);
+	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	//==============================================================================
 #endif
 #ifdef CONSOLE_OUTPUT
 	printf("Final Resulting Transformation CPU time: %e secs\n\n", secondCpuTime - firstCpuTime);
 #endif
+	//==============================================================================
 	// Save the Resultant Transformation
 	params.affineResults = finalResults;
+	//==============================================================================
 }
 //==============================================================================
 void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType objPixel)
