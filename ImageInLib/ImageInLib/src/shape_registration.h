@@ -47,7 +47,7 @@ extern "C" {
 * gDescentMethod - choice of 1 for Simple, 2 for Stochastic GD method
 * pathResults - path to where a vtk file for the resulting registered data
 */
-	void run_registration(dataType **dPtr, dataType **sPtr, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, unsigned int gdescentMethod);
+	void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, optimizationMethod gdescentMethod);
 	// Cla. if the distance is within delta
 	inline int NFunction(dataType val1, dataType val2, dataType delta);
 	// Calc. the distance differences
