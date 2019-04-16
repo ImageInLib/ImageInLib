@@ -69,10 +69,10 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 	size_t k, i, j, x;
 	struct Node * band = NULL; // Holds all the Objects
 							   // Sets the structure size, to hold all the calculated arrival times
-	objStructure ** objectNthD = (objStructure **)malloc(sizeof(objStructure*)*imageHeight);
+	Obj_Structure ** objectNthD = (Obj_Structure **)malloc(sizeof(Obj_Structure*)*imageHeight);
 	for (i = 0; i < imageHeight; i++)
 	{
-		objectNthD[i] = (objStructure *)malloc(sizeof(objStructure) * (imageLength*imageWidth));
+		objectNthD[i] = (Obj_Structure *)malloc(sizeof(Obj_Structure) * (imageLength*imageWidth));
 	}
 	// Initialize Object2D
 	for (k = 0; k < imageHeight; k++)

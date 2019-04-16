@@ -16,7 +16,7 @@ extern "C" {
 #include "common_functions.h"
 // STRUCTURES
 // Enum States
-	enum cellState
+	enum CellState
 	{
 		FROZEN, NARROWBAND, UNKNOWN
 	};
@@ -30,12 +30,12 @@ extern "C" {
 		size_t xpos;
 		size_t ypos;
 		size_t zpos;
-	} objStructure;
+	} Obj_Structure;
 	//==============================================================================
 	// Linked List
 	struct Node
 	{
-		enum cellState state;
+		enum CellState state;
 		dataType arrival;
 		size_t position;
 		size_t xpos;
@@ -69,7 +69,7 @@ extern "C" {
 	struct Node * getElement(struct Node* head, int index);
 	//==============================================================================
 	// 4.a Pushes/Inserts an object at the beginning of the list
-	void push(struct Node** head_ref, objStructure objAdd);
+	void push(struct Node** head_ref, Obj_Structure objAdd);
 	// 4.b Pushes/Inserts an element at the bottom or after another element in the list and maintains the ascending ordering as it adds
 	void pushNodeBottom(struct Node** head_ref, struct Node * objsBand);
 	// 4.c Pushes a Node at the beginning of the list

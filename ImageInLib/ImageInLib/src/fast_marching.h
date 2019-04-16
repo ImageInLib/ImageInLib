@@ -27,7 +27,7 @@ extern "C" {
 	//==============================================================================
 	// Function Prototypes
 	// Fast Marching 2D &3D
-	void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[], ArrivalTime *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints);
+	void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], ArrivalTime *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints);
 	//==============================================================================
 	// Calls Fmm Method
 	void fastMarching(dataType **distancePtr, dataType **dataSourcePtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType objPixel);

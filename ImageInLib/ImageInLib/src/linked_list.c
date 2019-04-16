@@ -241,7 +241,7 @@ struct Node * getElement(struct Node* head, int index)
 	free(temp);*/  // <-- Memory watchers!
 }
 // 4.a Pushes/Inserts an element at the beginning of the list
-void push(struct Node** head_ref, objStructure objAdd)
+void push(struct Node** head_ref, Obj_Structure objAdd)
 {
 	/* allocate node */
 	struct Node* new_node = (struct Node*) malloc(sizeof(struct Node));
@@ -361,7 +361,7 @@ void printList(struct Node *node)
 {
 	while (node != NULL)
 	{
-		printf("T = %6.4lf state = %2d xPos = %2zd yPos = %2zd zpos = %2zd position = %6zd \n", 
+		printf("T = %6.4lf state = %2d xPos = %2zd yPos = %2zd zpos = %2zd position = %6zd \n",
 			node->arrival, node->state, node->xpos, node->ypos, node->zpos, node->position);
 		node = node->next;
 	}
