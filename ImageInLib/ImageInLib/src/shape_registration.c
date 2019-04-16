@@ -115,7 +115,7 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 		}
 	}
 	// Arrival times
-	ArrivalTime *shapeArrival = (ArrivalTime *)malloc(sizeof(ArrivalTime)*loop);
+	Arrival_Time *shapeArrival = (Arrival_Time *)malloc(sizeof(Arrival_Time)*loop);
 	for (i = 0; i < loop; i++)
 	{
 		shapeArrival[i].T = 0.0;

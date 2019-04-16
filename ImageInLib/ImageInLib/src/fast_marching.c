@@ -19,7 +19,7 @@ void smallSort(dataType *a, dataType *b, dataType *c);
 void smallSort2D(dataType *a, dataType *b);
 //==============================================================================
 // Fast Marching Method
-void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], ArrivalTime *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
+void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
 {
 	// 1. Initialization
 	size_t i;
