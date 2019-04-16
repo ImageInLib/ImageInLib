@@ -23,7 +23,7 @@ extern "C" {
 		vtk_header_line line9;
 		vtk_header_line line10;
 		vtk_header_line line11;
-	} VTKHeaderLines;
+	} VTK_Header_Lines;
 	//==============================================================================
 	typedef enum {
 		BINARY_DATA = 1,
@@ -33,7 +33,7 @@ extern "C" {
 	typedef struct {
 		bool revertDataBytes;
 		bool appendToFile;
-	} storageFlags;
+	} Storage_Flags;
 	//==============================================================================
 
 #ifdef __cplusplus

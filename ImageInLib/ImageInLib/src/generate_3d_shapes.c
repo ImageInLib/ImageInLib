@@ -135,7 +135,7 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 	}
 
 	// Store generated object to file
-	storageFlags flags = { true, true };
+	Storage_Flags flags = { true, true };
 	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
@@ -180,7 +180,7 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	}
 
 	// Store generated object to file
-	storageFlags flags = { true, true };
+	Storage_Flags flags = { true, true };
 	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;

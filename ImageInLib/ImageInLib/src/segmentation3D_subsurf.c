@@ -154,7 +154,7 @@ bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters,
 			strcpy_s(name, sizeof name, outputPathPtr);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i);
 			strcat_s(name, sizeof(name), name_ending);
-			storageFlags flags = { true, true };
+			Storage_Flags flags = { true, true };
 			store3dDataVtkD(imageData.segmentationFuntionPtr, length, width, height, name, segParameters.h, flags);
 		}
 		i++;
@@ -490,7 +490,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 			}
 		}
 	}
-	storageFlags flags = { true, true };
+	Storage_Flags flags = { true, true };
 	store3dDataVtkD(inputDataArrayPtr, length, width, height, pathArray1, (2.5 / (length)), flags);
 	return true;
 }
