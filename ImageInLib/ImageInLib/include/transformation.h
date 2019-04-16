@@ -11,7 +11,7 @@ extern "C" {
 		INVERSE_TRANSFORM
 	} transformationMethod;
 
-	void transformImage(ImageData image, dataType **, affineTransformParameters affineTransformParam, transformationMethod transform);
+	void transformImage(Image_Data image, dataType **, affineTransformParameters affineTransformParam, transformationMethod transform);
 
 #ifdef __cplusplus
 }

@@ -26,7 +26,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(ImageData inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
 	//const size_t length = 50, width = 57, height = 20;// length = 50, width = 57, height = 20;//length = 101, width = 101, height = 101
@@ -495,7 +495,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	return true;
 }
 
-bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
+bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
 	SegParameters segParameters, FilterParameters explicit_lhe_Parameters)
 {
 	//checks if the memory was allocated
@@ -517,7 +517,7 @@ bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extende
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 
-	ImageData presmoothingData;
+	Image_Data presmoothingData;
 	presmoothingData.height = height_ext;
 	presmoothingData.length = length_ext;
 	presmoothingData.width = width_ext;

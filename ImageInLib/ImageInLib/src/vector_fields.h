@@ -42,7 +42,7 @@ extern "C" {
 	* fieldDirection String for the finite difference method we want to calculate/evaluate
 	* Coeff is the k used in calculation for gradient
 	*/
-	void generate3DVector(Point3D ** vectorPtr, ImageData inputDataPtr, vectorParameters vectorVariables, enum finiteDifference fieldDirection, dataType coef);
+	void generate3DVector(Point3D ** vectorPtr, Image_Data inputDataPtr, vectorParameters vectorVariables, enum finiteDifference fieldDirection, dataType coef);
 	//==============================================================================
 #endif // !VECTOR_FIELDS
 
