@@ -108,7 +108,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	}
 	//==============================================================================
 	//Create feature vector for shapes - D by 1 dimension
-	EigenShapes *eigshapes = (EigenShapes*)malloc(sizeof(EigenShapes)*numShapes);
+	Eigen_Shapes *eigshapes = (Eigen_Shapes*)malloc(sizeof(Eigen_Shapes)*numShapes);
 	// Alloc. and copy
 	for (i = 0; i < numShapes; i++)
 	{

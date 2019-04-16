@@ -14,7 +14,7 @@ extern "C" {
 // Container for Eigen shapes, in descending order to their eigenvalues
 	typedef struct {
 		dataType * eigenShape;
-	} EigenShapes;
+	} Eigen_Shapes;
 	//==============================================================================
 	// Generalized Procrustes Analysis - Returns the Mean Shape
 	void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shapeAnalysisParameters params);
