@@ -5,7 +5,7 @@
 //==============================================================================
 #include "shape_registration.h"
 //==============================================================================
-void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, optimizationMethod gdescentMethod)
+void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod)
 {
 	// Variable definition
 	dataType  step_size = params.step_size;
@@ -24,7 +24,7 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	translationTran.y = fixedCentroid[1] - movingCentroid[1];
 	translationTran.z = fixedCentroid[2] - movingCentroid[2];
 	// Sets Transformation Parameters to be used in Registration
-	AffineParameter finalResults;
+	Affine_Parameter finalResults;
 	Point3D rotationTran = { 0.0, 0.0, 0.0 };
 	Point3D scalingTran = { 1.0, 1.0, 1.0 };
 	finalResults.rotation = rotationTran, finalResults.scaling = scalingTran, finalResults.translation = translationTran;
@@ -282,9 +282,9 @@ dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t 
 	}
 }
 //==============================================================================
-AffineParameter gradientComponents(dataType ** destPtr, dataType ** distTrans, dataType h, AffineParameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth)
+Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth)
 {
-	AffineParameter results;
+	Affine_Parameter results;
 	// Initialize the parameters
 	size_t k, i, j, x;
 
@@ -401,7 +401,7 @@ AffineParameter gradientComponents(dataType ** destPtr, dataType ** distTrans, d
 	return results;
 }
 //==============================================================================
-AffineParameter registration3D(dataType ** fixedData, dataType ** movingData, AffineParameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params)
+Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
 {
 	//==============================================================================
 	size_t k, i, dim2D = imageLength * imageWidth;
@@ -410,7 +410,7 @@ AffineParameter registration3D(dataType ** fixedData, dataType ** movingData, Af
 	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0.;
 	//==============================================================================
 	// Affine Parameters
-	AffineParameter affineResult, affineTmp;
+	Affine_Parameter affineResult, affineTmp;
 	//==============================================================================
 	// Create a new shape Pointers to be used
 	dataType ** destPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for destination
@@ -631,7 +631,7 @@ AffineParameter registration3D(dataType ** fixedData, dataType ** movingData, Af
 	//==============================================================================
 }
 //==============================================================================
-AffineParameter registrationStochastic3D(dataType ** fixedData, dataType ** movingData, AffineParameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params)
+Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
 {
 	//==============================================================================
 	size_t k, i, j, l, x, dim2D = imageLength * imageWidth, iteration = 0;
@@ -640,7 +640,7 @@ AffineParameter registrationStochastic3D(dataType ** fixedData, dataType ** movi
 	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0.;
 	//==============================================================================
 	// Affine Parameters
-	AffineParameter affineResult;
+	Affine_Parameter affineResult;
 	//==============================================================================
 	// Create new fixed dist. Pointers to be used
 	dataType ** destPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for destination
