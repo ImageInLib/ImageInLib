@@ -28,11 +28,11 @@ extern "C" {
 /*
 * Function To Perform Heat Explicit Scheme
 */
-	void heatExplicitScheme(ImageData toExplicitImage, const FilterParameters explicitParameters);
+	void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters);
 	/*
 	* Function To Perform Heat Gauss-Seidel Method Implicit Scheme
 	*/
-	void heatImplicitScheme(ImageData toImplicitImage, const FilterParameters implicitParameters);
+	void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters);
 	//==============================================================================
 	//#endif // !HEAT_QUATION_H
 

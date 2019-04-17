@@ -9,7 +9,7 @@
 #include <string.h>
 
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
-	const size_t imageHeight, unsigned char * pathPtr, VTKHeaderLines * lines)
+	const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines)
 {
 	//checks if the memory was allocated
 	if (imageDataPtr == NULL)
@@ -90,7 +90,7 @@ bool load3dDataArrayD(dataType ** imageDataPtr, const size_t imageLength, const 
 }
 
 bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
-	const size_t imageHeight, unsigned char * pathPtr, loadDataType dType)
+	const size_t imageHeight, unsigned char * pathPtr, LoadDataType dType)
 {
 	//checks if the memory was allocated
 	if (imageDataPtr == NULL)

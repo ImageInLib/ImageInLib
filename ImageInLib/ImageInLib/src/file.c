@@ -3,7 +3,7 @@
 #include "data_storage.h"
 
 bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
-	const size_t height, unsigned char * pathPtr, VTKHeaderLines *lines, operationType operation, loadDataType dType, storageFlags flags)
+	const size_t height, unsigned char * pathPtr, VTK_Header_Lines *lines, OperationType operation, LoadDataType dType, Storage_Flags flags)
 {
 	bool status = false; // Initial Status, only changed to true if the operation is successful
 	switch (operation)

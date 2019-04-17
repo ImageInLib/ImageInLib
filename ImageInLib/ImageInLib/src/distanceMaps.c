@@ -2,7 +2,7 @@
 #include "fast_marching.h"
 #include "distance_function.h"
 
-void computeDistanceMap(void **outputDistanceData, void **inputImageData, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, distanceMapParams distParams, distanceMapMethod method)
+void computeDistanceMap(void **outputDistanceData, void **inputImageData, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, Distance_Map_Params distParams, DistanceMapMethod method)
 {
 	switch (method)
 	{

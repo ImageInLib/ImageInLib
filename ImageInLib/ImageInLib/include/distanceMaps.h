@@ -11,7 +11,7 @@ extern "C" {
 		FAST_MARCH,
 		ROUY_TOURIN,
 		BRUTE_FORCE
-	} distanceMapMethod;
+	} DistanceMapMethod;
 
 	typedef struct
 	{
@@ -20,9 +20,9 @@ extern "C" {
 		dataType objectPixel;
 		dataType initValue;
 		dataType tolerance;
-	}distanceMapParams;
+	} Distance_Map_Params;
 
-	void computeDistanceMap(void **, void **, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, distanceMapParams distParams, distanceMapMethod method);
+	void computeDistanceMap(void **, void **, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, Distance_Map_Params distParams, DistanceMapMethod method);
 
 #ifdef __cplusplus
 }

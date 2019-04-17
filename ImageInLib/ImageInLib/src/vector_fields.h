@@ -23,14 +23,14 @@ extern "C" {
 	{
 		dataType h;
 		size_t p;
-	} vectorParameters; // Needed in calculation of vector field points
+	} Vector_Parameters; // Needed in calculation of vector field points
 	// Structure for the Vector Field Direction
 	//==============================================================================
 	typedef struct
 	{
 		// Container to store the vector field calculated values.
 		dataType ** fieldPtr;
-	} vectorDirection;
+	} Vector_Direction;
 	//==============================================================================
 	// Function Prototypes
 	/*
@@ -42,7 +42,7 @@ extern "C" {
 	* fieldDirection String for the finite difference method we want to calculate/evaluate
 	* Coeff is the k used in calculation for gradient
 	*/
-	void generate3DVector(Point3D ** vectorPtr, ImageData inputDataPtr, vectorParameters vectorVariables, enum finiteDifference fieldDirection, dataType coef);
+	void generate3DVector(Point3D ** vectorPtr, Image_Data inputDataPtr, Vector_Parameters vectorVariables, enum FiniteDifference fieldDirection, dataType coef);
 	//==============================================================================
 #endif // !VECTOR_FIELDS
 
