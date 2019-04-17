@@ -19,7 +19,7 @@ void smallSort(dataType *a, dataType *b, dataType *c);
 void smallSort2D(dataType *a, dataType *b);
 //==============================================================================
 // Fast Marching Method
-void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[], ArrivalTime *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
+void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
 {
 	// 1. Initialization
 	size_t i;
@@ -116,7 +116,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 				size_t posz = neighbours->zpos;
 				size_t xy = x_new(posx, posy, imageLength);
 				// Y Begin
-				objStructure objBegin;
+				Obj_Structure objBegin;
 				if (posz > -1 && posz < imageHeight && posy - 1 > -1 && posy - 1 < imageWidth && posx > -1 && posx < imageLength)
 				{
 					size_t yB = x_new(posx, posy - 1, imageLength);
@@ -127,7 +127,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					objBegin.arrival = INFINITY;
 				}
 				// Y End
-				objStructure objEnd;
+				Obj_Structure objEnd;
 				if (posz > -1 && posz < imageHeight && posy + 1 > -1 && posy + 1 < imageWidth && posx > -1 && posx < imageLength)
 				{
 					size_t yE = x_new(posx, posy + 1, imageLength);
@@ -138,7 +138,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					objEnd.arrival = INFINITY;
 				}
 				// X Left
-				objStructure objLeft;
+				Obj_Structure objLeft;
 				if (posz > -1 && posz < imageHeight && posy > -1 && posy < imageWidth && posx - 1 > -1 && posx - 1 < imageLength)
 				{
 					size_t xL = x_new(posx - 1, posy, imageLength);
@@ -149,7 +149,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					objLeft.arrival = INFINITY;
 				}
 				// X Right
-				objStructure objRight;
+				Obj_Structure objRight;
 				if (posz > -1 && posz < imageHeight && posy > -1 && posy < imageWidth && posx + 1 > -1 && posx + 1 < imageLength)
 				{
 					size_t xR = x_new(posx + 1, posy, imageLength);
@@ -160,7 +160,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					objRight.arrival = INFINITY;
 				}
 				// Z Top
-				objStructure objTop;
+				Obj_Structure objTop;
 				if (posz - 1 > -1 && posz - 1 < imageHeight && posy > -1 && posy < imageWidth && posx > -1 && posx < imageLength)
 				{
 					objTop = object[posz - 1][xy];
@@ -170,7 +170,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					objTop.arrival = INFINITY;
 				}
 				// Z Bottom
-				objStructure objBottom;
+				Obj_Structure objBottom;
 				if (posz + 1 > -1 && posz + 1 < imageHeight && posy > -1 && posy < imageWidth && posx > -1 && posx < imageLength)
 				{
 					objBottom = object[posz + 1][xy];
@@ -276,7 +276,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 				size_t pxy = x_new(pox, poy, imageLength);
 
 				// Begin
-				objStructure neibourBegin;
+				Obj_Structure neibourBegin;
 				if (poz > -1 && poz < imageHeight && poy - 1 > -1 && poy - 1 < imageWidth && pox > -1 && pox < imageLength)
 				{
 					size_t poB = x_new(pox, poy - 1, imageLength);
@@ -291,7 +291,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					neibourBegin.arrival = INFINITY;
 				}
 				// End
-				objStructure neibourEnd;
+				Obj_Structure neibourEnd;
 				if (poz > -1 && poz < imageHeight && poy + 1 > -1 && poy + 1 < imageWidth && pox > -1 && pox < imageLength)
 				{
 					size_t poE = x_new(pox, poy + 1, imageLength);
@@ -302,7 +302,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					neibourEnd.arrival = INFINITY;
 				}
 				//Left
-				objStructure neibourLeft;
+				Obj_Structure neibourLeft;
 				if (poz > -1 && poz < imageHeight && poy > -1 && poy < imageWidth && pox - 1 > -1 && pox - 1 < imageLength)
 				{
 					size_t poL = x_new(pox - 1, poy, imageLength);
@@ -313,7 +313,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					neibourLeft.arrival = INFINITY;
 				}
 				// Right
-				objStructure neibourRight;
+				Obj_Structure neibourRight;
 				if (poz > -1 && poz < imageHeight && poy > -1 && poy < imageWidth && pox + 1 > -1 && pox + 1 < imageLength)
 				{
 					size_t poR = x_new(pox + 1, poy, imageLength);
@@ -324,7 +324,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					neibourRight.arrival = INFINITY;
 				}
 				// Top
-				objStructure neibourTop;
+				Obj_Structure neibourTop;
 				if (poz - 1 > -1 && poz - 1 < imageHeight && poy > -1 && poy < imageWidth && pox > -1 && pox < imageLength)
 				{
 					neibourTop = object[poz - 1][pxy];
@@ -334,7 +334,7 @@ void fastMarching3D(struct Node * band, objStructure ** object, Point3D points[]
 					neibourTop.arrival = INFINITY;
 				}
 				// Bottom
-				objStructure neibourBottom;
+				Obj_Structure neibourBottom;
 				if (poz + 1 > -1 && poz + 1 < imageHeight && poy > -1 && poy < imageWidth && pox > -1 && pox < imageLength)
 				{
 					neibourBottom = object[poz + 1][pxy];

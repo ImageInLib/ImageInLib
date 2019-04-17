@@ -47,7 +47,7 @@ extern "C" {
 * gDescentMethod - choice of 1 for Simple, 2 for Stochastic GD method
 * pathResults - path to where a vtk file for the resulting registered data
 */
-	void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, registrationParams params, optimizationMethod gdescentMethod);
+	void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod);
 	// Cla. if the distance is within delta
 	inline int NFunction(dataType val1, dataType val2, dataType delta);
 	// Calc. the distance differences
@@ -59,11 +59,11 @@ extern "C" {
 	// Calc. Finite difference Z direction
 	inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
 	// Calc. and return the gradient descent components
-	AffineParameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, AffineParameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	Affine_Parameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, Affine_Parameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	// Calc the transformation parameters from Registration of two images using Simple GD method
-	AffineParameter registration3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
+	Affine_Parameter registration3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	// Cals Registration using Stochastic GD method
-	AffineParameter registrationStochastic3D(dataType ** destination, dataType ** source, AffineParameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], registrationParams params);
+	Affine_Parameter registrationStochastic3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	//==============================================================================
 #endif // !SHAPE_REGISTRATION
 

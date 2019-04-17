@@ -11,10 +11,10 @@ extern "C" {
 		SOLID_SPHERE = 2,
 		SPHERE_WITH_HOLES = 3,
 		CUBOID = 4
-	} shapeType;
+	} ShapeType;
 
 	void generateShape(dataType **inputDataPtr, unsigned char *outputDataPtr, Point3D center, Point3D blockCorner, dataType *fillBlockDimension,
-		size_t length, size_t width, size_t height, dataType sphereRadius, dataType smallRadius, dataType fillValue, shapeType method);
+		size_t length, size_t width, size_t height, dataType sphereRadius, dataType smallRadius, dataType fillValue, ShapeType method);
 
 #ifdef __cplusplus
 }

@@ -35,7 +35,7 @@ extern "C" {
 		/* h is the Grid size, tau is time step for the segmentation process,
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
-	} SegParameters;
+	} Segmentation_Parameters;
 
 	// Structure that holds the coefficients for PM function G calculated from the image
 	typedef struct
@@ -46,7 +46,7 @@ extern "C" {
 		dataType ** GsPtr; // South coefficient pointer for PM function G
 		dataType ** GtPtr; // Top coefficient pointer for PM function G
 		dataType ** GbPtr; // Bottom coefficient pointer for PM function G
-	} GPointers;
+	} Gradient_Pointers;
 
 	// Structure that holds the coefficients for calculations
 	typedef struct
@@ -57,7 +57,7 @@ extern "C" {
 		dataType ** s_Ptr; // South coefficient pointer
 		dataType ** t_Ptr; // Top coefficient pointer
 		dataType ** b_Ptr; // Bottom coefficient pointer
-	} CoefficientPointers;
+	} Coefficient_Pointers;
 
 	//Structure that holds the image and its dimensions
 	typedef struct {
@@ -66,14 +66,14 @@ extern "C" {
 
 		dataType **segmentationFuntionPtr; // Segmentation funtion
 		dataType **inputImageToBeSegmented; // input image to be segmented
-	} SegImageData;
+	} Segment_Image_Data;
 
 	//Structure that holds the extended image and its dimensions
 	typedef struct {
 		dataType **prevSol_extPtr; // Pointer to the Previous solution
 		dataType **gauss_seidelPtr; // Pointer to array used during Gauss-Seidel iterations
 		dataType **prevSol_p_extPtr; //
-	} ExtendedImageData;
+	} Extended_ImageData;
 
 	// FUNCTION PROTOTYPES
 	/*generateInitialSegmentationFunctionForMultipleCentres generates initial segmentation function for multiple centers
@@ -93,8 +93,8 @@ extern "C" {
 	- CoefPtrs is structure that holds the coefficients for calculations
 	- no_of_centers no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_seidelPtr, SegImageData inputImageData, GPointers GPtrs,
-		SegParameters segParameters, CoefficientPointers CoefPtrs, Point3D * centers, size_t no_of_centers);
+	bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_seidelPtr, Segment_Image_Data inputImageData, Gradient_Pointers GPtrs,
+		Segmentation_Parameters segParameters, Coefficient_Pointers CoefPtrs, Point3D * centers, size_t no_of_centers);
 
 	/*subsurfSegmentation performs the whole segmentation process
 	- Allocation and deallocation of memory are done by the function
@@ -104,7 +104,7 @@ extern "C" {
 	- Finally, it also generates initial segmentation function
 	- no_of_centers is no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentation(ImageData inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
+	bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr);
 
 	/* gFunctionForImageToBeSegmented manages computation of norm of presmoothed image to be segmented
@@ -115,8 +115,8 @@ extern "C" {
 	-GPtrs is structure that holds the coefficients for PM function G
 	-segParameters is structure that holds the parameters used during SUBSURF segmentation process
 	-explicit_lhe_Parameters is structure that holds the parameters used for presmoothing or solving LHE*/
-	bool gFunctionForImageToBeSegmented(ImageData inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
-		SegParameters segParameters, FilterParameters explicit_lhe_Parameters);
+	bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, Gradient_Pointers GPtrs,
+		Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters);
 
 	/* gaussSeidelCoefficients calculates coefficient used during Gauss-Seidel iterations
 	- inputImageData is structure that holds the image and its dimensions
@@ -124,8 +124,8 @@ extern "C" {
 	- GPtrs is structure that holds the coefficients for PM function G
 	- CoefPtrs is structure that holds the coefficients for calculations
 	*/
-	bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImageData, GPointers GPtrs,
-		CoefficientPointers CoefPtrs, SegParameters segParameters);
+	bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inputImageData, Gradient_Pointers GPtrs,
+		Coefficient_Pointers CoefPtrs, Segmentation_Parameters segParameters);
 
 	bool rescaleToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, size_t height);
 

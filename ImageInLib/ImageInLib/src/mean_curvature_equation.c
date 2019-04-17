@@ -15,7 +15,7 @@
 
 // Local Function Prototype
 
-bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterParameters,
+bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
 	const size_t maxNumberOfSolverIteration, dataType  eps2, size_t numberOfTimeStep)
 {
 	//checks if the memory was allocated
@@ -54,7 +54,6 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 
 	// Create temporary Image Data holder for Current time step data - with extended boundary because of boundary condition
 	dataType  ** gauss_seidelPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
-
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || gauss_seidelPtr == NULL)// || presmoothed_coeftempPtr == NULL)
@@ -137,11 +136,11 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 	//set boundary values to ensure Dirichlet boundary condition.
 
 	// perform reflection of the extended area to ensure zero Neumann boundary condition
-	
+
 	reflection3D(prevSolPtr, height_ext, length_ext, width_ext);
 	reflection3D(gauss_seidelPtr, height_ext, length_ext, width_ext);
 
-	//calculation of coefficients 
+	//calculation of coefficients
 	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
 	{
 		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
@@ -158,7 +157,7 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 				kplus1 = k_ext + 1;
 				kminus1 = k_ext - 1;
 
-				//values of voxels in the extended data container for the original image  
+				//values of voxels in the extended data container for the original image
 				u = prevSolPtr[k_ext][x_ext];
 				uN = prevSolPtr[k_ext][x_new(i_ext, jminus1, length_ext)];
 				uS = prevSolPtr[k_ext][x_new(i_ext, jplus1, length_ext)];
@@ -187,9 +186,8 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 				BuSE = prevSolPtr[kplus1][x_new(iplus1, jplus1, length_ext)];
 				BuSW = prevSolPtr[kplus1][x_new(iminus1, jplus1, length_ext)];
 
-
-				//calculation of coefficients in the original image data  
-				// Calculation of coefficients in east direction 
+				//calculation of coefficients in the original image data
+				// Calculation of coefficients in east direction
 				ux = (uE - u) / filterParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
 					/ (4.0 * filterParameters.h);
@@ -197,7 +195,7 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 					/ (4.0 * filterParameters.h);
 				orig_e_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
 					/ (4.0 * filterParameters.h);
@@ -205,7 +203,7 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 					/ (4.0 * filterParameters.h);
 				orig_w_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
 					/ (4.0 * filterParameters.h);
 				uy = (uN - u) / filterParameters.h;
@@ -213,7 +211,7 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 					/ (4.0 * filterParameters.h);
 				orig_n_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
 					/ (4.0 * filterParameters.h);
 				uy = (uS - u) / filterParameters.h;
@@ -221,7 +219,7 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 					/ (4.0 * filterParameters.h);
 				orig_s_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
 					/ (4.0 * filterParameters.h);
 				uy = ((TuN + uN) - (TuS + uS))
@@ -229,14 +227,13 @@ bool meanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterPara
 				uz = (Tu - u) / filterParameters.h;
 				orig_t_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
 					/ (4.0 * filterParameters.h);
 				uy = ((BuN + uN) - (BuS + uS))
 					/ (4.0 * filterParameters.h);
 				uz = (Bu - u) / filterParameters.h;
 				orig_b_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
-
 
 				// evaluation of norm of gradient of image at each voxel
 				average_face_coef = ((orig_e_coefPtr[k][x] + orig_w_coefPtr[k][x] + orig_n_coefPtr[k][x] + orig_s_coefPtr[k][x]

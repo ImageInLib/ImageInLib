@@ -4,9 +4,8 @@
 #include "filter_params.h"
 #include "common_functions.h"
 
-
-void filterImage(ImageData inputImageData, FilterParameters filterParameters, const size_t maxNumberOfSolverIteration,
-	dataType  coef, dataType  eps2, size_t numberOfTimeStep, const filterMethod method)
+void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const size_t maxNumberOfSolverIteration,
+	dataType  coef, dataType  eps2, size_t numberOfTimeStep, const FilterMethod method)
 {
 	switch (method)
 	{
