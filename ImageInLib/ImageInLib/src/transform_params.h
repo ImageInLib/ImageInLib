@@ -12,7 +12,7 @@ extern "C" {
 		Point3D rotation;
 		dataType centroid[3];
 		dataType imageBackground;
-	} affineTransformParameters;
+	} Affine_Transform_Parameters;
 
 #ifdef __cplusplus
 }
