@@ -3,7 +3,7 @@
 #include "segmentation3D_atlas.h"
 
 void segmentImage(Image_Data inputImageData, SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters,
-	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr, const segmentationMethod model)
+	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr, const SegmentationMethod model)
 {
 	switch (model)
 	{

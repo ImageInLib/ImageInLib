@@ -10,10 +10,10 @@ extern "C" {
 	{
 		SUBSURF_MODEL = 1,
 		GSUBSURF_ATLAS_MODEL
-	} segmentationMethod;
+	} SegmentationMethod;
 
 	void segmentImage(Image_Data inputImageData, SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters,
-		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr, const segmentationMethod model);
+		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr, const SegmentationMethod model);
 
 #ifdef __cplusplus
 }
