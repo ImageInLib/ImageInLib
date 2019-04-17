@@ -26,7 +26,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
 	//const size_t length = 50, width = 57, height = 20;// length = 50, width = 57, height = 20;//length = 101, width = 101, height = 101
@@ -94,13 +94,13 @@ bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters,
 	}
 
 	//Initialization of structures
-	SegImageData imageData;
+	Segment_Image_Data imageData;
 	imageData.height = height;
 	imageData.length = length;
 	imageData.width = width;
 	imageData.segmentationFuntionPtr = segmFuntionPtr;
 
-	GPointers GPtrs;
+	Gradient_Pointers GPtrs;
 	GPtrs.GePtr = GePtr;
 	GPtrs.GwPtr = GwPtr;
 	GPtrs.GnPtr = GnPtr;
@@ -108,7 +108,7 @@ bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters,
 	GPtrs.GtPtr = GtPtr;
 	GPtrs.GbPtr = GbPtr;
 
-	CoefficientPointers CoefPtrs;
+	Coefficient_Pointers CoefPtrs;
 	CoefPtrs.e_Ptr = e_Ptr;
 	CoefPtrs.w_Ptr = w_Ptr;
 	CoefPtrs.n_Ptr = n_Ptr;
@@ -205,8 +205,8 @@ bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters,
 	return true;
 }
 
-bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_seidelPtr, SegImageData inputImageData, GPointers GPtrs,
-	SegParameters segParameters, CoefficientPointers CoefPtrs, Point3D * centers, size_t no_of_centers)
+bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_seidelPtr, Segment_Image_Data inputImageData, Gradient_Pointers GPtrs,
+	Segmentation_Parameters segParameters, Coefficient_Pointers CoefPtrs, Point3D * centers, size_t no_of_centers)
 {
 	//check if the memory was allocated successfully
 	if (inputImageData.segmentationFuntionPtr == NULL || prevSol_extPtr == NULL || gauss_seidelPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL
@@ -495,8 +495,8 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	return true;
 }
 
-bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
-	SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters)
+bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, Gradient_Pointers GPtrs,
+	Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || extendedCoefPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL
@@ -634,7 +634,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	return true;
 }
 
-bool gaussSeidelCoefficients(dataType **extendedCoefPtr, SegImageData inputImageData, GPointers GPtrs, CoefficientPointers CoefPtrs, SegParameters segParameters)
+bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inputImageData, Gradient_Pointers GPtrs, Coefficient_Pointers CoefPtrs, Segmentation_Parameters segParameters)
 {
 	//checks if the memory was allocated
 	if (extendedCoefPtr == NULL || inputImageData.segmentationFuntionPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL
