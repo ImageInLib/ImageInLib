@@ -26,7 +26,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
 	//const size_t length = 50, width = 57, height = 20;// length = 50, width = 57, height = 20;//length = 101, width = 101, height = 101
@@ -496,7 +496,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 }
 
 bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
-	SegParameters segParameters, FilterParameters explicit_lhe_Parameters)
+	SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || extendedCoefPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL

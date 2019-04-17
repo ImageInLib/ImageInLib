@@ -6,7 +6,7 @@
 
 // Local Function Prototype
 
-void heatExplicitScheme(Image_Data toExplicitImage, const FilterParameters explicitParameters)
+void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
 	dataType hh = explicitParameters.h*explicitParameters.h;
@@ -76,7 +76,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const FilterParameters expli
 	free(tempPtr);
 }
 
-void heatImplicitScheme(Image_Data toImplicitImage, const FilterParameters implicitParameters)
+void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters)
 {
 	size_t k, i, j, z, steps = implicitParameters.timeStepsNum, p = implicitParameters.p;
 	dataType hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;

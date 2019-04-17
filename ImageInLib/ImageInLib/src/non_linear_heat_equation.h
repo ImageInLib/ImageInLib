@@ -23,16 +23,16 @@ extern "C" {
 /*explicitParameters
 * Function To Perform Heat Explicit Scheme
 */
-	bool nonLinearHeatExplicitScheme(Image_Data inputImageData, FilterParameters explicitParameters);
+	bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters);
 	/*
 	* Function To Perform Heat Gauss-Seidel Method Implicit Scheme
 	*/
-	bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters implicitParameters, size_t numberOfTimeStep);
+	bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters, size_t numberOfTimeStep);
 
-	bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters filterParameters,
+	bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
 		const size_t maxNumberOfSolverIteration, dataType  coef, dataType  eps2, size_t numberOfTimeStep);
 
-	bool meanCurvatureTimeStep(Image_Data inputImageData, FilterParameters filterParameters,
+	bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
 		const size_t maxNumberOfSolverIteration, dataType  eps2, size_t numberOfTimeStep);
 
 #endif // !HEAT_QUATION_H

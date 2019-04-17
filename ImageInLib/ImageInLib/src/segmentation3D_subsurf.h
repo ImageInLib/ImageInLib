@@ -104,7 +104,7 @@ extern "C" {
 	- Finally, it also generates initial segmentation function
 	- no_of_centers is no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, FilterParameters explicit_lhe_Parameters,
+	bool subsurfSegmentation(Image_Data inputImageData, SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr);
 
 	/* gFunctionForImageToBeSegmented manages computation of norm of presmoothed image to be segmented
@@ -116,7 +116,7 @@ extern "C" {
 	-segParameters is structure that holds the parameters used during SUBSURF segmentation process
 	-explicit_lhe_Parameters is structure that holds the parameters used for presmoothing or solving LHE*/
 	bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, GPointers GPtrs,
-		SegParameters segParameters, FilterParameters explicit_lhe_Parameters);
+		SegParameters segParameters, Filter_Parameters explicit_lhe_Parameters);
 
 	/* gaussSeidelCoefficients calculates coefficient used during Gauss-Seidel iterations
 	- inputImageData is structure that holds the image and its dimensions

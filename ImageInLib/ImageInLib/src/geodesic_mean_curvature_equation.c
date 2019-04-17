@@ -15,7 +15,7 @@
 
 // Local Function Prototype
 
-bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters filterParameters,
+bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
 	const size_t maxNumberOfSolverIteration, dataType coef, dataType eps2, size_t numberOfTimeStep)
 {
 	//checks if the memory was allocated
