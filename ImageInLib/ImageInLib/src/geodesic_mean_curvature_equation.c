@@ -15,7 +15,7 @@
 
 // Local Function Prototype
 
-bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters filterParameters,
+bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
 	const size_t maxNumberOfSolverIteration, dataType coef, dataType eps2, size_t numberOfTimeStep)
 {
 	//checks if the memory was allocated
@@ -49,7 +49,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 	dataType voxel_coef, average_face_coef;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 
-	ImageData presmoothingData;
+	Image_Data presmoothingData;
 	presmoothingData.height = height_ext;
 	presmoothingData.length = length_ext;
 	presmoothingData.width = width_ext;
@@ -172,7 +172,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 	//perfom presmoothing
 	heatExplicitScheme(presmoothingData, filterParameters);
 
-	//calculation of coefficients 
+	//calculation of coefficients
 	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
 	{
 		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
@@ -218,7 +218,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 				BuSE = presmoothed_coefPtr[kplus1][x_new(iplus1, jplus1, length_ext)];
 				BuSW = presmoothed_coefPtr[kplus1][x_new(iminus1, jplus1, length_ext)];
 
-				//values of voxels in the extended data container for the original image  
+				//values of voxels in the extended data container for the original image
 				orig_u = prevSolPtr[k_ext][x_ext];
 				orig_uN = prevSolPtr[k_ext][x_new(i_ext, jminus1, length_ext)];
 				orig_uS = prevSolPtr[k_ext][x_new(i_ext, jplus1, length_ext)];
@@ -249,7 +249,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 
 				//calculation of coefficients in the presmooted image data
 
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				ux = (uE - u) / filterParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
 					/ (4.0 * filterParameters.h);
@@ -257,7 +257,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				presmoot_e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
 					/ (4.0 * filterParameters.h);
@@ -265,7 +265,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				presmoot_w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
 					/ (4.0 * filterParameters.h);
 				uy = (uN - u) / filterParameters.h;
@@ -273,7 +273,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				presmoot_n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
 					/ (4.0 * filterParameters.h);
 				uy = (uS - u) / filterParameters.h;
@@ -281,7 +281,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				presmoot_s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
 					/ (4.0 * filterParameters.h);
 				uy = ((TuN + uN) - (TuS + uS))
@@ -289,7 +289,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 				uz = (Tu - u) / filterParameters.h;
 				presmoot_t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
 					/ (4.0 * filterParameters.h);
 				uy = ((BuN + uN) - (BuS + uS))
@@ -298,7 +298,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 				presmoot_b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
 
 				//calculation of coefficients in the original image data
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				orig_ux = (orig_uE - orig_u) / filterParameters.h;
 				orig_uy = ((orig_uN + orig_uNE) - (orig_uS + orig_uSE))
 					/ (4.0 * filterParameters.h);
@@ -306,7 +306,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				orig_e_coefPtr[k][x] = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				orig_ux = (orig_uW - orig_u) / filterParameters.h;
 				orig_uy = ((orig_uNW + orig_uN) - (orig_uSW + orig_uS))
 					/ (4.0 * filterParameters.h);
@@ -314,7 +314,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				orig_w_coefPtr[k][x] = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				orig_ux = ((orig_uNE + orig_uE) - (orig_uNW + orig_uW))
 					/ (4.0 * filterParameters.h);
 				orig_uy = (orig_uN - orig_u) / filterParameters.h;
@@ -322,7 +322,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				orig_n_coefPtr[k][x] = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				orig_ux = ((orig_uE + orig_uSE) - (orig_uW + orig_uSW))
 					/ (4.0 * filterParameters.h);
 				orig_uy = (orig_uS - orig_u) / filterParameters.h;
@@ -330,7 +330,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 					/ (4.0 * filterParameters.h);
 				orig_s_coefPtr[k][x] = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				orig_ux = ((orig_TuE + orig_uE) - (orig_TuW + orig_uW))
 					/ (4.0 * filterParameters.h);
 				orig_uy = ((orig_TuN + orig_uN) - (orig_TuS + orig_uS))
@@ -338,7 +338,7 @@ bool geodesicMeanCurvatureTimeStep(ImageData inputImageData, FilterParameters fi
 				orig_uz = (orig_Tu - orig_u) / filterParameters.h;
 				orig_t_coefPtr[k][x] = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				orig_ux = ((orig_BuW + orig_uW) - (orig_BuE + orig_uE))
 					/ (4.0 * filterParameters.h);
 				orig_uy = ((orig_BuN + orig_uN) - (orig_BuS + orig_uS))

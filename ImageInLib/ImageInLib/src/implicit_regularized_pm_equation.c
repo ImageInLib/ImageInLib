@@ -8,7 +8,7 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters implicitParameters, size_t numberOfTimeStep)
+bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters, size_t numberOfTimeStep)
 {
 	size_t k, i, j;
 	dataType  hh = implicitParameters.h * implicitParameters.h;
@@ -34,7 +34,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 	size_t k_ext, j_ext, i_ext;
 	dataType  ux, uy, uz;
 
-	ImageData presmoothingData;
+	Image_Data presmoothingData;
 	presmoothingData.height = height_ext;
 	presmoothingData.length = length_ext;
 	presmoothingData.width = width_ext;
@@ -109,7 +109,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 	//perfom presmoothing
 	heatExplicitScheme(presmoothingData, implicitParameters);
 
-	//calculation of coefficients 
+	//calculation of coefficients
 	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
 	{
 		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
@@ -157,7 +157,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 
 				//calculation of coefficients in the presmooted image data
 
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				ux = (uE - u) / implicitParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
 					/ (4.0 * implicitParameters.h);
@@ -165,7 +165,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 					/ (4.0 * implicitParameters.h);
 				e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				ux = (uW - u) / implicitParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
 					/ (4.0 * implicitParameters.h);
@@ -173,7 +173,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 					/ (4.0 * implicitParameters.h);
 				w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
 					/ (4.0 * implicitParameters.h);
 				uy = (uN - u) / implicitParameters.h;
@@ -181,7 +181,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 					/ (4.0 * implicitParameters.h);
 				n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
 					/ (4.0 * implicitParameters.h);
 				uy = (uS - u) / implicitParameters.h;
@@ -189,7 +189,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 					/ (4.0 * implicitParameters.h);
 				s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
 					/ (4.0 * implicitParameters.h);
 				uy = ((TuN + uN) - (TuS + uS))
@@ -197,7 +197,7 @@ bool nonLinearHeatImplicitScheme(ImageData inputImageData, FilterParameters impl
 				uz = (Tu - u) / implicitParameters.h;
 				t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
 					/ (4.0 * implicitParameters.h);
 				uy = ((BuN + uN) - (BuS + uS))

@@ -3,9 +3,8 @@
 #include "shapeGeneration.h"
 #include "generate_3d_shapes.h"
 
-
 void generateShape(dataType **inputDataPtr, unsigned char *outputDataPtr, Point3D center, Point3D blockCorner, dataType *fillBlockDimension,
-	size_t length, size_t width, size_t height, dataType sphereRadius, dataType smallRadius, dataType fillValue, shapeType method)
+	size_t length, size_t width, size_t height, dataType sphereRadius, dataType smallRadius, dataType fillValue, ShapeType method)
 {
 	switch (method)
 	{

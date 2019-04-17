@@ -9,13 +9,13 @@
 
 #include "vtkDataSet.h"
 //==============================================================================
-void fillPtr(double * ptr, vtkFileInfo * vtkInfo);
-void fillPtr(int * ptr, vtkFileInfo * vtkInfo);
-void fillPtr(float * ptr, vtkFileInfo * vtkInfo);
-void fillPtr(unsigned int * ptr, vtkFileInfo * vtkInfo);
-void fillPtr(unsigned char * ptr, vtkFileInfo * vtkInfo);
+void fillPtr(double * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(int * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(float * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(unsigned int * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo);
 //==============================================================================
-int readVtkFile(const char * inputFilePath, vtkFileInfo * vtkMetaInfo)
+int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo)
 {
 	// Set up the reader obj
 	vtkSmartPointer<vtkGenericDataObjectReader> readGenericVtk = vtkSmartPointer<vtkGenericDataObjectReader>::New();
@@ -89,7 +89,7 @@ int readVtkFile(const char * inputFilePath, vtkFileInfo * vtkMetaInfo)
 	}
 	return EXIT_SUCCESS;
 }
-int storeVtkFile(const char * outputFilePath, vtkFileInfo * vtkMetaInfo)
+int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo)
 {
 	// Creates A new imageData Pointer
 	vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
@@ -114,7 +114,7 @@ int storeVtkFile(const char * outputFilePath, vtkFileInfo * vtkMetaInfo)
 	return 0;
 }
 //==============================================================================
-int createVtkImageData(vtkImageData * imageData, vtkFileInfo * vtkInfo)
+int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkInfo)
 {
 	imageData->SetDimensions(vtkInfo->dimensions);
 	imageData->SetSpacing(vtkInfo->spacing);
@@ -175,11 +175,11 @@ int createVtkImageData(vtkImageData * imageData, vtkFileInfo * vtkInfo)
 	return EXIT_SUCCESS;
 }
 //==============================================================================
-void fillPtr(double * ptr, vtkFileInfo * vtkInfo)
+void fillPtr(double * ptr, Vtk_File_Info * vtkInfo)
 {
 	size_t k, i, j, xd, xyd;
 	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];
-	if (vtkInfo->operation == copyTo) 
+	if (vtkInfo->operation == copyTo)
 	{
 		// Initialize the pointer to which it is to be copied to
 		vtkInfo->dataPointer = (dataType **)malloc(sizeof(dataType *) * height);
@@ -209,7 +209,7 @@ void fillPtr(double * ptr, vtkFileInfo * vtkInfo)
 	}
 }
 //==============================================================================
-void fillPtr(int * ptr, vtkFileInfo * vtkInfo)
+void fillPtr(int * ptr, Vtk_File_Info * vtkInfo)
 {
 	size_t k, i, j, xd, xyd;
 	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];
@@ -243,7 +243,7 @@ void fillPtr(int * ptr, vtkFileInfo * vtkInfo)
 	}
 }
 //==============================================================================
-void fillPtr(float * ptr, vtkFileInfo * vtkInfo)
+void fillPtr(float * ptr, Vtk_File_Info * vtkInfo)
 {
 	size_t k, i, j, xd, xyd;
 	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];
@@ -277,7 +277,7 @@ void fillPtr(float * ptr, vtkFileInfo * vtkInfo)
 	}
 }
 //==============================================================================
-void fillPtr(unsigned int * ptr, vtkFileInfo * vtkInfo)
+void fillPtr(unsigned int * ptr, Vtk_File_Info * vtkInfo)
 {
 	size_t k, i, j, xd, xyd;
 	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];
@@ -311,7 +311,7 @@ void fillPtr(unsigned int * ptr, vtkFileInfo * vtkInfo)
 	}
 }
 //==============================================================================
-void fillPtr(unsigned char * ptr, vtkFileInfo * vtkInfo)
+void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo)
 {
 	size_t k, i, j, xd, xyd;
 	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];

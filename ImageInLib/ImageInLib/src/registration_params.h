@@ -12,7 +12,7 @@ extern "C" {
 		Point3D translation;
 		Point3D rotation;
 		Point3D scaling;
-	} AffineParameter;
+	} Affine_Parameter;
 
 	typedef struct
 	{
@@ -24,18 +24,18 @@ extern "C" {
 		dataType h;
 		size_t max_iterations;
 		size_t rand_points;
-		AffineParameter affineResults;
+		Affine_Parameter affineResults;
 		dataType imageBackground;
 		dataType imageForeground;
 		bool displayRegistrationOutputs;
 		char fPathname[100];
-	} registrationParams;
+	} Registration_Params;
 
 	typedef enum
 	{
 		GRADIENT_DESCENT = 1,
 		STOCHASTIC_DESCENT
-	} optimizationMethod;
+	} Optimization_Method;
 
 #ifdef __cplusplus
 }

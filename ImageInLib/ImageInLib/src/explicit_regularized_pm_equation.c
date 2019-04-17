@@ -8,7 +8,7 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters explicitParameters)
+bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
 	dataType  hh = explicitParameters.h * explicitParameters.h;
@@ -30,7 +30,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 	dataType  ux, uy, uz;
 	dataType  e_coef, w_coef, n_coef, s_coef, t_coef, b_coef, sum_coef;
 
-	ImageData presmoothingParamenters;
+	Image_Data presmoothingParamenters;
 	presmoothingParamenters.height = height_ext;
 	presmoothingParamenters.length = length_ext;
 	presmoothingParamenters.width = width_ext;
@@ -66,7 +66,6 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 	//perform reflection of the extended area to solve border problem
 	reflection3D(presmoothed_coefPtr, height_ext, length_ext, width_ext);
 	reflection3D(prevSolPtr, height_ext, length_ext, width_ext);
-
 
 	//perfom presmoothing
 	heatExplicitScheme(presmoothingParamenters, explicitParameters);
@@ -117,7 +116,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 				BuSE = presmoothed_coefPtr[kplus1][x_new(iplus1, jplus1, length_ext)];
 				BuSW = presmoothed_coefPtr[kplus1][x_new(iminus1, jplus1, length_ext)];
 
-				// Calculation of coefficients in east direction 
+				// Calculation of coefficients in east direction
 				ux = (uE - u) / explicitParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
 					/ (4.0 * explicitParameters.h);
@@ -125,7 +124,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 					/ (4.0 * explicitParameters.h);
 				e_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in west direction  
+				// Calculation of coefficients in west direction
 				ux = (uW - u) / explicitParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
 					/ (4.0 * explicitParameters.h);
@@ -133,7 +132,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 					/ (4.0 * explicitParameters.h);
 				w_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in north direction  
+				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
 					/ (4.0 * explicitParameters.h);
 				uy = (uN - u) / explicitParameters.h;
@@ -141,7 +140,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 					/ (4.0 * explicitParameters.h);
 				n_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in south direction  
+				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
 					/ (4.0 * explicitParameters.h);
 				uy = (uS - u) / explicitParameters.h;
@@ -149,7 +148,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 					/ (4.0 * explicitParameters.h);
 				s_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in top direction  
+				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
 					/ (4.0 * explicitParameters.h);
 				uy = ((TuN + uN) - (TuS + uS))
@@ -157,7 +156,7 @@ bool nonLinearHeatExplicitScheme(ImageData inputImageData, FilterParameters expl
 				uz = (Tu - u) / explicitParameters.h;
 				t_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
-				// Calculation of coefficients in bottom direction  
+				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
 					/ (4.0 * explicitParameters.h);
 				uy = ((BuN + uN) - (BuS + uS))

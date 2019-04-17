@@ -42,8 +42,8 @@ extern "C" {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 
-		dataType **imageDataPtr; // Image Data Containers
-	} ImageData;
+		dataType ** imageDataPtr; // Image Data Containers
+	} Image_Data;
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
@@ -53,9 +53,9 @@ extern "C" {
 	} Shapes;
 	//==============================================================================
 	// Enumeration
-	enum finiteDifference
+	enum FiniteDifference
 	{
-		FORWARD = 1, BACKWARD, CENTRAL
+		FINITE_FORWARD = 1, FINITE_BACKWARD, FINITE_CENTRAL
 	};
 	//==============================================================================
 	// FUNCTION PROTOTYPES

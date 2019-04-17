@@ -7,18 +7,18 @@ extern "C" {
 
 	typedef struct
 	{
-		registrationParams regParams;
-		optimizationMethod gdescentMethod;
+		Registration_Params regParams;
+		Optimization_Method gdescentMethod;
 		size_t initEstimateShape;
 		size_t meanCalcSteps;
-	} shapeAnalysisParameters;
+	} shape_Analysis_Parameters;
 
 	typedef struct
 	{
 		dataType ** eigenvectors;
 		dataType * eigenvalues;
 		size_t princomp;
-	} pcaParams;
+	} PCA_Params;
 
 #ifdef __cplusplus
 }
