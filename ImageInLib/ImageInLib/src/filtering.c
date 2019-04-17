@@ -5,7 +5,7 @@
 #include "common_functions.h"
 
 void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const size_t maxNumberOfSolverIteration,
-	dataType  coef, dataType  eps2, size_t numberOfTimeStep, const filterMethod method)
+	dataType  coef, dataType  eps2, size_t numberOfTimeStep, const FilterMethod method)
 {
 	switch (method)
 	{
