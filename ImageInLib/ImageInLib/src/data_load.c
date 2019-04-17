@@ -90,7 +90,7 @@ bool load3dDataArrayD(dataType ** imageDataPtr, const size_t imageLength, const 
 }
 
 bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
-	const size_t imageHeight, unsigned char * pathPtr, loadDataType dType)
+	const size_t imageHeight, unsigned char * pathPtr, LoadDataType dType)
 {
 	//checks if the memory was allocated
 	if (imageDataPtr == NULL)

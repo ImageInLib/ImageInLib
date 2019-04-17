@@ -28,7 +28,7 @@ extern "C" {
 	typedef enum {
 		BINARY_DATA = 1,
 		ASCII_DATA
-	} loadDataType;
+	} LoadDataType;
 	//==============================================================================
 	typedef struct {
 		bool revertDataBytes;
