@@ -14,10 +14,10 @@ extern "C" {
 		NONLINEAR_HEATEQUATION_IMPLICIT = 4,
 		MEAN_CURVATURE_FILTER = 5,
 		GEODESIC_MEAN_CURVATURE_FILTER = 6
-	} filterMethod;
+	} FilterMethod;
 
-	void filterImage(ImageData inputImageData, FilterParameters filterParameters, const size_t maxNumberOfSolverIteration,
-		dataType  coef, dataType  eps2, size_t numberOfTimeStep, const filterMethod method);
+	void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const size_t maxNumberOfSolverIteration,
+		dataType  coef, dataType  eps2, size_t numberOfTimeStep, const FilterMethod method);
 
 #ifdef __cplusplus
 }

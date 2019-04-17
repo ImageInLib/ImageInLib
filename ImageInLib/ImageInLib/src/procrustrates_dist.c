@@ -10,7 +10,7 @@ void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
 void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width);
 //==============================================================================
-void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shapeAnalysisParameters params)
+void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
 	size_t k, i, j, xd;
 	char st[160];
@@ -108,7 +108,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	}
 	//==============================================================================
 	//Create feature vector for shapes - D by 1 dimension
-	EigenShapes *eigshapes = (EigenShapes*)malloc(sizeof(EigenShapes)*numShapes);
+	Eigen_Shapes *eigshapes = (Eigen_Shapes*)malloc(sizeof(Eigen_Shapes)*numShapes);
 	// Alloc. and copy
 	for (i = 0; i < numShapes; i++)
 	{
@@ -299,7 +299,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	selected_eigvectors = NULL;
 	//==============================================================================
 }
-void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shapeAnalysisParameters shapeParam, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
+void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shape_Analysis_Parameters shapeParam, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
 	size_t k;
 	// Init mean shape pointer
@@ -317,7 +317,7 @@ void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shapeAnaly
 	//==============================================================================
 	size_t dim3D = height * length*width;
 	// PCA Params
-	pcaParams *pcaParam = (pcaParams*)malloc(sizeof(pcaParams));
+	PCA_Params *pcaParam = (PCA_Params*)malloc(sizeof(PCA_Params));
 	(*pcaParam).eigenvectors = (dataType**)malloc(sizeof(dataType*) * dim3D);
 	(*pcaParam).eigenvalues = NULL;
 	// Use Mean shape to calculate the PCA Variables - Eigenvectors, Eigenvalues, Number of Proncipal components

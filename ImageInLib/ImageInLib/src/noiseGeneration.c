@@ -3,8 +3,8 @@
 #include "noise_generator.h"
 
 // length == xDim, width == yDim, height == zDim
-void addNoiseToImage(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, 
-	dataType density, const noiseType method)
+void addNoiseToImage(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim,
+	dataType density, const NoiseType method)
 {
 	switch (method)
 	{
@@ -21,4 +21,3 @@ void addNoiseToImage(dataType ** array3DPtr, const size_t xDim, const size_t yDi
 		break;
 	}
 }
-

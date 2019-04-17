@@ -1,7 +1,7 @@
 #include "transformation.h"
 #include "transformations.h"
 
-void transformImage(ImageData image, dataType **outputTransformedImage, affineTransformParameters affineTransformParam, transformationMethod transform)
+void transformImage(Image_Data image, dataType **outputTransformedImage, Affine_Transform_Parameters affineTransformParam, TransformationMethod transform)
 {
 	switch (transform)
 	{

@@ -17,7 +17,7 @@ extern "C" {
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
 		size_t maxNumberOftimeSteps;
-	} FilterParameters;
+	} Filter_Parameters;
 	// Parameters used in filtering
 
 #ifdef __cplusplus
