@@ -4,14 +4,14 @@
 /*
 * Function generating 3D vector field
 */
-void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, vectorParameters vectorVariables, enum finiteDifference fieldDirection, dataType coeff)
+void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, Vector_Parameters vectorVariables, enum finiteDifference fieldDirection, dataType coeff)
 {
 	size_t k, x;
 	const size_t height = inputPtr.height, _width = inputPtr.length, p = vectorVariables.p;
 	dataType h = vectorVariables.h;
 
 	// Mid center Pointers Pointers for the 3 Dimensions
-	vectorDirection zCent = { NULL }, xCent = { NULL }, yCent = { NULL };
+	Vector_Direction zCent = { NULL }, xCent = { NULL }, yCent = { NULL };
 	// Calculate the Mid center before
 	for (k = p; k <= height + p; k++)
 	{
