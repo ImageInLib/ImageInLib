@@ -4,7 +4,7 @@
 /*
 * Function generating 3D vector field
 */
-void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, Vector_Parameters vectorVariables, enum finiteDifference fieldDirection, dataType coeff)
+void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, Vector_Parameters vectorVariables, enum FiniteDifference fieldDirection, dataType coeff)
 {
 	size_t k, x;
 	const size_t height = inputPtr.height, _width = inputPtr.length, p = vectorVariables.p;
