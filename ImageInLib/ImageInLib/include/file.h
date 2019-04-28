@@ -16,7 +16,7 @@ extern "C" {
 	} OperationType;
 
 	bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
-		const size_t height, unsigned char * pathPtr, VTK_Header_Lines *lines, OperationType operation, LoadDataType dType, Storage_Flags flags);
+		const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags);
 
 	/*Converts to doulbe*/
 	void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height);
