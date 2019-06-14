@@ -4,10 +4,6 @@
 #include "common_functions.h"
 #include <stdbool.h>
 //==============================================================================
-// VTK Imports
-// vtkImageData
-#include "vtkImageData.h"
-//==============================================================================
 typedef enum {
 	dta_UChar,
 	dta_Int,
@@ -31,7 +27,4 @@ typedef struct {
 //==============================================================================
 int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo);
 int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo);
-//==============================================================================
-/* Manual Creation of vtkImageData*/
-int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkMetaInfo);
 //==============================================================================

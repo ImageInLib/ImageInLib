@@ -1,5 +1,10 @@
 #include "common_vtk.h"
 //==============================================================================
+//==============================================================================
+// VTK Imports
+// vtkImageData
+#include "vtkImageData.h"
+//==============================================================================
 // VTK smart pointer
 #include "vtkSmartPointer.h"
 // VTK Data Reader
@@ -14,6 +19,8 @@ void fillPtr(int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(float * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo);
+/* Manual Creation of vtkImageData*/
+int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkMetaInfo);
 //==============================================================================
 int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo)
 {
