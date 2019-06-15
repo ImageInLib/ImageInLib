@@ -29,7 +29,11 @@ To use this library, you must have an **existing C/C++ solution!**
 3. Open the ImageInLib solution file in the extracted folder and build it. To find it see [solution file location](https://github.com/ImageInLib/ImageInLib/tree/master/ImageInLib)
 3. To continue, the next steps can be found here --> [How To Use Library in an Existing Solution](https://github.com/ImageInLib/ImageInLib/wiki/how_to_use)
 
-Have fun!
+### Licensing
+
+ImageInLib/ImageInLib is licensed under the **BSD 3-Clause "New" or "Revised" License**
+
+Have Coding!
 
 **This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No. 721537**
 
