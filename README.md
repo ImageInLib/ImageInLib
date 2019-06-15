@@ -16,7 +16,7 @@ The following image processing techniques have been implemented in the library:
 * [Shape generation](https://github.com/ImageInLib/ImageInLib/wiki/Shape-Generation)
 * [Statistical shape analysis](https://github.com/ImageInLib/ImageInLib/wiki/Statistical%20Shape%20Analysis)
 
-We also have a [VTK](https://vtk.org) imaging library which offers support for reading and storing vtk files. Our chosen data format is vtk. Read more about its usage in **[VTK Library](https://github.com/ImageInLib/ImageInLib/wiki/VTK-Library)**.
+We also have a **[VTK Library](https://github.com/ImageInLib/ImageInLib/wiki/VTK-Library)** imaging library which offers support for reading and storing vtk files. Our chosen data format is vtk.
 
 All the implementations are for **3D data** and uses the **C** language. To use various functionalities please visit their respective pages.
 
