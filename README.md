@@ -18,7 +18,7 @@ The following image processing techniques have been implemented in the library:
 
 We also have a **[VTK Library](https://github.com/ImageInLib/ImageInLib/wiki/VTK-Library)** imaging library which offers support for reading and storing vtk files. Our chosen data format is vtk.
 
-All the implementations are for **3D data** and uses the **C** language. To use various functionalities please visit their respective pages.
+All the implementations are for **3D data** and uses the **C/C++** language. To use various functionalities please visit their respective pages.
 
 ### How To Use
 
