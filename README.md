@@ -27,9 +27,7 @@ To use this library, you must have an **existing C/C++ solution!**
 1. Download the repository as a zip
 2. Extract the zip to a folder
 3. Open the ImageInLib solution file in the extracted folder and build it. To find it see [solution file location](https://github.com/ImageInLib/ImageInLib/tree/master/ImageInLib)
-3. From your already existing solution, right click on the solution > Add > Existing Project ...
-4. Navigate to the extracted zip folder ImageInLib > ImageInLib and select the ImageInLib.vcxproj file, found at [ImageInLib.vcxproj file location](https://github.com/ImageInLib/ImageInLib/tree/master/ImageInLib/ImageInLib). Read more about this process at [Add an Existing Project to a Solution](https://docs.microsoft.com/en-us/sql/ssms/solution/add-an-existing-project-to-a-solution?view=sql-server-2017)
-5. To continue, the next steps can be found here --> [How To Use Library in an Existing Solution](https://github.com/ImageInLib/ImageInLib/wiki/how_to_use)
+3. To continue, the next steps can be found here --> [How To Use Library in an Existing Solution](https://github.com/ImageInLib/ImageInLib/wiki/how_to_use)
 
 Have fun!
 
