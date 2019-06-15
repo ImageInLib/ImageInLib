@@ -3,8 +3,8 @@ extern "C" {
 #endif
 
 #pragma once
-#include "common_functions.h"
-#include "filter_params.h"
+#include "../src/common_functions.h"
+#include "../src/filter_params.h"
 
 	typedef enum
 	{

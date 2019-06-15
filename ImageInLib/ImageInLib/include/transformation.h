@@ -3,7 +3,7 @@ extern "C" {
 #endif
 
 #pragma once
-#include "transform_params.h"
+#include "../src/transform_params.h"
 
 	typedef enum
 	{
