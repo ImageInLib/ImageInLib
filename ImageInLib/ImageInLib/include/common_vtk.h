@@ -1,7 +1,7 @@
 #pragma once
 //==============================================================================
 // ImageInLib Imports
-#include "common_functions.h"
+#include "../src/common_functions.h"
 #include <stdbool.h>
 //==============================================================================
 typedef enum {

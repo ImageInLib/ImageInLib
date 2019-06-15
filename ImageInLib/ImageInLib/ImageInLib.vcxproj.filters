@@ -421,7 +421,7 @@
     <ClInclude Include="include\distanceMaps.h">
       <Filter>Header Files\Interfaces\Distance Functions</Filter>
     </ClInclude>
-    <ClInclude Include="src\common_vtk.h">
+    <ClInclude Include="include\common_vtk.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
