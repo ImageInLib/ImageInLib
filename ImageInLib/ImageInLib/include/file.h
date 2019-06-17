@@ -4,7 +4,7 @@ extern "C" {
 
 #pragma once
 #include <stdio.h> // Standard lib for input and output functions
-#include "../src/common_functions.h"
+#include "common_functions.h"
 #include "../src/vtk_params.h"
 #include <stdbool.h>
 
