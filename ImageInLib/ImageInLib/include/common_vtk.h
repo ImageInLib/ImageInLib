@@ -5,7 +5,7 @@ extern "C" {
 #pragma once
 	//==============================================================================
 	// ImageInLib Imports
-#include "../src/common_functions.h"
+#include "common_functions.h"
 #include <stdbool.h>
 //==============================================================================
 	typedef enum {
