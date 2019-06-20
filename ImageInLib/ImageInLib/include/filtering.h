@@ -4,7 +4,7 @@ extern "C" {
 
 #pragma once
 #include "common_functions.h"
-#include "filter_params.h"
+#include "../src/filter_params.h"
 
 	typedef enum
 	{
