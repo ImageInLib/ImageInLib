@@ -994,3 +994,85 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	//==============================================================================
 }
 //==============================================================================
+CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth, int loc)
+{
+	//==============================================================================
+	int bottom, left, begin;
+	//==============================================================================
+	dataType k_a, i_a, j_a; // Affine indices
+	// Transformed
+	dataType k_t, i_t, j_t; // Transformed indices
+	// Temporary parameters
+	dataType tmpX, tmpY, tmpZ, tmp;
+	dataType cz = centroid[2], cx = centroid[0], cy = centroid[1];
+	dataType theta = (rotation.y), psi = (rotation.z), phi = (rotation.x);
+	//==============================================================================
+	size_t k = (*inputPoints).k, i = (*inputPoints).i, j = (*inputPoints).j;
+	//==============================================================================
+	// 1. Move to origin for Min
+	k_a = k - cz; // Move to origin Z
+	i_a = i - cx; // Move to origin x
+	j_a = j - cy; // Move to origin Y
+	//==============================================================================
+	// Apply scaling
+	tmpZ = k_a / scaling.z;
+	tmpX = i_a / scaling.x;
+	tmpY = j_a / scaling.y;
+	//==============================================================================
+	// Apply Rotation
+	i_t = x_rotate(tmpZ, tmpX, tmpY, theta, psi);
+	j_t = y_rotate(tmpZ, tmpX, tmpY, theta, psi, phi);
+	k_t = z_rotate(tmpZ, tmpX, tmpY, theta, psi, phi);
+	//==============================================================================
+	// Move back to centroid
+	tmpX = i_t + cx;
+	tmpY = j_t + cy;
+	tmpZ = k_t + cz;
+	//==============================================================================
+	// Set the values
+	i_t = tmpX;
+	j_t = tmpY;
+	k_t = tmpZ;
+	//==============================================================================
+	// Add translation - Translation already included in the points!
+	i_t = i_t - translation.x;
+	j_t = j_t - translation.y;
+	k_t = k_t - translation.z;
+
+	if (loc == 1) // Lower
+	{
+		bottom = floorf(k_t);
+		bottom = max(bottom, 0);
+		bottom = min(bottom, imageHeight - 1);
+		(*inputPoints).k = bottom;
+		// X
+		int left = floorf(i_t);
+		left = max(left, 0);
+		left = min(left, imageLength - 1);
+		(*inputPoints).i = left;
+		// Y
+		int begin = floorf(j_t);
+		begin = max(begin, 0);
+		begin = min(begin, imageWidth - 1);
+		(*inputPoints).j = begin;
+	}
+	else if (loc == 2) // Upper
+	{
+		bottom = ceilf(k_t);
+		bottom = max(bottom, 0);
+		bottom = min(bottom, imageHeight - 1);
+		(*inputPoints).k = bottom;
+		// X
+		left = ceilf(i_t);
+		left = max(left, 0);
+		left = min(left, imageLength - 1);
+		(*inputPoints).i = left;
+		// Y
+		begin = ceilf(j_t);
+		begin = max(begin, 0);
+		begin = min(begin, imageWidth - 1);
+		(*inputPoints).j = begin;
+	}
+	return *inputPoints;
+}
+//==============================================================================
