@@ -48,10 +48,19 @@ extern "C" {
 * pathResults - path to where a vtk file for the resulting registered data
 */
 	void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod);
+	//==============================================================================
+	ClipBox findClipBoxSingle(dataType ** Source, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	ClipBox findClipBoxTwo(dataType ** destination, dataType ** source, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	void fillNarrowBandArea(dataType ** sourceDist, dataType ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType insideValue, dataType outsideValue);
+	//==============================================================================
 	// Cla. if the distance is within delta
 	inline int NFunction(dataType val1, dataType val2, dataType delta);
+	inline int NFunctionBinary(dataType v1, dataType v2, dataType delta);
+	int NFunctionOne(dataType v1, dataType delta);
 	// Calc. the distance differences
 	dataType energyFunction(dataType ** destination, dataType **distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h);
+	dataType energyFunctionClip(dataType ** destination, dataType **distTrans, ClipBox coord, size_t imageLength);
+	dataType energyFunctionClipBandArea(dataType ** destination, dataType ** distTrans, ClipBox coord, size_t imageLength, dataType ** fixedNBandPtr, dataType ** movingNBandPtr);
 	// Calc. Finite difference X direction
 	inline dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength);
 	// Calc. Finite difference Y direction
@@ -60,10 +69,18 @@ extern "C" {
 	inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
 	// Calc. and return the gradient descent components
 	Affine_Parameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, Affine_Parameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTrans, dataType hh, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, ClipBox bestFit);
 	// Calc the transformation parameters from Registration of two images using Simple GD method
 	Affine_Parameter registration3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	// Cals Registration using Stochastic GD method
 	Affine_Parameter registrationStochastic3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
+	//==============================================================================
+	//==============================================================================
+	ClipBox findClipBoxSingle(dataType ** Source, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	ClipBox findClipBoxTwo(dataType ** destination, dataType ** source, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	void fillNarrowBandArea(dataType ** sourceDist, dataType ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType insideValue, dataType outsideValue);
+	//==============================================================================
+	void transformClip(ClipBox *bestfit, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
 #endif // !SHAPE_REGISTRATION
 
