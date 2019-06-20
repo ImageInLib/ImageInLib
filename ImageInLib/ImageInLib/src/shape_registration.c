@@ -5,6 +5,8 @@
 //==============================================================================
 #include "shape_registration.h"
 //==============================================================================
+#include <omp.h>
+//==============================================================================
 void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod)
 {
 	//==============================================================================
