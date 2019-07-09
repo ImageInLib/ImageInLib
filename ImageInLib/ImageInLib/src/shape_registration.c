@@ -1205,3 +1205,22 @@ size_t surfacePoints(dataType ** binaryImage, size_t imageLength, const unsigned
 	return ptsNum;
 }
 //==============================================================================
+// Converts unsigned to signed distance map
+void converToSignedDist(dataType ** distFn, dataType ** originalData, size_t imageHeight, size_t imageLength, size_t imageWidth, const unsigned char fgroundValue)
+{
+	for (size_t k = 0; k < imageHeight; k++)
+	{
+		for (size_t i = 0; i < imageLength; i++)
+		{
+			for (size_t j = 0; j < imageWidth; j++)
+			{
+				size_t xd = x_new(i, j, imageLength);
+				if (originalData[k][xd] == fgroundValue)
+				{
+					distFn[k][xd] = -1 * distFn[k][xd];
+				}
+			}
+		}
+	}
+}
+//==============================================================================
