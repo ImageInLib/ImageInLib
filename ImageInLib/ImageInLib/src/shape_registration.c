@@ -1180,3 +1180,28 @@ dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLe
 	//==============================================================================
 }
 //==============================================================================
+// Returns points for the surface/object
+size_t surfacePoints(dataType ** binaryImage, size_t imageLength, const unsigned char fgroundValue, ClipBox bestfitBox)
+{
+	//==============================================================================
+	size_t k_1, i_1, k_2, i_2;//loop counter for z dimension
+	//==============================================================================
+	size_t ptsNum = 0;
+	//==============================================================================
+	// In the clip box volume
+	size_t k_min = bestfitBox.k_min, k_max = bestfitBox.k_max + 1, i_min = bestfitBox.i_min, i_max = bestfitBox.i_max, j_min = bestfitBox.j_min, j_max = bestfitBox.j_max;
+	size_t i_2_max = x_new(i_max, j_max, imageLength), i_2_min = x_new(i_min, j_min, imageLength);
+	// Find the surcae points only within the clipbox
+	for (k_2 = k_min; k_2 < k_max; k_2++) // z axis of the input surface or image
+	{
+		for (i_2 = i_2_min; i_2 < i_2_max; i_2++)// x-y axis of the input surface or image
+		{
+			if (binaryImage[k_2][i_2] == fgroundValue)
+			{
+				ptsNum++;
+			}
+		}
+	}
+	return ptsNum;
+}
+//==============================================================================
