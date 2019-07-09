@@ -38,6 +38,10 @@ extern "C" {
 // Narrow band
 #define NDelta 50
 //==============================================================================
+// Variables for OpenMp
+#define PAD 16 // assumes 256kb l1 cache
+#define NUM_THREADS 4
+//==============================================================================
 // Prototypes
 // Run the Shape Registration Function
 /*

@@ -1076,3 +1076,109 @@ CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point
 	return *inputPoints;
 }
 //==============================================================================
+// neighbourPoints getDistance(T ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const size_t k2, const size_t x2, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum)
+dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType insideShapevalue, bool parallelize)
+{
+	dataType pv = 10000;
+	//==============================================================================
+	dataType dx, dy, dz, dist;
+	//==============================================================================
+	dataType tmpX, tmpY, tmpZ;
+	//==============================================================================
+	tmpZ = k1;
+	//==============================================================================
+	tmpX = (int)(x1 / imageLength);
+	//==============================================================================
+	tmpY = (x1 % imageLength);
+	//==============================================================================
+	Point3D tmpXYZ;
+	tmpXYZ.z = k1;
+	//==============================================================================
+	tmpXYZ.x = (int)(x1 / imageLength);
+	//==============================================================================
+	tmpXYZ.y = (x1 % imageLength);
+
+	//==============================================================================
+	int i;
+	//==============================================================================
+	if (!parallelize) // Run sequential code
+	{
+		//==============================================================================
+		// Sequetial
+		for (i = 0; i < ptsNum; i++)
+		{
+			//==============================================================================
+			dz = tmpZ - surface_points[i].z; // difference between z axes of both images
+			dx = tmpX - surface_points[i].x;// difference between x axes of both images
+			dy = tmpY - surface_points[i].y;// difference between y axes of both images
+			dist = dx * dx + dy * dy + dz * dz;
+			//==============================================================================
+			if (dist <= pv)
+			{
+				pv = dist;
+			}
+			//==============================================================================
+		}
+		//==============================================================================
+	}
+	else // Run parallelized 
+	{
+		//==============================================================================
+		// OpenMp
+		int nthreads;
+		dataType distances[NUM_THREADS][PAD];
+		omp_set_dynamic(0); // Disable dynamic adjustment of threads
+		omp_set_num_threads(NUM_THREADS);
+	#pragma omp parallel
+		{
+			int i, id, nthrds;
+			dataType dx, dy, dz, dist, distPv;
+
+			id = omp_get_thread_num();
+			nthrds = omp_get_num_threads();
+
+			if (id == 0) { nthreads = nthrds; }
+			for (i = id, distPv = 10000; i < ptsNum; i = i + nthrds)
+			{
+				//==============================================================================
+				//printf("Running on thread %d\n", id);
+				//==============================================================================
+				dz = tmpZ - surface_points[i].z; // difference between z axes of both images
+				dx = tmpX - surface_points[i].x;// difference between x axes of both images
+				dy = tmpY - surface_points[i].y;// difference between y axes of both images
+				dist = dx * dx + dy * dy + dz * dz;
+				//==============================================================================
+				//distPv = min(distPv, dist);
+				if (dist <= distPv)
+				{
+					distPv = dist;
+				}
+				//==============================================================================
+				//distances[id][0] = distPv;
+				//==============================================================================
+			}
+			distances[id][0] = distPv;
+			//==============================================================================
+		}
+		for (size_t i = 0; i < nthreads; i++)
+		{
+			if (pv >= distances[i][0])
+			{
+				pv = distances[i][0];
+			}
+		}
+	}
+	//==============================================================================
+	pv = sqrt(pv);
+	//==============================================================================
+	// Check if the point is inside
+	if (binaryImage[k1][x1] == insideShapevalue)
+	{
+		// pv = -1 * pv;
+		pv = 0;
+	}
+	//==============================================================================
+	return pv;
+	//==============================================================================
+}
+//==============================================================================
