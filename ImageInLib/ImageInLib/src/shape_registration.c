@@ -10,8 +10,7 @@
 typedef struct { size_t k, i, j; } CoordPoints;
 //==============================================================================
 CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth, int loc);
-// neighbourPoints getDistance(T ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const size_t k2, const size_t x2, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
-dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
+dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType insideShapevalue, bool parallelize);
 size_t surfacePoints(dataType ** binaryImage, size_t imageLength, const unsigned char fgroundValue, ClipBox bestfitBox);
 //==============================================================================
 void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod)
@@ -1076,7 +1075,6 @@ CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point
 	return *inputPoints;
 }
 //==============================================================================
-// neighbourPoints getDistance(T ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const size_t k2, const size_t x2, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum)
 dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType insideShapevalue, bool parallelize)
 {
 	dataType pv = 10000;
