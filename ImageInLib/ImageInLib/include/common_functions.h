@@ -5,8 +5,8 @@ extern "C" {
 #pragma once
 #ifndef COMMON_FUNCTIONS
 #define COMMON_FUNCTIONS
-	//==============================================================================
-	//debug constants
+//==============================================================================
+//debug constants
 #ifndef MEASURE_TIME
 #define MEASURE_TIME
 #endif
@@ -15,6 +15,12 @@ extern "C" {
 #define CONSOLE_OUTPUT
 #endif
 #undef CONSOLE_OUTPUT
+//==============================================================================
+#ifndef USE_CLIP
+#define USE_CLIP
+#endif // !USE_CLIP
+
+//#undef USE_CLIP
 //==============================================================================
 // Typedefs
 // Data Type
