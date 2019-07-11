@@ -434,14 +434,20 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	//==============================================================================
 	// Create a new shape Pointers to be used
 	dataType ** destPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for destination
+	//==============================================================================
+#ifdef USE_CLIP
+	dataType ** movInitPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for Moving
+	for (i = 0; i < imageHeight; i++)
+	{
+		movInitPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+	}
+#endif // USE_CLIP
+	//==============================================================================
 	// Initializations of Pointers
 	for (i = 0; i < imageHeight; i++)
 	{
 		destPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
 	}
-	//==============================================================================
-	// Initialize to same background - default value is 255, 0, 0
-	// initialize3dArrayD(destPtr, imageLength, imageWidth, imageHeight, 0);
 	//==============================================================================
 	// Instantiate Affine Parameters
 	affineResult.rotation = initTransform.rotation;
@@ -458,13 +464,37 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
-	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+	//==============================================================================
+#ifdef USE_CLIP
+	// Initial dist. fn for moving image before adding any transformation
+	fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+#endif // USE_CLIP
 	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	// Store the time
 	distanceTotalCpuTime += secondCpuTime - firstCpuTime;
 #endif
+	//==============================================================================
+#ifdef USE_CLIP
+	//==============================================================================
+	// Finding the clip box points for the fixed image
+	ClipBox coordFixed = findClipBoxSingle(destPtr, imageHeight, imageLength, imageWidth);
+	//==============================================================================
+	ClipBox coordMoving = findClipBoxSingle(movInitPtr, imageHeight, imageLength, imageWidth);
+	//==============================================================================
+	// Free after
+	for (k = 0; k < imageHeight; k++)
+	{
+		free(movInitPtr[k]);
+	}
+	free(movInitPtr);
+	movInitPtr = NULL;
+	//==============================================================================
+	ClipBox bestFit, coordMovingTmp; // Clipbox for bestFit of both fixed and moving images, Moving image clipbox
+	//==============================================================================
+#endif // USE_CLIP
 	//==============================================================================
 #ifdef CONSOLE_OUTPUT
 	printf("Distance calc before Registration CPU time: %e secs\n\n", secondCpuTime - firstCpuTime);
@@ -476,18 +506,17 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	regStartCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
+	// Create a new shape Pointers to be used
+	dataType ** transPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // Transformed Ptr
+	dataType ** distTransPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
+	for (i = 0; i < imageHeight; i++)
+	{
+		transPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		distTransPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+	}
+	//==============================================================================
 	while (!stopCond)
 	{
-		// Create a new shape Pointers to be used
-		dataType ** transPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // Transformed Ptr
-		dataType ** distTransPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
-		for (i = 0; i < imageHeight; i++)
-		{
-			transPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-			distTransPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-		}
-		// initialize3dArrayD(transPtr, imageLength, imageWidth, imageHeight, params.imageBackground);
-		// initialize3dArrayD(distTransPtr, imageLength, imageWidth, imageHeight, 0);
 		//==============================================================================
 		// Timing The Transformation Inside the registration function
 #ifdef MEASURE_TIME
@@ -501,6 +530,23 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		transformationTotalCpuTime += secondCpuTime - firstCpuTime;
 #endif
 		//==============================================================================
+#ifdef USE_CLIP
+		//==============================================================================
+		// Transform the coordMoving clip box using calc. transform component results
+		// Copy to coordMovingTmp
+		coordMovingTmp = coordMoving;
+		transformClip(&coordMovingTmp, affineResult.translation, affineResult.scaling, affineResult.rotation, centroid, imageHeight, imageLength, imageWidth);
+		// Find the bestFit from transformed clip
+		bestFit.k_min = min(coordFixed.k_min, coordMovingTmp.k_min);
+		bestFit.i_min = min(coordFixed.i_min, coordMovingTmp.i_min);
+		bestFit.j_min = min(coordFixed.j_min, coordMovingTmp.j_min);
+
+		bestFit.k_max = max(coordFixed.k_max, coordMovingTmp.k_max);
+		bestFit.i_max = max(coordFixed.i_max, coordMovingTmp.i_max);
+		bestFit.j_max = max(coordFixed.j_max, coordMovingTmp.j_max);
+		//==============================================================================
+#endif // USE_CLIP
+		//==============================================================================
 #ifdef CONSOLE_OUTPUT
 		printf("Registration Transformation calc. CPU time at iteration %4d: %e secs\n", iteration, secondCpuTime - firstCpuTime);
 #endif
@@ -511,14 +557,11 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 		//==============================================================================
-		fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, 0);
-		//==============================================================================
-		for (k = 0; k < imageHeight; k++)
-		{
-			free(transPtr[k]);
-		}
-		free(transPtr);
-		transPtr = NULL;
+#ifdef USE_CLIP
+		fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground, bestFit);
+#else
+		fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+#endif // USE_CLIP		
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -530,13 +573,19 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		printf("Distance calc during Registration CPU time at iteration %4d: %e secs\n", iteration, secondCpuTime - firstCpuTime);
 #endif
 		//==============================================================================
-		// Evaluate Energy Function - L2 Norm Between the two calc. distances
+		// Evaluate Energy Function
 		// Begin Record Time
 #ifdef MEASURE_TIME
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 		//==============================================================================
+#ifdef USE_CLIP
+		// Evaluate Energy Function - L2 Norm Between the two calc. distances within the band and clipbox
+		energyTmp = energyFunctionClip(destPtr, distTransPtr, bestFit, imageLength);
+#else
+		// Evaluate Energy Function - L2 Norm Between the two calc. distances
 		energyTmp = energyFunction(destPtr, distTransPtr, imageHeight, imageLength, imageWidth, params.h);
+#endif // USE_CLIP		
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -562,9 +611,17 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 			for (k = 0; k < imageHeight; k++)
 			{
 				free(destPtr[k]);
+				free(transPtr[k]);
+				free(distTransPtr[k]);
 			}
 			free(destPtr);
 			destPtr = NULL;
+			//
+			free(transPtr);
+			transPtr = NULL;
+			//
+			free(distTransPtr);
+			distTransPtr = NULL;
 			//==============================================================================
 			printf("Total distance Function calc. CPU Time is: %e secs\n", distanceTotalCpuTime);
 			printf("Total energy Function calc. CPU Time is: %e secs\n", energyTotalCpuTime);
@@ -585,15 +642,12 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 			firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 			//==============================================================================
-			affineTmp = gradientComponents(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth);
-			//==============================================================================
-			// Free
-			for (k = 0; k < imageHeight; k++)
-			{
-				free(distTransPtr[k]);
-			}
-			free(distTransPtr);
-			distTransPtr = NULL;
+#ifdef USE_CLIP
+			affineTmp = gradientComponentsClip(destPtr, distTransPtr, params.h, &affineResult, imageHeight, imageLength, imageWidth, bestFit);
+
+#else
+			affineTmp = gradientComponents(destPtr, distTransPtr, params.h, &affineResult, imageHeight, imageLength, imageWidth);
+#endif // USE_CLIP			
 			//==============================================================================
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
