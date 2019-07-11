@@ -27,7 +27,9 @@ extern "C" {
 		Affine_Parameter affineResults;
 		dataType imageBackground;
 		dataType imageForeground;
+		dataType insideShapevalue;
 		bool displayRegistrationOutputs;
+		bool parallelize;
 		char fPathname[100];
 	} Registration_Params;
 
