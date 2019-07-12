@@ -931,7 +931,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 #endif
 		//==============================================================================
 #ifdef USE_CLIP
-		fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground, bestFit);
+		fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground, bestFit);
 #else
 		fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
 #endif // USE_CLIP		
