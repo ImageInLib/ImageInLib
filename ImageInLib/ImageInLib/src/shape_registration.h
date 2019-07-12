@@ -35,6 +35,10 @@ extern "C" {
 #endif // !DIRECTIONAL
 //#undef DIRECTIONAL
 //==============================================================================
+// Use Narrow band for calculations
+#ifndef USE_NARROWBAND
+#define USE_NARROWBAND
+//==============================================================================
 // Narrow band
 #define NDelta 50
 //==============================================================================

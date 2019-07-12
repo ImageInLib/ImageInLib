@@ -255,6 +255,21 @@ int NFunction(dataType val1, dataType val2, dataType delta)
 		}
 	}
 }
+inline int NFunctionOne(dataType v1, dataType delta)
+{
+#ifdef USE_NARROWBAND
+	if (abs(v1) > delta)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+#else
+	return 1;
+#endif // USE_NARROWBAND
+}
 //==============================================================================
 dataType energyFunction(dataType ** destination, dataType ** distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h)
 {
