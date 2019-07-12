@@ -535,6 +535,145 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	return results;
 }
 //==============================================================================
+Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, ClipBox bestFit)
+{
+	Affine_Parameter results;
+	// Initialize the parameters
+	int k, i, j, x, counter = 0;
+
+	// Initialize the results
+	results.rotation.x = 0.0, results.rotation.y = 0.0, results.rotation.z = 0.0;
+	results.scaling.x = 0.0, results.scaling.y = 0.0, results.scaling.z = 0.0;
+	results.translation.x = 0.0, results.translation.y = 0.0, results.translation.z = 0.0;
+
+	// Forward difference parameters
+	dataType xFwd, yFwd, zFwd;
+
+	// Derivative component
+	dataType component, componentX, componentY, componentZ;
+
+	// Stores the difference between two distance pointers
+	dataType distDifference;
+
+	// Shorter Transformation names
+	dataType phi = params->rotation.x, theta = params->rotation.y, psi = params->rotation.z;
+	dataType sx = params->scaling.x, sy = params->scaling.y, sz = params->scaling.z;
+	dataType tx = params->translation.x, ty = params->translation.y, tz = params->translation.z;
+
+	// Setting same if uniform scale and rotation
+#ifdef UNIFORM
+	sx = sy = sz;
+	phi = theta = psi;
+#endif // UNIFORM
+	// Scale denominator
+	dataType inv_sx2 = 1.0 / (sx*sx);
+	dataType inv_sy2 = 1.0 / (sy*sy);
+	dataType inv_sz2 = 1.0 / (sz*sz);
+
+	// Begin Evaluation
+	for (k = bestFit.k_min; k < bestFit.k_max + 1; k++)
+	{
+		for (j = bestFit.j_min; j < bestFit.j_max + 1; j++)
+		{
+			// 2D to 1D representation for i, j
+			x = x_new(0, j, imageLength);
+			for (i = bestFit.i_min; i < bestFit.i_max + 1; i++)
+			{
+				// 2D to 1D representation for i, j
+				//x = x_new(i, j, imageLength);
+				if (NFunction(destPtr[k][x], distTrans[k][x], NDelta) == 1)
+				{
+					counter++;
+					// Store the distance function difference
+					distDifference = (destPtr[k][x] - distTrans[k][x]) * 2.0;
+
+					// Directional component vector derivatives - i, j, k
+					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
+
+					// Trignometry functions inside the component evaluation equation
+					dataType a = cos(phi), b = sin(phi), ab = cos(phi)*sin(phi), aa = cos(phi)*cos(phi), bb = sin(phi)*sin(phi), aaa = a * aa, bbb = b * bb, aab = aa * b, abb = a * bb;
+
+					// Apply Forward Differences to the distTrans pointer
+					xFwd = finiteDifX(distTrans, h, x, k, i, imageLength);
+					yFwd = finiteDifY(distTrans, h, k, i, j, imageLength, imageWidth);
+					zFwd = finiteDifZ(distTrans, h, x, k, i, imageLength, imageHeight);
+					// Evaluate Individual Gradient Components
+#ifdef UNIFORM
+					// Uniform Rotations Angles
+					component = xFwd * ((-2.0*tmpI)*(ab / sx) + ((tmpJ)*((bb - aa) / sx)) + ((tmpK)*(a / sx))) +
+						yFwd * (((tmpI)*((aa + 2.0 * aab - bb - bbb) / sy)) + ((tmpJ)*((-2.0 * ab - 3.0 * abb) / sy)) + ((tmpK)*((bb - aa) / sy))) +
+						zFwd * (((tmpI)*((-aaa + 2.0 * ab + 2.0 * abb) / sz)) + ((tmpJ)*((aa + 2.0 * aa - bb - bbb) / sz)) + ((tmpK)*((-2.0 * ab) / sz)));
+					// Set the Rotation - Uniform Angles
+					results.rotation.x += (component)*(distDifference);
+					results.rotation.y += (component)*(distDifference);
+					results.rotation.z += (component)*(distDifference);
+					// Scaling Parameters
+					Uniform Scale Component
+						component = xFwd * (((tmpI)*((-aa) * inv_sx2)) + ((tmpJ)*(ab * inv_sx2)) + ((tmpK)*((-b) * inv_sx2))) +
+						yFwd * (((-tmpI)*((ab + abb)  * inv_sy2)) + ((-tmpJ)*((aa - bbb) * inv_sy2)) + ((tmpK)*(ab * inv_sy2))) +
+						zFwd * (((-tmpI)*((-aab + bb) * inv_sz2)) + ((-tmpJ)*((ab + abb) * inv_sz2)) + ((-tmpK)*(aa * inv_sz2)));
+					// Set the Scales - Uniform Scale
+					results.scaling.x += (component)*(distDifference);
+					results.scaling.y += (component)*(distDifference);
+					results.scaling.z += (component)*(distDifference);
+#endif // UNIFORM
+#ifdef DIRECTIONAL
+					// Rotation Components - Directionnal
+					componentX = yFwd * (((tmpI)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(psi)*sin(phi) - cos(phi)*sin(psi)*sin(theta)) / sy)) + ((-tmpK)*((cos(phi)*cos(theta)) / sy))) +
+						zFwd * (((tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sz)) + ((-tmpK)*((cos(theta) * sin(phi)) / sz)));
+					componentY = xFwd * (((-tmpI)*((cos(psi)*sin(theta)) / sx)) + ((tmpJ)*((sin(psi)*sin(theta)) / sx)) + ((tmpK)*((cos(theta)) / sx))) +
+						yFwd * (((tmpI)*((cos(psi)*cos(theta)*sin(phi)) / sy)) + ((-tmpJ)*((cos(theta)*sin(phi)*sin(psi)) / sy)) + ((tmpK)*((sin(phi)*sin(theta)) / sy))) +
+						zFwd * (((-tmpI)*((cos(phi)*cos(psi)*cos(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(theta)*sin(psi)) / sz)) + ((-tmpK)*((cos(phi)*sin(theta)) / sz)));
+					componentZ = xFwd * (((-tmpI)*((cos(theta)*sin(psi)) / sx)) + ((-tmpJ)*((cos(psi)*cos(theta)) / sx))) +
+						yFwd * (((tmpI)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(phi)*sin(psi) - cos(psi)*sin(phi)*sin(theta)) / sy))) +
+						zFwd * (((tmpI)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / sz)) + ((tmpJ)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sz)));
+					// Set the Rotations - Directional
+					results.rotation.x += (componentX)*(distDifference);
+					results.rotation.y += (componentY)*(distDifference);
+					results.rotation.z += (componentZ)*(distDifference);
+					// Directional Scale Components
+					componentX = xFwd * ((-tmpI)*((cos(psi)*cos(theta)) / (sx*sx)) + ((tmpJ)*((cos(theta)*sin(psi)) / (sx*sx))) + ((-tmpK)*((sin(theta)) / (sx*sx))));
+					componentY = yFwd * (((-tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / (sy*sy))) + ((-tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / (sy*sy))) + ((tmpK)*((cos(theta)*sin(phi)) / (sy*sy))));
+					componentZ = zFwd * (((-tmpI)*((sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)) / (sz*sz))) + ((-tmpJ)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / (sz*sz))) + ((-tmpK)*((cos(phi)*cos(theta)) / (sz*sz))));
+					// Set the Scales - Directional Scales
+					results.scaling.x += (componentX)*(distDifference);
+					results.scaling.y += (componentY)*(distDifference);
+					results.scaling.z += (componentZ)*(distDifference);
+#endif // DIRECTIONAL
+					// Translation Parameters - Always directional
+					// Tx
+					results.translation.x += (-xFwd)*(distDifference);
+					// Ty
+					results.translation.y += (-yFwd)*(distDifference);
+					// Tz
+					results.translation.z += (-zFwd)*(distDifference);
+				}
+				x++;
+			}
+		}
+	}
+	// Normalize results
+	if (counter == 0)
+	{
+		counter = 1;
+	}
+
+	results.scaling.x = results.scaling.x / counter;
+	results.scaling.y = results.scaling.y / counter;
+	results.scaling.z = results.scaling.z / counter;
+
+	results.rotation.x = results.rotation.x / counter;
+	results.rotation.y = results.rotation.y / counter;
+	results.rotation.z = results.rotation.z / counter;
+
+	results.translation.x = results.translation.x / counter;
+	// Ty
+	results.translation.y = results.translation.y / counter;
+	// Tz
+	results.translation.z = results.translation.z / counter;
+	return results;
+}
+//==============================================================================
 Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
 {
 	//==============================================================================
@@ -1028,7 +1167,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 #ifdef USE_CLIP
 		//energyTmp = energyFunctionClip(destPtr, distTransPtr, bestFit, imageLength);
 		// For using narrowband areas
-		energyTmp = energyFunctionClipBandArea(destPtr, distTransPtr, bestFit, imageLength, fixedNBandPtr, movingNBandPtr);
+		energyTmp = energyFunctionClipBandArea(destPtr, distTransPtr, bestFit, imageLength, fixedNBandPtr, movingNBandPtr, params.imageForeground);
 #else
 		energyTmp = energyFunction(destPtr, distTransPtr, imageHeight, imageLength, imageWidth, params.h);
 #endif // USE_CLIP

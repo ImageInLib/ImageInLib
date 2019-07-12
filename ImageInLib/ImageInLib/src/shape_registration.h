@@ -38,6 +38,7 @@ extern "C" {
 // Use Narrow band for calculations
 #ifndef USE_NARROWBAND
 #define USE_NARROWBAND
+#endif // !USE_NARROWBAND
 
 //#undef USE_NARROWBAND
 //==============================================================================
@@ -79,7 +80,7 @@ extern "C" {
 	inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
 	// Calc. and return the gradient descent components
 	Affine_Parameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, Affine_Parameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
-	Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTrans, dataType hh, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, ClipBox bestFit);
+	Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, ClipBox bestFit);
 	// Calc the transformation parameters from Registration of two images using Simple GD method
 	Affine_Parameter registration3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	// Cals Registration using Stochastic GD method
