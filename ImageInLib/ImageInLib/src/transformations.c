@@ -9,6 +9,7 @@
 /*
 * Rotated indices
 */
+void coordinate_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi, dataType * k_t, dataType * i_t, dataType * j_t);
 dataType x_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi);
 dataType y_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
 dataType z_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
@@ -326,6 +327,47 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 /*
 * Rotated indices
 */
+void coordinate_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi, dataType * k_t, dataType * i_t, dataType * j_t)
+{
+	//==============================================================================
+	dataType _cos_psi_theta = cos(psi)*cos(theta), _cos_phi_psi = cos(phi)*cos(psi), _cos_phi_theta = cos(phi)*cos(theta);
+	dataType _sin_phi_theta = sin(phi)*sin(theta), _sin_phi_psi = sin(phi)*sin(psi), _sin_theta_psi = sin(theta)*sin(psi);
+
+	dataType _sin_theta = sin(theta), _sin_psi = sin(psi), _sin_phi = sin(phi);
+	dataType _cos_theta = cos(theta), _cos_psi = cos(psi), _cos_phi = cos(phi);
+	//==============================================================================
+	// I
+	dataType _cos_theta_sin_psi = _cos_theta * _sin_psi;
+	//=============================================================================
+	// J
+	dataType _sin_psi_neg = -1 * _sin_psi;
+	dataType _sin_phi_neg = -1 * _sin_phi;
+
+	dataType _cos_phi_sin_psi = _cos_phi * _sin_psi;
+	dataType _sin_phi_sin_theta_cos_psi = _sin_phi * _sin_theta * _cos_psi;
+
+	dataType _sin_phi_sin_theta_sin_psi_neg = _sin_phi_theta * _sin_psi_neg;
+
+	dataType _sin_phi_neg_cos_theta = _sin_phi_neg * _cos_theta;
+	// (((cos(phi))*sin(psi) + sin(phi)*sin(theta)*cos(psi))*(x)+(cos(phi)*cos(psi) + sin(phi)*sin(theta)*(-sin(psi)))*(y)+((-sin(phi))*cos(theta))*(z))
+	//=============================================================================
+	// K
+	// ((sin(phi)*sin(psi) + cos(phi)*(-sin(theta))*cos(psi))*(x)+((sin(phi))*cos(psi) + cos(phi)*sin(theta)*sin(psi))*(y)+(cos(phi)*cos(theta))*(z))
+	dataType _sin_theta_neg = -1 * _sin_theta;
+	dataType _cos_phi_sin_theta_neg_cos_psi = _cos_phi * _sin_theta_neg * _cos_psi;
+	dataType _sin_phi_cos_psi = _sin_phi * _cos_psi;
+	dataType _cos_phi_sin_theta_psi = _cos_phi * _sin_theta_psi;
+	//=============================================================================
+	// I
+	*i_t = x * _cos_psi_theta - y * _cos_theta_sin_psi + z * _sin_theta; // (x*cos(psi)*cos(theta) - y * cos(theta)*sin(psi) + z * sin(theta))
+	//==============================================================================
+	// J
+	*j_t = ((_cos_phi_sin_psi + _sin_phi_sin_theta_cos_psi)*(x)+(_cos_phi_psi + _sin_phi_sin_theta_sin_psi_neg)*(y)+(_sin_phi_neg_cos_theta)*(z));
+	//==============================================================================
+	// k
+	*k_t = ((_sin_phi_psi + _cos_phi_sin_theta_neg_cos_psi)*(x)+(_sin_phi_cos_psi + _cos_phi_sin_theta_psi)*(y)+(_cos_phi_theta)*(z));
+	//==============================================================================
+}
 dataType x_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi)
 {
 	return (x*cos(psi)*cos(theta) - y * cos(theta)*sin(psi) + z * sin(theta));
