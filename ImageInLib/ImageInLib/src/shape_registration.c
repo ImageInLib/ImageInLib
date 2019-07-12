@@ -40,6 +40,12 @@ CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point
 dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType insideShapevalue, bool parallelize);
 size_t surfacePoints(dataType ** binaryImage, size_t imageLength, const unsigned char fgroundValue, ClipBox bestfitBox);
 //==============================================================================
+void nbPointsX(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t i, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
+void nbPointsY(dataType ** transformedBinaryData, dataType pixelSize, size_t k, size_t i, size_t j, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
+void nbPointsZ(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
+//==============================================================================
+dataType finiteDifAll(dataType pValue, dataType qValue, dataType hh);
+//==============================================================================
 void run_registration(dataType **fixedData, dataType **movingData, dataType **resultPtr, size_t zDim, size_t xDim, size_t yDim, Registration_Params params, Optimization_Method gdescentMethod)
 {
 	//==============================================================================
@@ -414,6 +420,11 @@ dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t 
 	{
 		return (distPtr[k + 1][x] - distPtr[k - 1][x]) / (2 * h);
 	}
+}
+//==============================================================================
+dataType finiteDifAll(dataType pValue, dataType qValue, dataType hh)
+{
+	return (pValue - qValue) / hh;
 }
 //==============================================================================
 Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth)
