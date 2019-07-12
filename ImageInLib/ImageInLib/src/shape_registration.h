@@ -38,6 +38,8 @@ extern "C" {
 // Use Narrow band for calculations
 #ifndef USE_NARROWBAND
 #define USE_NARROWBAND
+
+//#undef USE_NARROWBAND
 //==============================================================================
 // Narrow band
 #define NDelta 50
@@ -68,7 +70,7 @@ extern "C" {
 	// Calc. the distance differences
 	dataType energyFunction(dataType ** destination, dataType **distTrans, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType h);
 	dataType energyFunctionClip(dataType ** destination, dataType **distTrans, ClipBox coord, size_t imageLength);
-	dataType energyFunctionClipBandArea(dataType ** destination, dataType ** distTrans, ClipBox coord, size_t imageLength, dataType ** fixedNBandPtr, dataType ** movingNBandPtr);
+	dataType energyFunctionClipBandArea(dataType ** destination, dataType ** distTrans, ClipBox coord, size_t imageLength, dataType ** fixedNBandPtr, dataType ** movingNBandPtr, dataType imageForeground);
 	// Calc. Finite difference X direction
 	inline dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength);
 	// Calc. Finite difference Y direction

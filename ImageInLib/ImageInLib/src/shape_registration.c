@@ -7,6 +7,8 @@
 //==============================================================================
 #include <omp.h>
 //==============================================================================
+size_t bandPts = 0, clipBoxPts = 0;
+//==============================================================================
 // Stores generated random points
 typedef struct {
 	size_t k, i, j;
@@ -293,6 +295,64 @@ dataType energyFunction(dataType ** destination, dataType ** distTrans, size_t i
 		}
 	}
 	return ((h * energy) / (2 * counter));
+}
+//==============================================================================
+dataType energyFunctionClip(dataType ** destination, dataType **distTrans, ClipBox coord, size_t imageLength)
+{
+	size_t k, i, j, counter = 0, clipPts = 0;
+	dataType energy = 0.0;
+	//==============================================================================
+	// Energy calculation withing the clipped box and inside narrow band
+	for (k = coord.k_min; k <= coord.k_max; k++)
+	{
+		for (i = coord.i_min; i <= coord.i_max; i++)
+		{
+			for (j = coord.j_min; j <= coord.j_max; j++)
+			{
+				// 2D to 1D representation for i, j
+				int x = x_new(i, j, imageLength);
+				if (NFunction(destination[k][x], distTrans[k][x], NDelta) == 1)
+				{
+					energy += (destination[k][x] - distTrans[k][x])   * (destination[k][x] - distTrans[k][x]);
+					counter++; // Points within the narrow band
+				}
+				clipPts++; // Count points within the clipbox
+			}
+		}
+	}
+	//==============================================================================
+	bandPts = counter;
+	clipBoxPts = clipPts;
+	return (energy / (2 * counter));
+}
+//==============================================================================
+dataType energyFunctionClipBandArea(dataType ** destination, dataType ** distTrans, ClipBox coord, size_t imageLength, dataType ** fixedNBandPtr, dataType ** movingNBandPtr, dataType imageForeground)
+{
+	size_t k, i, j, counter = 0, clipPts = 0;
+	dataType energy = 0.0;
+	//==============================================================================
+	// Energy calculation withing the clipped box and inside narrow band
+	for (k = coord.k_min; k <= coord.k_max; k++)
+	{
+		for (i = coord.i_min; i <= coord.i_max; i++)
+		{
+			for (j = coord.j_min; j <= coord.j_max; j++)
+			{
+				// 2D to 1D representation for i, j
+				int x = x_new(i, j, imageLength);
+				if (NFunctionBinary(fixedNBandPtr[k][x], movingNBandPtr[k][x], imageForeground) == 1)
+				{
+					energy += (destination[k][x] - distTrans[k][x])   * (destination[k][x] - distTrans[k][x]);
+					counter++; // Points within the narrow band
+				}
+				clipPts++; // Count points within the clipbox
+			}
+		}
+	}
+	//==============================================================================
+	bandPts = counter;
+	clipBoxPts = clipPts;
+	return (energy / (2 * counter));
 }
 //==============================================================================
 dataType finiteDifX(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength)
