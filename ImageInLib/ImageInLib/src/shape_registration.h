@@ -43,7 +43,7 @@ extern "C" {
 //#undef USE_NARROWBAND
 //==============================================================================
 // Narrow band
-#define NDelta 50
+#define NDelta 10
 //==============================================================================
 // Variables for OpenMp
 #define PAD 16 // assumes 256kb l1 cache
