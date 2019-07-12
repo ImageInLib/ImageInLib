@@ -1456,6 +1456,128 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	//==============================================================================
 }
 //==============================================================================
+ClipBox findClipBoxSingle(dataType ** Source, size_t imageHeight, size_t imageLength, size_t imageWidth)
+{
+	ClipBox coord;
+	coord.k_min = imageHeight, coord.i_min = imageLength, coord.j_min = imageWidth, coord.k_max = 0, coord.i_max = 0, coord.j_max = 0;
+	size_t k, i, j;
+	for (k = 0; k < imageHeight; k++)
+	{
+		for (i = 0; i < imageLength; i++)
+		{
+			for (j = 0; j < imageWidth; j++)
+			{
+				// 2D to 1D representation for i, j
+				int x = x_new(i, j, imageLength);
+				if (NFunctionOne(Source[k][x], NDelta) == 1)
+				{
+					// Find K clip
+					if (k > coord.k_max)
+					{
+						coord.k_max = k;
+					}
+					if (k < coord.k_min)
+					{
+						coord.k_min = k;
+					}
+					// FInd I clip
+					if (i > coord.i_max)
+					{
+						coord.i_max = i;
+					}
+					if (i < coord.i_min)
+					{
+						coord.i_min = i;
+					}
+					// Find J clip
+					if (j > coord.j_max)
+					{
+						coord.j_max = j;
+					}
+					if (j < coord.j_min)
+					{
+						coord.j_min = j;
+					}
+				}
+			}
+		}
+	}
+	return coord;
+}
+//==============================================================================
+void fillNarrowBandArea(T ** sourceDist, T ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, T insideValue, T outsideValue)
+{
+	size_t k, i, j;
+	for (k = 0; k < imageHeight; k++)
+	{
+		for (i = 0; i < imageLength; i++)
+		{
+			for (j = 0; j < imageWidth; j++)
+			{
+				// 2D to 1D representation for i, j
+				int xd = x_new(i, j, imageLength);
+				if (NFunctionOne(sourceDist[k][xd], NDelta) == 1)
+				{
+					bandContainer[k][xd] = insideValue;
+				}
+				else
+				{
+					bandContainer[k][xd] = outsideValue;
+				}
+			}
+		}
+	}
+}
+//==============================================================================
+ClipBox findClipBoxTwo(T ** destination, T ** source, size_t imageHeight, size_t imageLength, size_t imageWidth)
+{
+	ClipBox coord;
+	coord.k_min = imageHeight, coord.i_min = imageLength, coord.j_min = imageWidth, coord.k_max = 0, coord.i_max = 0, coord.j_max = 0;
+	size_t k, i, j;
+	for (k = 0; k < imageHeight; k++)
+	{
+		for (i = 0; i < imageLength; i++)
+		{
+			for (j = 0; j < imageWidth; j++)
+			{
+				// 2D to 1D representation for i, j
+				int x = x_new(i, j, imageLength);
+				if (NFunction(destination[k][x], source[k][x], NDelta) == 1)
+				{
+					// Find K clip
+					if (k > coord.k_max)
+					{
+						coord.k_max = k;
+					}
+					else if (k < coord.k_min)
+					{
+						coord.k_min = k;
+					}
+					// FInd I clip
+					if (i > coord.i_max)
+					{
+						coord.i_max = i;
+					}
+					else if (i < coord.i_min)
+					{
+						coord.i_min = i;
+					}
+					// Find J clip
+					if (j > coord.j_max)
+					{
+						coord.j_max = j;
+					}
+					else if (j < coord.j_min)
+					{
+						coord.j_min = j;
+					}
+				}
+			}
+		}
+	}
+	return coord;
+}
+//==============================================================================
 CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth, int loc)
 {
 	//==============================================================================
