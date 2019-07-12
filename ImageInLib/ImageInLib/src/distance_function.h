@@ -29,7 +29,9 @@ extern "C" {
 
 	bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t xDim, const size_t yDim, const size_t zDim,
 		const dataType h, const dataType largeValue, const dataType fgroundValue);
-
+	//==============================================================================
+	void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, const unsigned char h, const dataType largeValue, const unsigned char fgroundValue, const ClipBox bestFit);
+	//==============================================================================
 	bool fastSweepingFunction_2D(dataType * distance2DPtr, dataType * curve2DPtr, const size_t xDim, const size_t yDim,
 		const dataType h, const dataType largeValue, const dataType fgroundValue);
 

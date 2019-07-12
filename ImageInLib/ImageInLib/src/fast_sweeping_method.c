@@ -250,7 +250,256 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	free(temp3dPtr);
 	return true;
 }
+//==============================================================================
+void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, const unsigned char h, const dataType largeValue, const unsigned char fgroundValue, const ClipBox bestFit)
+{
+	size_t j, i, k, i_n;//i, j and k are loop counters. i_n is also a loop counter given by i_n = i + j * xDim
+	size_t sweepNumber = 0, sweepDirection;
+	// Within the best fit box
+	//==============================================================================
+	size_t k_min = bestFit.k_min, k_max = bestFit.k_max;
+	size_t i_min = bestFit.i_min, i_max = bestFit.i_max;
+	size_t j_min = bestFit.j_min, j_max = bestFit.j_max;
+	//==============================================================================
+	//const size_t dim2D = (i_max + 1) * (j_max + 1);
+	const size_t dim2D = (xDim) * (yDim);
+	dataType ** temp3dPtr = (dataType **)malloc(sizeof(dataType*) * (zDim));// temporary array used in the computation of distance
+	for (i = 0; i < zDim; i++)
+		temp3dPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+	//==============================================================================
+	//Initialization stage
+	for (k = 0; k < zDim; k++)
+	{
+		for (i = 0; i < xDim; i++)
+		{
+			for (j = 0; j < yDim; j++)
+			{
+				i_n = i + j * xDim;
+				if (curve3DPtr[k][i_n] == fgroundValue)
+				{
+					distance3DPtr[k][i_n] = fgroundValue;
+				}
+				else
+				{
+					distance3DPtr[k][i_n] = largeValue;
+				}
+			}
+		}
+	}
+	//==============================================================================
+	//
+	int band = 1;
 
+	i_max = min(i_max + band, xDim - 1);
+	j_max = min(j_max + band, yDim - 1);
+	k_max = min(k_max + band, zDim - 1);
+
+	if (i_min > 0)
+	{
+		i_min = max(i_min - band, 0);
+	}
+	if (j_min > 0)
+	{
+		j_min = max(j_min - band, 0);
+	}
+	if (k_min > 0)
+	{
+		k_min = max(k_min - band, 0);
+	}
+	//
+
+	//==============================================================================
+	while (sweepNumber < 8)
+	{
+		sweepDirection = sweepNumber;
+		switch (sweepDirection)
+		{
+		case 0:
+			for (k = k_min; k < k_max + 1; k++)
+			{
+				for (i = i_min; i < i_max + 1; i++)
+				{
+					for (j = j_max; j >= j_min; j--)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+
+						if (j == j_min) //because if j is unsigned type, then j(0) - 1 == type maximum value
+							break;
+					}
+				}
+			}
+			sweepNumber++;
+			break;
+
+		case 1:
+			for (k = k_min; k < k_max + 1; k++)
+			{
+				for (i = i_max; i >= i_min; i--)
+				{
+					for (j = j_max; j >= j_min; j--)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+
+						if (j == j_min) //because if j is unsigned type, then j(0) - 1 == type maximum value
+							break;
+					}
+
+					if (i == i_min) //because if i is unsigned type, then i(0) - 1 == type maximum value
+						break;
+				}
+			}
+			sweepNumber++;
+			break;
+
+		case 2:
+			for (k = k_min; k < k_max + 1; k++)
+			{
+				for (i = i_max; i >= i_min; i--)
+				{
+					for (j = j_min; j < j_max + 1; j++)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+					}
+
+					if (i == i_min) //because if i is unsigned type, then i(0) - 1 == type maximum value
+						break;
+				}
+			}
+			sweepNumber++;
+			break;
+
+		case 3:
+			for (k = k_max; k >= k_min; k--)
+			{
+				for (i = i_min; i < i_max + 1; i++)
+				{
+					for (j = j_min; j < j_max + 1; j++)
+					{
+						i_n = i + j * xDim;
+						//i_n = i + j * xD;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+					}
+				}
+				if (k == k_min) //because if k is unsigned type, then k(0) - 1 == type maximum value
+					break;
+			}
+			sweepNumber++;
+			break;
+		case 4:
+			for (k = k_max; k >= k_min; k--)
+			{
+				for (i = i_min; i < i_max + 1; i++)
+				{
+					for (j = j_max; j >= j_min; j--)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+
+						if (j == j_min) //because if j is unsigned type, then j(0) - 1 == type maximum value
+							break;
+					}
+				}
+
+				if (k == k_min) //because if k is unsigned type, then k(0) - 1 == type maximum value
+					break;
+			}
+			sweepNumber++;
+			break;
+		case 5:
+			for (k = k_max; k >= k_min; k--)
+			{
+				for (i = i_max; i >= i_min; i--)
+				{
+					for (j = j_min; j < j_max + 1; j++)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+					}
+					if (i == i_min) //because if i is unsigned type, then i(0) - 1 == type maximum value
+						break;
+				}
+				if (k == k_min) //because if k is unsigned type, then k(0) - 1 == type maximum value
+					break;
+			}
+			sweepNumber++;
+			break;
+		case 6:
+			for (k = k_max; k >= k_min; k--)
+			{
+				for (i = i_max; i >= i_min; i--)
+				{
+					for (j = j_max; j >= j_min; j--)
+					{
+						i_n = i + j * xDim;
+						//i_n = i + j * xD;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							//compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+
+						if (j == j_min) //because if j is unsigned type, then j(0) - 1 == type maximum value
+							break;
+					}
+
+					if (i == i_min) //because if i is unsigned type, then i(0) - 1 == type maximum value
+						break;
+				}
+
+				if (k == k_min) //because if k is unsigned type, then k(0) - 1 == type maximum value
+					break;
+			}
+			sweepNumber++;
+			break;
+		default:
+			for (k = k_min; k < k_max + 1; k++)
+			{
+				for (i = i_min; i < i_max + 1; i++)
+				{
+					for (j = j_min; j < j_max + 1; j++)
+					{
+						i_n = i + j * xDim;
+						if (curve3DPtr[k][i_n] != fgroundValue)
+						{
+							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
+						}
+					}
+				}
+			}
+			sweepNumber++;
+			break;
+		}
+	}
+	//==============================================================================
+	for (i = 0; i < (k_max + 1); i++)
+	{
+		free(temp3dPtr[i]);
+	}
+	free(temp3dPtr);
+	temp3dPtr = NULL;
+}
+//==============================================================================
 bool fastSweepingFunction_2D(dataType * distance2DPtr, dataType * curve2DPtr, const size_t xDim, const size_t yDim,
 	const dataType h, const dataType largeValue, const dataType fgroundValue)
 {
