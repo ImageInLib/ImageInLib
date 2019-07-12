@@ -1529,7 +1529,7 @@ void fillNarrowBandArea(T ** sourceDist, T ** bandContainer, size_t imageHeight,
 	}
 }
 //==============================================================================
-ClipBox findClipBoxTwo(T ** destination, T ** source, size_t imageHeight, size_t imageLength, size_t imageWidth)
+ClipBox findClipBoxTwo(dataType ** destination, dataType ** source, size_t imageHeight, size_t imageLength, size_t imageWidth)
 {
 	ClipBox coord;
 	coord.k_min = imageHeight, coord.i_min = imageLength, coord.j_min = imageWidth, coord.k_max = 0, coord.i_max = 0, coord.j_max = 0;
