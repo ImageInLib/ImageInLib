@@ -40,9 +40,9 @@ CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point
 dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLength, size_t dim2D, const size_t k1, const size_t x1, const unsigned char fgroundValue, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType insideShapevalue, bool parallelize);
 size_t surfacePoints(dataType ** binaryImage, size_t imageLength, const unsigned char fgroundValue, ClipBox bestfitBox);
 //==============================================================================
-void nbPointsX(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t i, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
-void nbPointsY(dataType ** transformedBinaryData, dataType pixelSize, size_t k, size_t i, size_t j, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
-void nbPointsZ(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t imageHeight, size_t imageLength, size_t imageWidth, T * pValue, T * qValue, T *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum);
+void nbPointsX(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t i, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize);
+void nbPointsY(dataType ** transformedBinaryData, dataType pixelSize, size_t k, size_t i, size_t j, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize);
+void nbPointsZ(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize);
 //==============================================================================
 dataType finiteDifAll(dataType pValue, dataType qValue, dataType hh);
 //==============================================================================
@@ -420,6 +420,115 @@ dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t 
 	{
 		return (distPtr[k + 1][x] - distPtr[k - 1][x]) / (2 * h);
 	}
+}
+//==============================================================================
+void nbPointsX(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t i, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize)
+{
+	////==============================================================================
+	size_t  dim2D = imageLength * imageWidth;
+	//==============================================================================
+	// neighbourPoints nb;
+	dataType pv, qv;
+	//==============================================================================
+	size_t x_n, x_p;
+	if (i == 0) // Beginings
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x + 1, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 1;
+	}
+	else if (i >= imageLength - 1) // End
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x - 1, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 1;
+	}
+	else // Central values
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x + 1, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x - 1, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		//*qValue = distanceResultsPtr[k][x - 1];
+		*hh = pixelSize * 2;
+	}
+	// *pValue = nb.pv; *qValue = nb.qv;
+	*pValue = pv; *qValue = qv;
+}
+//==============================================================================
+void nbPointsY(dataType ** transformedBinaryData, dataType pixelSize, size_t k, size_t i, size_t j, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize)
+{
+	////==============================================================================
+	size_t  dim2D = imageLength * imageWidth;
+	//==============================================================================
+	// neighbourPoints nb;
+	dataType pv, qv;
+	//==============================================================================
+	size_t x_n, x_p;
+	if (j == 0) // Apply Forward Difference
+	{
+		// 2D to 1D representation for i, j
+		x_n = x_new(i, j + 1, imageLength);
+		x_p = x_new(i, j, imageLength);
+
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_n, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_p, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 1;
+	}
+	else if (j >= imageWidth - 1) // Apply Backward Difference
+	{
+		// 2D to 1D representation for i, j
+		x_n = x_new(i, j, imageLength);
+		x_p = x_new(i, j - 1, imageLength);
+
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_n, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_p, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 1;
+	}
+	else // Apply Central Difference
+	{
+		// 2D to 1D representation for i, j
+		x_n = x_new(i, j + 1, imageLength);
+		x_p = x_new(i, j - 1, imageLength);
+
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_n, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x_p, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 2;
+	}
+	// *pValue = nb.pv; *qValue = nb.qv;
+	*pValue = pv; *qValue = qv;
+}
+//==============================================================================
+void nbPointsZ(dataType ** transformedBinaryData, dataType pixelSize, size_t x, size_t k, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType * pValue, dataType * qValue, dataType *hh, ClipBox bestfitBox, Point3D * surface_points, size_t ptsNum, dataType imageForeground, dataType insideShapevalue, bool parallelize)
+{
+	////==============================================================================
+	size_t  dim2D = imageLength * imageWidth;
+	//==============================================================================
+	// neighbourPoints nb;
+	dataType pv, qv;
+	//==============================================================================
+	if (k == 0) // Apply Forward Difference
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k + 1, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 1;
+		//==============================================================================
+	}
+	else if (k >= imageHeight - 1) // Apply Backward Difference
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k - 1, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		//*qValue = distanceResultsPtr[k - 1][x];
+		*hh = pixelSize * 1;
+		//==============================================================================
+	}
+	else // Apply Central Difference
+	{
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k + 1, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k - 1, x, imageForeground, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		*hh = pixelSize * 2;
+		//==============================================================================
+	}
+	// *pValue = nb.pv; *qValue = nb.qv;
+	*pValue = pv; *qValue = qv;
 }
 //==============================================================================
 dataType finiteDifAll(dataType pValue, dataType qValue, dataType hh)
@@ -1500,17 +1609,17 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 						destFixed = destPtr[k][x];
 						tmpDistances->distDifference = (destFixed - getDist) * 2.0;
 						//==============================================================================
-						nbPointsX(edgeMovingPointer, h, x, k, i, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+						nbPointsX(edgeMovingPointer, h, x, k, i, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 						tmpXFwd->hvl = hh;
 						tmpXFwd->pvl = pVal;
 						tmpXFwd->qvl = qVal;
 						//==============================================================================
-						nbPointsY(edgeMovingPointer, h, k, i, j, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+						nbPointsY(edgeMovingPointer, h, k, i, j, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 						tmpYFwd->hvl = hh;
 						tmpYFwd->pvl = pVal;
 						tmpYFwd->qvl = qVal;
 						//==============================================================================
-						nbPointsZ(edgeMovingPointer, h, x, k, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+						nbPointsZ(edgeMovingPointer, h, x, k, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 						tmpZFwd->hvl = hh;
 						tmpZFwd->pvl = pVal;
 						tmpZFwd->qvl = qVal;
@@ -1542,17 +1651,17 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 				destFixed = destPtr[k][x];
 				tmpDistances->distDifference = (destFixed - getDist) * 2.0;
 				//==============================================================================
-				nbPointsX(edgeMovingPointer, h, x, k, i, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+				nbPointsX(edgeMovingPointer, h, x, k, i, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 				tmpXFwd->hvl = hh;
 				tmpXFwd->pvl = pVal;
 				tmpXFwd->qvl = qVal;
 				//==============================================================================
-				nbPointsY(edgeMovingPointer, h, k, i, j, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+				nbPointsY(edgeMovingPointer, h, k, i, j, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 				tmpYFwd->hvl = hh;
 				tmpYFwd->pvl = pVal;
 				tmpYFwd->qvl = qVal;
 				//==============================================================================
-				nbPointsZ(edgeMovingPointer, h, x, k, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum);
+				nbPointsZ(edgeMovingPointer, h, x, k, imageHeight, imageLength, imageWidth, &pVal, &qVal, &hh, bestFit, surface_points, ptsNum, params.imageForeground, params.insideShapevalue, params.parallelize);
 				tmpZFwd->hvl = hh;
 				tmpZFwd->pvl = pVal;
 				tmpZFwd->qvl = qVal;
