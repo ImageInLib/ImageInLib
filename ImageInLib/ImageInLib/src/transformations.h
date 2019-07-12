@@ -15,6 +15,7 @@ extern "C" {
 	// INCLUDES
 #include "common_math.h" // PI value
 #include "interpolations.h" // Interpolation Function
+#include <stdbool.h>
 // MACROs
 //==============================================================================
 // STRUCTS
@@ -31,7 +32,7 @@ extern "C" {
 * imageWidth is the actual Y dimension
 * bgValue is the background value to set if the point is not transformed
 */
-	void transform3DImage(dataType ** sourceDataPtr, dataType **imageDataPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3]);
+	void transform3DImage(dataType ** sourceDataPtr, dataType **transformPointsPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3], dataType imageForeground, bool parallelize);
 	void transformInverse3DImage(dataType **sourceDataPtr, dataType **imageDataPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3]);
 	//==============================================================================
 	// Calc. centroid of image data

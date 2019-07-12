@@ -102,7 +102,7 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
-	transform3DImage(movingData, resultPtr, finalResults.translation, finalResults.scaling, finalResults.rotation, zDim, xDim, yDim, params.imageBackground, movingCentroid);
+	transform3DImage(movingData, resultPtr, finalResults.translation, finalResults.scaling, finalResults.rotation, zDim, xDim, yDim, params.imageBackground, movingCentroid, params.imageForeground, params.parallelize);
 	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -895,7 +895,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 #ifdef MEASURE_TIME
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
-		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid);
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1221,9 +1221,9 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 		//==============================================================================
-		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid);
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
 		// Transform the moving narrow band area
-		transform3DImage(movingNBandPtr, transMovingPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroidMovingBandArea);
+		transform3DImage(movingNBandPtr, transMovingPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroidMovingBandArea, params.imageForeground, params.parallelize);
 		// Copy back to movingNBandPtr
 		dataType ** tmpPtr = NULL;
 		tmpPtr = movingNBandPtr;
