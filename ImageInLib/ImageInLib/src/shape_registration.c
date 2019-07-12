@@ -216,6 +216,20 @@ void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHei
 	centroid[0] = x / counts, centroid[1] = y / counts, centroid[2] = z / counts;
 }
 //==============================================================================
+inline int NFunctionBinary(dataType v1, dataType v2, dataType delta)
+{
+	//==============================================================================
+	if (abs(v1) == delta || abs(v2) == delta)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+	//==============================================================================
+}
+//==============================================================================
 int NFunction(dataType val1, dataType val2, dataType delta)
 {
 	if (fabs(val1) < fabs(val2))
