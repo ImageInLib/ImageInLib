@@ -1505,7 +1505,7 @@ ClipBox findClipBoxSingle(dataType ** Source, size_t imageHeight, size_t imageLe
 	return coord;
 }
 //==============================================================================
-void fillNarrowBandArea(T ** sourceDist, T ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, T insideValue, T outsideValue)
+void fillNarrowBandArea(dataType ** sourceDist, dataType ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType insideValue, dataType outsideValue)
 {
 	size_t k, i, j;
 	for (k = 0; k < imageHeight; k++)
