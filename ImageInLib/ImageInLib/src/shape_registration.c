@@ -1806,6 +1806,114 @@ ClipBox findClipBoxTwo(dataType ** destination, dataType ** source, size_t image
 	return coord;
 }
 //==============================================================================
+void transformClip(ClipBox *bestfit, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth)
+{
+	//==============================================================================
+	size_t k_min = (*bestfit).k_min, k_max = (*bestfit).k_max;
+	size_t i_min = (*bestfit).i_min, i_max = (*bestfit).i_max;
+	size_t j_min = (*bestfit).j_min, j_max = (*bestfit).j_max;
+	//==============================================================================
+	// Floor Points - k min
+	// i_min, j_min, k_min; // Corner 1
+	// i_max, j_min, k_min; // Corner 2
+	// i_min, j_max, k_min; // Corner 3
+	// i_max, j_max, k_min; // Corner 4
+	//==============================================================================
+	// Ceiling Points - k max
+	// i_min, j_min, k_max; // Corner 5
+	// i_max, j_min, k_max; // Corner 6
+	// i_min, j_max, k_max; // Corner 7
+	// i_max, j_max, k_max; // Corner 8
+	//==============================================================================
+	// Transform the bottom corner point
+	// Corner 1
+	CoordPoints c1 = { k_min, i_min, j_min };
+	c1 = transformPoint(&c1, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 1);
+	CoordPoints c2 = { k_min, i_max, j_min };
+	c2 = transformPoint(&c2, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 1);
+	CoordPoints c3 = { k_min, i_min, j_max };
+	c3 = transformPoint(&c3, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 1);
+	CoordPoints c4 = { k_min, i_max, j_max };
+	c4 = transformPoint(&c4, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 1);
+	//==============================================================================
+	//transform the top corner points
+	// Corner 1
+	CoordPoints c5 = { k_max, i_min, j_min };
+	c5 = transformPoint(&c5, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 2);
+	CoordPoints c6 = { k_max, i_max, j_min };
+	c6 = transformPoint(&c6, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 2);
+	CoordPoints c7 = { k_max, i_min, j_max };
+	c7 = transformPoint(&c7, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 2);
+	CoordPoints c8 = { k_max, i_max, j_max };
+	c8 = transformPoint(&c8, translation, scaling, rotation, centroid, imageHeight, imageLength, imageWidth, 2);
+	//==============================================================================
+	size_t min_ab, min_cd, min_ef, min_gh, min_1, min_2;
+	// K min
+	min_ab = c1.k < c2.k ? c1.k : c2.k; // c1 vs c2
+	min_cd = c3.k < c4.k ? c3.k : c4.k; //  c3 vs c4
+	min_1 = min_ab < min_cd ? min_ab : min_cd; // min. of cube floor point k
+
+	min_ef = c4.k < c5.k ? c4.k : c5.k; // c4 vs c5
+	min_gh = c7.k < c8.k ? c7.k : c8.k; //  c7 vs c8
+	min_2 = min_ef < min_gh ? min_ef : min_gh; // min. of cube ceiling point k
+
+	(*bestfit).k_min = min_1 < min_2 ? min_1 : min_2; // min. k in all 8 corners
+	// I min
+	min_ab = c1.i < c2.i ? c1.i : c2.i; // c1 vs c2
+	min_cd = c3.i < c4.i ? c3.i : c4.i; //  c3 vs c4
+	min_1 = min_ab < min_cd ? min_ab : min_cd; // min. of cube floor point i
+
+	min_ef = c4.i < c5.i ? c4.i : c5.i; // c4 vs c5
+	min_gh = c7.i < c8.i ? c7.i : c8.i; //  c7 vs c8
+	min_2 = min_ef < min_gh ? min_ef : min_gh; // min. of cube ceiling point i
+
+	(*bestfit).i_min = min_1 < min_2 ? min_1 : min_2; // min. i in all 8 corners
+	// J min
+	min_ab = c1.j < c2.j ? c1.j : c2.j; // c1 vs c2
+	min_cd = c3.j < c4.j ? c3.j : c4.j; //  c3 vs c4
+	min_1 = min_ab < min_cd ? min_ab : min_cd; // min. of cube floor point j
+
+	min_ef = c4.j < c5.j ? c4.j : c5.j; // c4 vs c5
+	min_gh = c7.j < c8.j ? c7.j : c8.j; //  c7 vs c8
+	min_2 = min_ef < min_gh ? min_ef : min_gh; // min. of cube ceiling point j
+
+	(*bestfit).j_min = min_1 < min_2 ? min_1 : min_2; // min. j in all 8 corners
+	//==============================================================================
+	size_t max_ab, max_cd, max_ef, max_gh, max_1, max_2;
+	// Max End Points
+	// K max
+	max_ab = c1.k > c2.k ? c1.k : c2.k; // c1 vs c2
+	max_cd = c3.k > c4.k ? c3.k : c4.k; //  c3 vs c4
+	max_1 = max_ab > max_cd ? max_ab : max_cd; // max. of cube floor point k
+
+	max_ef = c5.k > c6.k ? c5.k : c6.k; // c4 vs c5
+	max_gh = c7.k > c8.k ? c7.k : c8.k; //  c7 vs c8
+	max_2 = max_ef > max_gh ? max_ef : max_gh; // max. of cube ceiling point k
+
+	(*bestfit).k_max = max_1 > max_2 ? max_1 : max_2; // max k in all 8 corners
+	// I max
+	max_ab = c1.i > c2.i ? c1.i : c2.i; // c1 vs c2
+	max_cd = c3.i > c4.i ? c3.i : c4.i; //  c3 vs c4
+	max_1 = max_ab > max_cd ? max_ab : max_cd; // max. of cube floor point i
+
+	max_ef = c5.i > c6.i ? c5.i : c6.i; // c4 vs c5
+	max_gh = c7.i > c8.i ? c7.i : c8.i; //  c7 vs c8
+	max_2 = max_ef > max_gh ? max_ef : max_gh; // max. of cube ceiling point i
+
+	(*bestfit).i_max = max_1 > max_2 ? max_1 : max_2; // max i in all 8 corners
+	// J max
+	max_ab = c1.j > c2.j ? c1.j : c2.j; // c1 vs c2
+	max_cd = c3.j > c4.j ? c3.j : c4.j; //  c3 vs c4
+	max_1 = max_ab > max_cd ? max_ab : max_cd; // max. of cube floor point k
+
+	max_ef = c5.j > c6.j ? c5.j : c6.j; // c4 vs c5
+	max_gh = c7.j > c8.j ? c7.j : c8.j; //  c7 vs c8
+	max_2 = max_ef > max_gh ? max_ef : max_gh; // max. of cube ceiling point j
+
+	(*bestfit).j_max = max_1 > max_2 ? max_1 : max_2; // max j in all 8 corners
+	//==============================================================================
+}
+//==============================================================================
 CoordPoints transformPoint(CoordPoints * inputPoints, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth, int loc)
 {
 	//==============================================================================
