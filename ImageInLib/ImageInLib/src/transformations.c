@@ -389,12 +389,15 @@ dataType interpolated(dataType k_t, dataType i_t, dataType j_t, int top, int bot
 {
 	// 8 Corner Values
 	dataType c000 = imageDataPtr[top][x_new(left, begin, imageLength)];
-	dataType c001 = imageDataPtr[bottom][x_new(left, begin, imageLength)];
-	dataType c010 = imageDataPtr[top][x_new(left, end, imageLength)];
-	dataType c011 = imageDataPtr[bottom][x_new(left, end, imageLength)];
 	dataType c100 = imageDataPtr[top][x_new(right, begin, imageLength)];
-	dataType c101 = imageDataPtr[bottom][x_new(right, begin, imageLength)];
+
+	dataType c010 = imageDataPtr[top][x_new(left, end, imageLength)];
 	dataType c110 = imageDataPtr[top][x_new(right, end, imageLength)];
+
+	dataType c001 = imageDataPtr[bottom][x_new(left, begin, imageLength)];
+	dataType c101 = imageDataPtr[bottom][x_new(right, begin, imageLength)];
+
+	dataType c011 = imageDataPtr[bottom][x_new(left, end, imageLength)];
 	dataType c111 = imageDataPtr[bottom][x_new(right, end, imageLength)];
 
 	return trilinearInterpolation(i_t, left, right, j_t, begin, end, c000, c001, c010, c011, c100, c101, c110, c111, k_t, bottom, top);
