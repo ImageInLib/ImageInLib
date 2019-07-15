@@ -61,6 +61,7 @@
     <ClCompile Include="src\vtk_format_ascii.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\common_math.h" />
     <ClInclude Include="include\common_vtk.h" />
     <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
@@ -72,7 +73,6 @@
     <ClInclude Include="include\statistics.h" />
     <ClInclude Include="include\transformation.h" />
     <ClInclude Include="src\common_functions.h" />
-    <ClInclude Include="src\common_math.h" />
     <ClInclude Include="src\data_initialization.h" />
     <ClInclude Include="src\data_load.h" />
     <ClInclude Include="src\data_storage.h" />
