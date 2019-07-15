@@ -224,6 +224,37 @@ void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHei
 	centroid[0] = x / counts, centroid[1] = y / counts, centroid[2] = z / counts;
 }
 //==============================================================================
+void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground)
+{
+	size_t k, i, j, counts = 0;
+	dataType x = 0.0, y = 0.0, z = 0.0;
+	for (k = coord.k_min; k <= coord.k_max; k++)
+	{
+		for (i = coord.i_min; i <= coord.i_max; i++)
+		{
+			for (j = coord.j_min; j <= coord.j_max; j++)
+			{
+				// 2D to 1D representation for i, j
+				int xD = x_new(i, j, imageLength);
+				if (imageDataPtr[k][xD] != imageBackground)
+				{
+					x += i;
+					y += j;
+					z += k;
+					counts++;
+				}
+			}
+		}
+	}
+	// Check K incase no 0 was found - not a shape
+	if (counts == 0)
+	{
+		counts = 1;
+	}
+	// Set the Centers of the shape
+	centroid[0] = x / counts, centroid[1] = y / counts, centroid[2] = z / counts;
+}
+//==============================================================================
 inline int NFunctionBinary(dataType v1, dataType v2, dataType delta)
 {
 	//==============================================================================
