@@ -7,19 +7,6 @@
 //==============================================================================
 // Local Functions Prototype
 /*
-* Rotated indices
-*/
-void coordinate_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi, dataType * k_t, dataType * i_t, dataType * j_t);
-dataType x_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi);
-dataType y_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
-dataType z_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
-//==============================================================================
-// Inverse
-dataType x_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
-dataType y_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
-dataType z_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
-//==============================================================================
-/*
 * Function to calculate and return interpolated values
 */
 dataType interpolated(dataType k_t, dataType i_t, dataType j_t, int top, int bottom, int left, int right, int begin, int end, dataType ** imageDataPtr, size_t imageWidth);
