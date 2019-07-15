@@ -35,10 +35,6 @@ extern "C" {
 	void transform3DImage(dataType ** sourceDataPtr, dataType **transformPointsPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3], dataType imageForeground, bool parallelize);
 	void transformInverse3DImage(dataType **sourceDataPtr, dataType **imageDataPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3]);
 	//==============================================================================
-	// Calc. centroid of image data
-	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
-	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
-	//==============================================================================
 #endif // !TRANSFORMATION_H
 
 #ifdef __cplusplus

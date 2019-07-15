@@ -115,6 +115,10 @@ extern "C" {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
 	} ClipBox;
 	//==============================================================================
+	// Calc. centroid of image data
+	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
+	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
+	//==============================================================================
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus
