@@ -21,6 +21,7 @@ extern "C" {
 #include "fast_marching.h"
 #include "distance_function.h"
 #include "registration_params.h"
+#include "edgedetection.h"
 //==============================================================================
 // TypeDefs
 //==============================================================================
