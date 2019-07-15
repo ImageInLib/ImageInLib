@@ -1524,22 +1524,22 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 					{
 						//==============================================================================
 						// Pick only for even random numbers
-						if (rn <= 50)
-						{
-							tmpPt = &surface_points[ptsNum];
-							//==============================================================================
-							tmpPt->x = (int)(i_2 / imageLength);
-							tmpPt->y = (i_2 % imageLength);
-							tmpPt->z = k_2;
-							ptsNum++;
-						}
+						//if (rn <= 50)
+						//{
+						//	tmpPt = &surface_points[ptsNum];
+						//	//==============================================================================
+						//	tmpPt->x = (int)(i_2 / imageLength);
+						//	tmpPt->y = (i_2 % imageLength);
+						//	tmpPt->z = k_2;
+						//	ptsNum++;
+						//}
 						//==============================================================================
-						// tmpPt = &surface_points[ptsNum];
+						tmpPt = &surface_points[ptsNum];
 						//==============================================================================
-						/*tmpPt->x = (int)(i_2 / imageLength);
+						tmpPt->x = (int)(i_2 / imageLength);
 						tmpPt->y = (i_2 % imageLength);
 						tmpPt->z = k_2;
-						ptsNum++;*/
+						ptsNum++;
 					}
 				}
 			}
