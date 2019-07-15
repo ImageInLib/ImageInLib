@@ -20,6 +20,20 @@ extern "C" {
 //==============================================================================
 // STRUCTS
 //==============================================================================
+	/*
+* Rotated indices
+*/
+	void coordinate_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi, dataType* k_t, dataType* i_t, dataType* j_t);
+	dataType x_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi);
+	dataType y_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
+	dataType z_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
+	//==============================================================================
+	// Inverse
+	dataType x_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
+	dataType y_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
+	dataType z_rotateInv(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi);
+	//==============================================================================
+//==============================================================================
 // FUNCTION PROTOTYPES
 /*
 * Transform Function for imageDataPtr
@@ -34,10 +48,6 @@ extern "C" {
 */
 	void transform3DImage(dataType ** sourceDataPtr, dataType **transformPointsPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3], dataType imageForeground, bool parallelize);
 	void transformInverse3DImage(dataType **sourceDataPtr, dataType **imageDataPtr, Point3D translation, Point3D scaling, Point3D rotation, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType bgValue, dataType centroid[3]);
-	//==============================================================================
-	// Calc. centroid of image data
-	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
-	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength);
 	//==============================================================================
 #endif // !TRANSFORMATION_H
 
