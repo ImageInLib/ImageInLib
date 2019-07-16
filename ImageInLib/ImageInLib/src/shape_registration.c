@@ -1372,7 +1372,6 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			free(transPtr);
 			transPtr = NULL;
 			//==============================================================================
-			printf("\n\n Final Results \n\n");
 			printf("Total distance Function calc. CPU Time is: %e secs\n", distanceTotalCpuTime);
 			printf("Total energy Function calc. CPU Time is: %e secs\n", energyTotalCpuTime);
 			printf("Total SGD Function calc. CPU Time is: %e secs\n", gradientTotalCpuTime);
