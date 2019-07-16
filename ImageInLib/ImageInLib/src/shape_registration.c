@@ -1061,9 +1061,6 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 			printf("Gradient Components calc. CPU time at iteration %4d: %e secs\n\n", iteration, secondCpuTime - firstCpuTime);
 #endif
 			//==============================================================================
-			// Update the weights
-			// updateWeights(&rotation_weight, &scaling_weight, &translation_weight, affineResult, energyTmp, lambda);
-			//==============================================================================
 			// Set new values for affine temp results
 			// Rotation
 			affineResult.rotation.x += params.rotation_weight * step_size*affineTmp.rotation.x;
@@ -1077,14 +1074,6 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 			affineResult.translation.x += params.translation_weight * step_size*affineTmp.translation.x;
 			affineResult.translation.y += params.translation_weight * step_size*affineTmp.translation.y;
 			affineResult.translation.z += params.translation_weight * step_size*affineTmp.translation.z;
-#ifdef UPDATEWEIGHT
-			// Update Rotation weight
-			updateWeight(&rotation_weight, initTransform.rotation, affineResult.rotation, lambda);
-			// Update Scale weight
-			updateWeight(&scaling_weight, initTransform.scaling, affineResult.scaling, lambda);
-			// Update Translation weight
-			updateWeight(&translation_weight, initTransform.translation, affineResult.translation, lambda);
-#endif // UPDATEWEIGHT
 			//==============================================================================
 			// Increase Iteration
 			iteration++;
@@ -1334,7 +1323,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		// Print Pre-evaluate affine values
 		if (params.displayRegistrationOutputs)
 		{
-			printf("Energy = %5.5lf, iteration %4zd, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
+			printf("Energy = %5.5lf, iteration %4d, Phi = %3.5lf, Theta = %3.5lf, Psi = %3.5lf, Sx = %2.5lf, Sy = %2.5lf, Sz = %2.5lf, Tx = %2.5lf, Ty = %2.5lf, Tz = %2.5lf\n",
 				energyTmp, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
 				affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
 		}
@@ -1390,7 +1379,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			printf("Total transformation Function calc. CPU Time is: %e secs\n", transformationTotalCpuTime);
 			//==============================================================================
 			// Print the Calculated Transformation Parameters At the End of Registration
-			printf("Energy = %5.2lf, iteration %4zd, Phi = %3.2lf, Theta = %3.2lf, Psi = %3.2lf, Sx = %2.2lf, Sy = %2.2lf, Sz = %2.2lf, Tx = %2.2lf, Ty = %2.2lf, Tz = %2.2lf\n",
+			printf("Energy = %5.5lf, iteration %4d, Phi = %3.5lf, Theta = %3.5lf, Psi = %3.5lf, Sx = %2.5lf, Sy = %2.5lf, Sz = %2.5lf, Tx = %2.5lf, Ty = %2.5lf, Tz = %2.5lf\n",
 				energyTmp, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
 				affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
 			//==============================================================================
@@ -1416,30 +1405,25 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			// Angles to radians
 			dataType _cos_phi = cos(phi), _cos_psi = cos(psi), _cos_theta = cos(theta);
 			dataType _cos_phi_neg = -1 * cos(phi), _cos_psi_neg = -1 * cos(psi), _cos_theta_neg = -1 * cos(theta);
-
 			dataType _sin_phi = sin(phi), _sin_psi = sin(psi), _sin_theta = sin(theta);
 			dataType _sin_phi_neg = -1 * sin(phi), _sin_psi_neg = -1 * sin(psi), _sin_theta_neg = -1 * sin(theta);
 			//==============================================================================
-
 			dataType _cos_phi_psi = _cos_phi * _cos_psi; // cos(phi)*cos(psi)
 			dataType _cos_phi_theta = _cos_phi * _cos_theta; // cos(phi)*cos(theta)
 			dataType _cos_psi_theta = _cos_psi * _cos_theta; // cos(psi)*cos(theta)
 			dataType _cos_phi_theta_psi = _cos_phi_psi * _cos_theta;
-
 			dataType _sin_psi_theta = _sin_psi * _sin_theta;// sin(psi)*sin(theta)
 			dataType _sin_phi_theta = _sin_phi * _sin_theta;// sin(phi)*sin(theta)
 			dataType _sin_phi_psi = _sin_phi * _sin_psi;// sin(phi)*sin(psi)
 			dataType _sin_phi_psi_theta = _sin_phi_psi * _sin_theta; // sin(phi)*sin(psi)*sin(theta)
 			//==============================================================================
 			dataType _sin_phi_neg_sin_psi = _sin_phi_neg * _sin_psi; // (-sin(phi)*sin(psi)
-
 			dataType _cos_phi_psi_sin_theta = _cos_phi_psi * _sin_theta; // cos(phi)*cos(psi)*sin(theta)
 			dataType _cos_psi_neg_sin_phi = _cos_psi_neg * _sin_phi; // (-cos(psi)*sin(phi)
 			dataType _cos_phi_neg_sin_psi_theta = _cos_phi_neg * _sin_psi_theta;
 			dataType _cos_phi_sin_psi_theta = _cos_phi * _sin_psi_theta; // cos(phi)*sin(psi)*sin(theta)
 			dataType _cos_phi_sin_psi = _cos_phi * _sin_psi;// cos(phi)*sin(psi)
 			dataType _cos_psi_sin_phi_theta = _cos_psi * _sin_phi_theta;// cos(psi)*sin(phi)*sin(theta)
-
 			dataType _cos_theta_sin_phi = _cos_theta * _sin_phi; // cos(theta) * sin(phi)
 			//==============================================================================
 			// 2nd component Ry
@@ -1491,8 +1475,6 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			//==============================================================================
 			dataType getDist;
 			//==============================================================================
-			// Point3D ptr to store points
-			//==============================================================================
 			size_t k_1, i_1, k_2, i_2;//loop counter for z dimension
 			//==============================================================================
 			size_t ptsNum = 0;
@@ -1500,7 +1482,6 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			size_t k_min = bestFit.k_min, k_max = bestFit.k_max + 1, i_min = bestFit.i_min, i_max = bestFit.i_max, j_min = bestFit.j_min, j_max = bestFit.j_max;
 			size_t i_2_max = x_new(i_max, j_max, imageLength), i_2_min = x_new(i_min, j_min, imageLength);
 			//==============================================================================
-			//Point3D * surface_points = malloc(sizeof(Point3D) * ptsNum);
 			// Begin record time
 			// Calc. the points and store them
 #ifdef MEASURE_TIME
@@ -1508,31 +1489,15 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 #endif
 			//==============================================================================
 			Point3D * tmpPt;
-			int rn;
 			//==============================================================================
 			// Find the surcae points only within the clipbox
 			for (k_2 = k_min; k_2 < k_max; k_2++) // z axis of the input surface or image
 			{
 				for (i_2 = i_2_min; i_2 < i_2_max; i_2++)// x-y axis of the input surface or image
 				{
-					//if (transPtr[k_2][i_2] == foregound)
-					//==============================================================================
-					// Generate random numbers 1 - 100
-					rn = 1 + (rand() % 100);
 					//==============================================================================
 					if (edgeMovingPointer[k_2][i_2] == params.imageForeground)
 					{
-						//==============================================================================
-						// Pick only for even random numbers
-						//if (rn <= 50)
-						//{
-						//	tmpPt = &surface_points[ptsNum];
-						//	//==============================================================================
-						//	tmpPt->x = (int)(i_2 / imageLength);
-						//	tmpPt->y = (i_2 % imageLength);
-						//	tmpPt->z = k_2;
-						//	ptsNum++;
-						//}
 						//==============================================================================
 						tmpPt = &surface_points[ptsNum];
 						//==============================================================================
@@ -1543,9 +1508,6 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 					}
 				}
 			}
-			//==============================================================================
-			// reduce number of selected points by 50%
-			//ptsNum = 0.5 * ptsNum;
 			//==============================================================================
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
