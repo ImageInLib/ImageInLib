@@ -106,14 +106,14 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** transformPointsPtr,
 							//==============================================================================
 							tmp = interpolated(k_t, i_t, j_t, top, bottom, left, right, begin, end, sourceDataPtr, imageLength);
 							//==============================================================================
-							if (tmp > (bgValue / 2))
+							/*if (tmp > (bgValue / 2))
 							{
 								tmp = bgValue;
 							}
 							else
 							{
 								tmp = imageForeground;
-							}
+							}*/
 							//==============================================================================
 							transformPointsPtr[k][x] = tmp;
 							//==============================================================================
@@ -182,14 +182,14 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** transformPointsPtr,
 					//==============================================================================
 					tmp = interpolated(k_t, i_t, j_t, top, bottom, left, right, begin, end, sourceDataPtr, imageLength);
 					//==============================================================================
-					if (tmp > (bgValue / 2))
+					/*if (tmp > (bgValue / 2))
 					{
 						tmp = bgValue;
 					}
 					else
 					{
 						tmp = imageForeground;
-					}
+					}*/
 					//==============================================================================
 					transformPointsPtr[k][x] = tmp;
 					//==============================================================================
