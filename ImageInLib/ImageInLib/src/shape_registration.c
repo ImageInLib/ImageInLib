@@ -1552,8 +1552,8 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			//==============================================================================
 			size_t ptsNum = 0;
 			//==============================================================================
-			size_t k_min = bestFit.k_min, k_max = bestFit.k_max + 1, i_min = bestFit.i_min, i_max = bestFit.i_max, j_min = bestFit.j_min, j_max = bestFit.j_max;
-			size_t i_2_max = x_new(i_max, j_max, imageLength), i_2_min = x_new(i_min, j_min, imageLength);
+			size_t k_min, k_max, i_min, i_max, j_min, j_max;
+			size_t i_2_max, i_2_min;
 			//==============================================================================
 			// Begin record time
 			// Calc. the points and store them
@@ -1562,6 +1562,9 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 #endif
 			if (!params.use_FSM)
 			{
+				//==============================================================================
+				k_min = bestFit.k_min, k_max = bestFit.k_max + 1, i_min = bestFit.i_min, i_max = bestFit.i_max, j_min = bestFit.j_min, j_max = bestFit.j_max;
+				i_2_max = x_new(i_max, j_max, imageLength), i_2_min = x_new(i_min, j_min, imageLength);
 				//==============================================================================
 				Point3D * tmpPt;
 				//==============================================================================
