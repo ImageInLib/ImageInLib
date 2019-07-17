@@ -31,6 +31,8 @@ extern "C" {
 		bool displayRegistrationOutputs;
 		bool parallelize;
 		bool use_clipbox;
+		bool binary_nband;
+		bool use_FSM;
 		char fPathname[100];
 	} Registration_Params;
 
