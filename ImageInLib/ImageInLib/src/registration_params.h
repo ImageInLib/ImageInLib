@@ -30,6 +30,7 @@ extern "C" {
 		dataType insideShapevalue;
 		bool displayRegistrationOutputs;
 		bool parallelize;
+		bool use_clipbox;
 		char fPathname[100];
 	} Registration_Params;
 
