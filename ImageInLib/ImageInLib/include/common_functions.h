@@ -16,12 +16,6 @@ extern "C" {
 #endif
 #undef CONSOLE_OUTPUT
 //==============================================================================
-#ifndef USE_CLIP
-#define USE_CLIP
-#endif // !USE_CLIP
-
-//#undef USE_CLIP
-//==============================================================================
 // Typedefs
 // Data Type
 
