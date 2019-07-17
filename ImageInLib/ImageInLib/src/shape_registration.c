@@ -1824,6 +1824,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 #endif
 			if (params.use_FSM)
 			{
+				l = 0;
 				do
 				{
 					// Generate random points
