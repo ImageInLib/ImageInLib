@@ -569,7 +569,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 {
 	Affine_Parameter results;
 	// Initialize the parameters
-	size_t k, i, j, x;
+	size_t k, i, j, x, counter = 0;
 
 	// Initialize the results
 	results.rotation.x = 0.0, results.rotation.y = 0.0, results.rotation.z = 0.0;
@@ -613,6 +613,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 				/*x = x_new(i, j, imageLength);*/
 				if (NFunction(destPtr[k][x], distTrans[k][x], NDelta) == 1)
 				{
+					counter++;
 					// Store the distance function difference
 					distDifference = (destPtr[k][x] - distTrans[k][x]) * 2.0;
 
@@ -681,6 +682,25 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 			}
 		}
 	}
+	// Normalize results
+	if (counter == 0)
+	{
+		counter = 1;
+	}
+
+	results.scaling.x = results.scaling.x / counter;
+	results.scaling.y = results.scaling.y / counter;
+	results.scaling.z = results.scaling.z / counter;
+
+	results.rotation.x = results.rotation.x / counter;
+	results.rotation.y = results.rotation.y / counter;
+	results.rotation.z = results.rotation.z / counter;
+
+	results.translation.x = results.translation.x / counter;
+	// Ty
+	results.translation.y = results.translation.y / counter;
+	// Tz
+	results.translation.z = results.translation.z / counter;
 	return results;
 }
 //==============================================================================
