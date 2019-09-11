@@ -81,7 +81,7 @@ bool rouyTourinFunction_3D(dataType ** distance3DPtr, dataType ** image3DPtr, da
 						current_dist = zPtrtemp[k][i_n];
 
 						distance3DPtr[k_o][(i_o + j_o * xDim)] = zPtrtemp[k][i_n] + tau - tauu *
-							(sqrt(
+							((dataType)sqrt(
 								max(pow(min(zPtrtemp[k][i_n - 1] - current_dist, 0), 2),
 									pow(min(zPtrtemp[k][i_n + 1] - current_dist, 0), 2)) +
 								max(pow(min(zPtrtemp[k][i_n - rowDim_ext] - current_dist, 0), 2),
@@ -89,13 +89,13 @@ bool rouyTourinFunction_3D(dataType ** distance3DPtr, dataType ** image3DPtr, da
 								max(pow(min(zPtrtemp[k - 1][i_n] - current_dist, 0), 2),
 									pow(min(zPtrtemp[k + 1][i_n] - current_dist, 0), 2))));
 
-						mass += pow(distance3DPtr[k_o][(i_o + j_o * xDim)] - zPtrtemp[k][i_n], 2);
+						mass += (dataType)pow(distance3DPtr[k_o][(i_o + j_o * xDim)] - zPtrtemp[k][i_n], 2);
 					}
 				}
 			}
 		}
 
-		mass = sqrt(mass);
+		mass = (dataType)sqrt(mass);
 	}
 
 	for (i = 0; i < sliceDim_ext; i++)

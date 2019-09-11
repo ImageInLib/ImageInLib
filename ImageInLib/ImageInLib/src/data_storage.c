@@ -76,7 +76,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 }
 
 //function for storage of data in 3D binary format.
-bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDim,
+bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
 	const size_t dimXY = xDim * yDim;
@@ -125,7 +125,7 @@ bool store3dDataArrayD(double ** array3DPtr, const size_t xDim, const size_t yDi
 }
 
 //function for storage of data in 3D ASCII format.
-bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t yDim,
+bool store3dDataArrayASCII(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
 	const size_t dim2D = xDim * yDim;
@@ -178,7 +178,7 @@ bool store3dDataArrayASCII(double ** array3DPtr, const size_t xDim, const size_t
 
 //xDim is the x dimension, yDim is the y dimension and zDim is the z dimension
 //value is the initial constant value
-bool store3dDataVtkD(double ** array3DPtr, const size_t xDim, const size_t yDim,
+bool store3dDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, double h, Storage_Flags flags)
 {
 	FILE * outputfile; //file stream
@@ -212,7 +212,7 @@ bool store3dDataVtkD(double ** array3DPtr, const size_t xDim, const size_t yDim,
 	return true;
 }
 
-bool store3dRealDataVtkD(double ** array3DPtr, const size_t imageLength, const size_t imageWidth,
+bool store3dRealDataVtkD(dataType ** array3DPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines, Storage_Flags flags)
 {
 	//checks if the memory was allocated

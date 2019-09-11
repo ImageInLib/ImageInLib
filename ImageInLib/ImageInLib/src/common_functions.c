@@ -89,7 +89,7 @@ void reflection3D(dataType ** toReflectImage, size_t imageHeight, size_t imageLe
 */
 dataType gradientFunction(dataType value, dataType coef)
 {
-	return 1.0 / (1 + coef * value);
+	return (dataType)(1.0 / (1 + coef * value));
 }
 //==============================================================================
 size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLength)
