@@ -26,7 +26,7 @@ dataType timespacel2norm3dDataArrayD(dataType ** dataArray3DPtr1, dataType ** da
 	{
 		for (i = 0; i < dim2D; i++)
 		{
-			sumPower += (pow(dataArray3DPtr1[k][i] - dataArray3DPtr2[k][i], 2) * hhh);
+			sumPower += (dataType)(pow(dataArray3DPtr1[k][i] - dataArray3DPtr2[k][i], 2) * hhh);
 		}
 	}
 	productOfSpaceSumAndtime = sumPower * tau;// sumPower * (step * tau) or sumPower * tau

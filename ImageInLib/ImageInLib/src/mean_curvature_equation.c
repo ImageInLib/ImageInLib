@@ -190,65 +190,65 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				// Calculation of coefficients in east direction
 				ux = (uE - u) / filterParameters.h;
 				uy = ((uN + uNE) - (uS + uSE))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uz = ((Tu + TuE) - (Bu + BuE))
-					/ (4.0 * filterParameters.h);
-				orig_e_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+					/ (4 * filterParameters.h);
+				orig_e_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
 				uy = ((uNW + uN) - (uSW + uS))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uz = ((TuW + Tu) - (BuW + Bu))
-					/ (4.0 * filterParameters.h);
-				orig_w_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+					/ (4 * filterParameters.h);
+				orig_w_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uy = (uN - u) / filterParameters.h;
 				uz = ((TuN + Tu) - (BuN + Bu))
-					/ (4.0 * filterParameters.h);
-				orig_n_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+					/ (4 * filterParameters.h);
+				orig_n_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uy = (uS - u) / filterParameters.h;
 				uz = ((TuS + Tu) - (BuS + Bu))
-					/ (4.0 * filterParameters.h);
-				orig_s_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+					/ (4 * filterParameters.h);
+				orig_s_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uy = ((TuN + uN) - (TuS + uS))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uz = (Tu - u) / filterParameters.h;
-				orig_t_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_t_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uy = ((BuN + uN) - (BuS + uS))
-					/ (4.0 * filterParameters.h);
+					/ (4 * filterParameters.h);
 				uz = (Bu - u) / filterParameters.h;
-				orig_b_coefPtr[k][x] = sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_b_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
 
 				// evaluation of norm of gradient of image at each voxel
 				average_face_coef = ((orig_e_coefPtr[k][x] + orig_w_coefPtr[k][x] + orig_n_coefPtr[k][x] + orig_s_coefPtr[k][x]
-					+ orig_t_coefPtr[k][x] + orig_b_coefPtr[k][x]) / 6.0);
+					+ orig_t_coefPtr[k][x] + orig_b_coefPtr[k][x]) / 6);
 
-				voxel_coef = sqrt(pow(average_face_coef, 2) + eps2);
+				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + eps2);
 
 				/* evaluation of norm of gradient of image at each voxel, norm of gradient of presmoothed
 				image at each voxel face and reciprocal of norm of gradient of image at each voxel face*/
-				coefPtr_e[k][x] = voxel_coef * (1.0 / orig_e_coefPtr[k][x]);//east coefficient
-				coefPtr_w[k][x] = voxel_coef * (1.0 / orig_w_coefPtr[k][x]);//west coefficient
-				coefPtr_n[k][x] = voxel_coef * (1.0 / orig_n_coefPtr[k][x]);//north coefficient
-				coefPtr_s[k][x] = voxel_coef * (1.0 / orig_s_coefPtr[k][x]);//south coefficient
-				coefPtr_t[k][x] = voxel_coef * (1.0 / orig_t_coefPtr[k][x]);//top coefficient
-				coefPtr_b[k][x] = voxel_coef * (1.0 / orig_b_coefPtr[k][x]);//bottom coefficient
+				coefPtr_e[k][x] = voxel_coef * (1 / orig_e_coefPtr[k][x]);//east coefficient
+				coefPtr_w[k][x] = voxel_coef * (1 / orig_w_coefPtr[k][x]);//west coefficient
+				coefPtr_n[k][x] = voxel_coef * (1 / orig_n_coefPtr[k][x]);//north coefficient
+				coefPtr_s[k][x] = voxel_coef * (1 / orig_s_coefPtr[k][x]);//south coefficient
+				coefPtr_t[k][x] = voxel_coef * (1 / orig_t_coefPtr[k][x]);//top coefficient
+				coefPtr_b[k][x] = voxel_coef * (1 / orig_b_coefPtr[k][x]);//bottom coefficient
 			}
 		}
 	}
@@ -298,7 +298,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					x = x_new(i, j, length);
 
-					error += pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coef_tauh * (coefPtr_e[k][x]
+					error += (dataType)pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coef_tauh * (coefPtr_e[k][x]
 						+ coefPtr_w[k][x] + coefPtr_n[k][x] + coefPtr_s[k][x]
 						+ coefPtr_t[k][x] + coefPtr_b[k][x]))
 						- coef_tauh * ((coefPtr_e[k][x] * gauss_seidelPtr[k_ext][x_ext + 1])

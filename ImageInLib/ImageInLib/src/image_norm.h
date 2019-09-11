@@ -19,7 +19,7 @@ extern "C" {
 
 	dataType timespacel2norm3dDataArrayD(dataType ** dataArray3DPtr1, dataType ** dataArray3DPtr2, const size_t xDim, const size_t yDim, const size_t zDim, dataType h);
 
-	dataType l2normD(double ** dataArray3DPtr1, double ** dataArray3DPtr2, const size_t xDim, const size_t yDim, const size_t zDim, double h);
+	dataType l2normD(dataType ** dataArray3DPtr1, dataType ** dataArray3DPtr2, const size_t xDim, const size_t yDim, const size_t zDim, double h);
 
 #ifdef __cplusplus
 }

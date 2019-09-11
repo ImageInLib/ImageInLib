@@ -54,7 +54,7 @@ void triDecomp(dataType ** a, const size_t n, dataType * d, dataType * e)
 		if (l > 1)
 		{
 			for (k = 1; k <= l; k++)
-				scale += fabs(a[i][k]);
+				scale += (dataType)fabs(a[i][k]);
 			if (scale == 0.0)
 				e[i] = a[i][l];
 			else
@@ -65,7 +65,7 @@ void triDecomp(dataType ** a, const size_t n, dataType * d, dataType * e)
 					h += a[i][k] * a[i][k];
 				}
 				f = a[i][l];
-				g = f > 0 ? -sqrt(h) : sqrt(h);
+				g = (dataType)(f > 0 ? -sqrt(h) : sqrt(h));
 				e[i] = scale * g;
 				h -= f * g;
 				a[i][l] = f - g;
@@ -135,17 +135,17 @@ void triDian(dataType d[], dataType e[], const size_t n, dataType ** z)
 		{
 			for (m = l; m <= n - 1; m++)
 			{
-				dd = fabs(d[m]) + fabs(d[m + 1]);
+				dd = (dataType)(fabs(d[m]) + fabs(d[m + 1]));
 				if (fabs(e[m]) + dd == dd) break;
 			}
 			if (m != l)
 			{
 				if (iter++ == 30) erhand("No convergence in TLQI.");
-				g = (d[l + 1] - d[l]) / (2.0 * e[l]);
-				r = sqrt((g * g) + 1.0);
-				g = d[m] - d[l] + e[l] / (g + SIGN(r, g));
-				s = c = 1.0;
-				p = 0.0;
+				g = (d[l + 1] - d[l]) / (2 * e[l]);
+				r = (dataType)sqrt((g * g) + 1);
+				g = (dataType)(d[m] - d[l] + e[l] / (g + SIGN(r, g)));
+				s = c = 1;
+				p = 0;
 				for (i = m - 1; i >= l; i--)
 				{
 					f = s * e[i];
@@ -153,19 +153,19 @@ void triDian(dataType d[], dataType e[], const size_t n, dataType ** z)
 					if (fabs(f) >= fabs(g))
 					{
 						c = g / f;
-						r = sqrt((c * c) + 1.0);
+						r = (dataType)sqrt((c * c) + 1.0);
 						e[i + 1] = f * r;
-						c *= (s = 1.0 / r);
+						c *= (s = 1 / r);
 					}
 					else
 					{
 						s = f / g;
-						r = sqrt((s * s) + 1.0);
+						r = (dataType)sqrt((s * s) + 1);
 						e[i + 1] = g * r;
-						s *= (c = 1.0 / r);
+						s *= (c = 1 / r);
 					}
 					g = d[i + 1] - p;
-					r = (d[i] - g) * s + 2.0 * c * b;
+					r = (d[i] - g) * s + 2 * c * b;
 					p = s * r;
 					d[i + 1] = g + p;
 					g = c * r - b;
