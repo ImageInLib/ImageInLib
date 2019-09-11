@@ -286,7 +286,7 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					x = x_new(i, j, length);
 
-					mean_square_residue += (pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coef_tauh * (CoefPtrs.e_Ptr[k][x]
+					mean_square_residue += (dataType)(pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coef_tauh * (CoefPtrs.e_Ptr[k][x]
 						+ CoefPtrs.w_Ptr[k][x] + CoefPtrs.n_Ptr[k][x] + CoefPtrs.s_Ptr[k][x]
 						+ CoefPtrs.t_Ptr[k][x] + CoefPtrs.b_Ptr[k][x]))
 						- coef_tauh * ((CoefPtrs.e_Ptr[k][x] * gauss_seidelPtr[k_ext][x_ext + 1])
@@ -351,7 +351,7 @@ bool rescaleToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, 
 			}
 		}
 	}
-	quotient = 1. / (max - min);
+	quotient = (dataType)1. / (max - min);
 	offset = min * quotient;
 	//Rescale values to interval (0, 1)
 	for (k = 0; k < height; k++)
@@ -395,7 +395,7 @@ bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t 
 				x = x_new(i, j, length);
 
 				//Find local minimum and maximum
-				norm_of_distance = sqrt((dx * dx) + (dy * dy) + (dz * dz));
+				norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
 				if (norm_of_distance <= R)
 				{
 					if (imagePtr[k][x] < min)
@@ -406,7 +406,7 @@ bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t 
 			}
 		}
 	}
-	quotient = 1. / (max - min);
+	quotient = 1 / (max - min);
 	offset = min * quotient;
 	//Rescale values to interval (0, 1)
 	for (k = 0; k < height; k++)
@@ -422,7 +422,7 @@ bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t 
 				x = x_new(i, j, length);
 
 				// recaling values
-				norm_of_distance = sqrt((dx * dx) + (dy * dy) + (dz * dz));
+				norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
 				new_value = (quotient * imagePtr[k][x]) - offset;
 
 				if (norm_of_distance <= R)
@@ -459,8 +459,8 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					// 1D representation
 					size_t x_n = x_new(i, j, length);
 					// Set Value
-					norm_of_distance = sqrt((dx * dx) + (dy * dy) + (dz * dz));
-					new_value = (1. / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v));
+					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
+					new_value = (1 / ((dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1 / (R + v));
 					if (s == 0)
 					{
 						if (norm_of_distance > R)
@@ -511,8 +511,8 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	size_t height_ext = inputImageData.height + 2;
 	size_t length_ext = inputImageData.length + 2;
 	size_t width_ext = inputImageData.width + 2;
-	dataType quotient = 4.0 * segParameters.h;
-	dataType inverse = 1. / (VTK_MAX_HEADER_LINE_LENGTH - 1);
+	dataType quotient = 4 * segParameters.h;
+	dataType inverse = 1 / (VTK_MAX_HEADER_LINE_LENGTH - 1);
 	dataType ux, uy, uz; //change in x, y and z respectively
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
@@ -649,7 +649,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 	size_t height_ext = inputImageData.height + 2;
 	size_t length_ext = inputImageData.length + 2;
 	size_t width_ext = inputImageData.width + 2;
-	dataType quotient = 4.0 * segParameters.h;
+	dataType quotient = 4 * segParameters.h;
 	dataType orig_ux, orig_uy, orig_uz; //change in x, y and z respectively
 	dataType orig_u, orig_uN, orig_uS, orig_uE, orig_uW, orig_uNW, orig_uNE, orig_uSE, orig_uSW, orig_Tu, orig_TuN, orig_TuS,
 		orig_TuE, orig_TuW, orig_TuNW, orig_TuNE, orig_TuSE, orig_TuSW, //current and surrounding voxel values
@@ -716,7 +716,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 					/ quotient;
 				orig_uz = ((orig_Tu + orig_TuE) - (orig_Bu + orig_BuE))
 					/ quotient;
-				orig_e = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_e = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// Calculation of coefficients in west direction
 				orig_ux = (orig_uW - orig_u) / segParameters.h;
@@ -724,7 +724,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 					/ quotient;
 				orig_uz = ((orig_TuW + orig_Tu) - (orig_BuW + orig_Bu))
 					/ quotient;
-				orig_w = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_w = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// Calculation of coefficients in north direction
 				orig_ux = ((orig_uNE + orig_uE) - (orig_uNW + orig_uW))
@@ -732,7 +732,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 				orig_uy = (orig_uN - orig_u) / segParameters.h;
 				orig_uz = ((orig_TuN + orig_Tu) - (orig_BuN + orig_Bu))
 					/ quotient;
-				orig_n = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_n = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// Calculation of coefficients in south direction
 				orig_ux = ((orig_uE + orig_uSE) - (orig_uW + orig_uSW))
@@ -740,7 +740,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 				orig_uy = (orig_uS - orig_u) / segParameters.h;
 				orig_uz = ((orig_TuS + orig_Tu) - (orig_BuS + orig_Bu))
 					/ quotient;
-				orig_s = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_s = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// Calculation of coefficients in top direction
 				orig_ux = ((orig_TuE + orig_uE) - (orig_TuW + orig_uW))
@@ -748,7 +748,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 				orig_uy = ((orig_TuN + orig_uN) - (orig_TuS + orig_uS))
 					/ quotient;
 				orig_uz = (orig_Tu - orig_u) / segParameters.h;
-				orig_t = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_t = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// Calculation of coefficients in bottom direction
 				orig_ux = ((orig_BuW + orig_uW) - (orig_BuE + orig_uE))
@@ -756,21 +756,21 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 				orig_uy = ((orig_BuN + orig_uN) - (orig_BuS + orig_uS))
 					/ quotient;
 				orig_uz = (orig_Bu - orig_u) / segParameters.h;
-				orig_b = sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
+				orig_b = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// evaluation of norm of gradient of image at each voxel
-				average_face_coef = ((orig_e + orig_w + orig_n + orig_s + orig_t + orig_b) / 6.0);
+				average_face_coef = ((orig_e + orig_w + orig_n + orig_s + orig_t + orig_b) / 6);
 
-				voxel_coef = sqrt(pow(average_face_coef, 2) + segParameters.eps2);
+				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + segParameters.eps2);
 
 				/* evaluation of norm of gradient of image at each voxel, norm of gradient of presmoothed
 				image at each voxel face and reciprocal of norm of gradient of image at each voxel face*/
-				CoefPtrs.e_Ptr[k][x] = voxel_coef * GPtrs.GePtr[k][x] * (1.0 / orig_e);//east coefficient
-				CoefPtrs.w_Ptr[k][x] = voxel_coef * GPtrs.GwPtr[k][x] * (1.0 / orig_w);//west coefficient
-				CoefPtrs.n_Ptr[k][x] = voxel_coef * GPtrs.GnPtr[k][x] * (1.0 / orig_n);//north coefficient
-				CoefPtrs.s_Ptr[k][x] = voxel_coef * GPtrs.GsPtr[k][x] * (1.0 / orig_s);//south coefficient
-				CoefPtrs.t_Ptr[k][x] = voxel_coef * GPtrs.GtPtr[k][x] * (1.0 / orig_t);//top coefficient
-				CoefPtrs.b_Ptr[k][x] = voxel_coef * GPtrs.GbPtr[k][x] * (1.0 / orig_b);//bottom coefficient
+				CoefPtrs.e_Ptr[k][x] = voxel_coef * GPtrs.GePtr[k][x] * (1 / orig_e);//east coefficient
+				CoefPtrs.w_Ptr[k][x] = voxel_coef * GPtrs.GwPtr[k][x] * (1 / orig_w);//west coefficient
+				CoefPtrs.n_Ptr[k][x] = voxel_coef * GPtrs.GnPtr[k][x] * (1 / orig_n);//north coefficient
+				CoefPtrs.s_Ptr[k][x] = voxel_coef * GPtrs.GsPtr[k][x] * (1 / orig_s);//south coefficient
+				CoefPtrs.t_Ptr[k][x] = voxel_coef * GPtrs.GtPtr[k][x] * (1 / orig_t);//top coefficient
+				CoefPtrs.b_Ptr[k][x] = voxel_coef * GPtrs.GbPtr[k][x] * (1 / orig_b);//bottom coefficient
 			}
 		}
 	}

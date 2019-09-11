@@ -42,7 +42,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	//==============================================================================
 	// Step two - Register/Align the eigen shapes with the selected mean shape
 	int z;
-	dataType error, tol_proc = 1.0e-02;
+	double error, tol_proc = 1.0e-02;
 	z = 0;
 	do
 	{
@@ -203,7 +203,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	//==============================================================================
 	// Selct only significant eigenvalues, sum > 90%
 	(*princomp) = 0;
-	dataType eigsum = 0.0, total = 0;
+	double eigsum = 0.0, total = 0;
 	for (i = numShapes; i >= 1; i--)
 	{
 		total += fabs(eig_values[i]);
@@ -492,7 +492,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	//==============================================================================
 	// Minimization of Energy
 	int iteration = 0, steps = 100;
-	dataType tolerance = 1.0e-04, error;
+	double tolerance = 1.0e-04, error;
 	dataType eps = 1000;
 	// Initialize pointers#
 	dataType * est_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
@@ -518,7 +518,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 			for (j = 0; j < princomp; j++)
 			{
 				// Estimated shape
-				est_shape[i] += shp_projection[j] * sqrt(eigenvalues[j]) * eigenvectors[i][j];
+				est_shape[i] += shp_projection[j] * (dataType)sqrt(eigenvalues[j]) * eigenvectors[i][j];
 			}
 		}
 		//==============================================================================
@@ -639,6 +639,6 @@ dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t leng
 			}
 		}
 	}
-	return sqrt(procTmp);
+	return (dataType)sqrt(procTmp);
 }
 //==============================================================================

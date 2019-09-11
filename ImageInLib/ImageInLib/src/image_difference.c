@@ -24,7 +24,7 @@ bool imageDifference3dDataArrayD(dataType ** image3DPtr1, dataType ** image3DPtr
 	{
 		for (i = 0; i < dim2D; i++) 
 		{
-			outputImage3DPtr[k][i] = fabs(image3DPtr1[k][i] - image3DPtr2[k][i]);
+			outputImage3DPtr[k][i] = (dataType)fabs(image3DPtr1[k][i] - image3DPtr2[k][i]);
 		}
 	}
 

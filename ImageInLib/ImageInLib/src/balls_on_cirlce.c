@@ -17,8 +17,8 @@ bool ballsOnCircle(dataType ** image3DPtr, dataType radius, size_t xDim, size_t 
 	if (image3DPtr == NULL)
 		return false;
 
-	dataType pi, t;
-	pi = 2 * M_PI;
+	double pi, t;
+	pi = 2. * M_PI;
 	Point3D ballCenter;
 
 	for (t = 0; t <= pi; t += 0.06)

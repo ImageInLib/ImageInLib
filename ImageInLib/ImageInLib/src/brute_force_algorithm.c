@@ -39,7 +39,7 @@ bool bruteForceFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr,
 		{
 			if (curve3DPtr[k_2][i_2] == fgroundValue)
 			{
-				surface_points[ptsNum].x = (int)(i_2 / xDim);
+				surface_points[ptsNum].x = (dataType)(i_2 / xDim);
 				surface_points[ptsNum].y = (dataType)(i_2 % xDim);
 				surface_points[ptsNum].z = (dataType)k_2;
 				ptsNum++;
@@ -71,7 +71,7 @@ bool bruteForceFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr,
 	{
 		for (i_1 = 0; i_1 < dim2D; i_1++)// x-y axis of the original image 
 		{
-			distance3DPtr[k_1][i_1] = sqrt(distance3DPtr[k_1][i_1]);
+			distance3DPtr[k_1][i_1] = (dataType)(sqrt(distance3DPtr[k_1][i_1]));
 		}
 	}
 

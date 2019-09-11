@@ -10,7 +10,7 @@
 // Solves the Eikonal Equation 3D
 dataType eikonalSolve3D(/*dataType uniform_speed, dataType grid_spacex, dataType grid_spacey*/ dataType T1, dataType T2, dataType T3);
 // Solves the Quadratic Equation
-dataType quadraticSolve(dataType a, dataType b, dataType c);
+double quadraticSolve(double a, double b, double c);
 // Swaps two pointers values
 void swapper(dataType *num1, dataType *num2);
 // Sorts 3 pointers
@@ -390,8 +390,8 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 {
 	dataType uniform_speed = 1.0;
 	dataType grid_spacex = 1.0, grid_spacey = 1.0, grid_spacez = 1.0;
-	dataType T, Tp, grid_T;
-	dataType a, b, c;
+	double T, Tp, grid_T;
+	double a, b, c;
 	if (T1 == INFINITY && T2 == INFINITY)
 	{
 		// Use T3
@@ -412,7 +412,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			}
 			else
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -436,7 +436,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			}
 			else
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -460,7 +460,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			}
 			else
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -489,7 +489,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			c = (pow(T, 2) / (pow(grid_T, 2))) - 1;
 			if (pow(b, 2) < (4 * a*c))
 			{
-				return T; // minimal value
+				return (dataType)T; // minimal value
 				printf("Pause"); // Negative - -nan(inf) - check
 			}
 			else
@@ -497,11 +497,11 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 				Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 				if (Tp < T || Tp == T)
 				{
-					return T; // Solution needs to be at least as large as the inputs
+					return (dataType)T; // Solution needs to be at least as large as the inputs
 				}
 				else
 				{
-					return Tp;
+					return (dataType)Tp;
 				}
 			}
 		}
@@ -531,13 +531,13 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 					}
 					else
 					{
-						return Tp;
+						return (dataType)Tp;
 					}
 				}
 			}
 			else // As large as the inputs
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -566,7 +566,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			c = (pow(T, 2) / (pow(grid_T, 2))) - 1;
 			if (pow(b, 2) < (4 * a*c))
 			{
-				return T; // minimal value
+				return (dataType)T; // minimal value
 				printf("Pause"); // Negative - -nan(inf) - check
 			}
 			else
@@ -574,11 +574,11 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 				Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 				if (Tp < T || Tp == T)
 				{
-					return T; // Solution needs to be at least as large as the inputs
+					return (dataType)T; // Solution needs to be at least as large as the inputs
 				}
 				else
 				{
-					return Tp;
+					return (dataType)Tp;
 				}
 			}
 		}
@@ -608,13 +608,13 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 					}
 					else
 					{
-						return Tp;
+						return (dataType)Tp;
 					}
 				}
 			}
 			else // As large as the inputs
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -643,7 +643,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			c = (pow(T, 2) / (pow(grid_T, 2))) - 1;
 			if (pow(b, 2) < (4 * a*c))
 			{
-				return T;
+				return (dataType)T;
 				printf("Pause"); // Negative - -nan(inf) - check
 			}
 			else
@@ -651,11 +651,11 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 				Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 				if (Tp < T || Tp == T)
 				{
-					return T; // Solution needs to be at least as large as the inputs
+					return (dataType)T; // Solution needs to be at least as large as the inputs
 				}
 				else
 				{
-					return Tp;
+					return (dataType)Tp;
 				}
 			}
 		}
@@ -685,13 +685,13 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 					}
 					else
 					{
-						return Tp;
+						return (dataType)Tp;
 					}
 				}
 			}
 			else // As large as the inputs
 			{
-				return Tp;
+				return (dataType)Tp;
 			}
 		}
 	}
@@ -735,7 +735,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 					c = (pow(T, 2) / (pow(grid_T, 2))) - 1;
 					if (pow(b, 2) < (4 * a*c))
 					{
-						return T;
+						return (dataType)T;
 						printf("Pause"); // Negative - -nan(inf) - check
 					}
 					else
@@ -743,11 +743,11 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 						Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 						if (Tp < T || Tp == T)
 						{
-							return T; // Solution needs to be at least as large as the inputs
+							return (dataType)T; // Solution needs to be at least as large as the inputs
 						}
 						else
 						{
-							return Tp;
+							return (dataType)Tp;
 						}
 					}
 				}
@@ -777,13 +777,13 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 							}
 							else
 							{
-								return Tp;
+								return (dataType)Tp;
 							}
 						}
 					}
 					else // As large as the inputs
 					{
-						return Tp;
+						return (dataType)Tp;
 					}
 				}
 			}
@@ -793,7 +793,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 			Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 			if (Tp >= T1 && Tp >= T2 && Tp >= T3)
 			{
-				return Tp; // As large as the inputs
+				return (dataType)Tp; // As large as the inputs
 			}
 			else
 			{
@@ -822,7 +822,7 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 					c = (pow(T, 2) / (pow(grid_T, 2))) - 1;
 					if (pow(b, 2) < (4 * a*c))
 					{
-						return T;
+						return (dataType)T;
 						printf("Pause");
 					}
 					else
@@ -830,11 +830,11 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 						Tp = quadraticSolve(a, b, c); // Calculated Arrival Time
 						if (Tp < T || Tp == T)
 						{
-							return T; // Solution needs to be at least as large as the inputs
+							return (dataType)T; // Solution needs to be at least as large as the inputs
 						}
 						else
 						{
-							return Tp;
+							return (dataType)Tp;
 						}
 					}
 				}
@@ -864,13 +864,13 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 							}
 							else
 							{
-								return Tp;
+								return (dataType)Tp;
 							}
 						}
 					}
 					else // As large as the inputs
 					{
-						return Tp;
+						return (dataType)Tp;
 					}
 				}
 			}
@@ -878,10 +878,10 @@ dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 	}
 }
 //==============================================================================
-dataType quadraticSolve(dataType a, dataType b, dataType c)
+double quadraticSolve(double a, double b, double c)
 {
-	dataType resultA = (-1 * b - sqrt(pow(b, 2) - 4 * a*c)) / (2 * a);
-	dataType resultB = (-1 * b + sqrt(pow(b, 2) - 4 * a*c)) / (2 * a);
+	double resultA = (-1 * b - sqrt(pow(b, 2) - 4 * a*c)) / (2 * a);
+	double resultB = (-1 * b + sqrt(pow(b, 2) - 4 * a*c)) / (2 * a);
 	return max(resultA, resultB);
 }
 //==============================================================================
