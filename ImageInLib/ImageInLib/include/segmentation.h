@@ -4,7 +4,7 @@ extern "C" {
 
 #pragma once
 #include "common_functions.h"
-#include "segmentation3D_subsurf.h"
+#include "../src/segmentation3D_subsurf.h"
 
 	typedef enum
 	{
