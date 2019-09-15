@@ -54,13 +54,13 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 					x = x_new(i, j, length);
 
 					// Explicit formula
-					toExplicitImage.imageDataPtr[k][x] = (1 - 6 * coeff)*tempPtr[k_ext][x_ext]
+					toExplicitImage.imageDataPtr[k][x] = (dataType)((1.0 - 6.0 * coeff)*tempPtr[k_ext][x_ext]
 						+ coeff * (tempPtr[k_ext][x_ext + 1]
 							+ tempPtr[k_ext][x_ext - 1]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
 							+ tempPtr[k_ext + 1][x_ext]
-							+ tempPtr[k_ext - 1][x_ext]);
+							+ tempPtr[k_ext - 1][x_ext]));
 				}
 			}
 		}
@@ -119,11 +119,11 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					// Begin Gauss-Seidel Formula Evaluation
-					sor = (tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
+					sor = (dataType)((tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
-						+ currentPtr[k_ext + 1][x_ext] + currentPtr[k_ext - 1][x_ext])) / (1 + 6 * coeff);
+						+ currentPtr[k_ext + 1][x_ext] + currentPtr[k_ext - 1][x_ext])) / (1 + 6.0 * coeff));
 					// Gauss-Seidel
 					currentPtr[k_ext][x_ext] = currentPtr[k_ext][x_ext] + implicitParameters.omega_c*(sor - currentPtr[k_ext][x_ext]);
 				}
@@ -141,7 +141,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					// Begin Error Calculation
-					error += (dataType)pow(currentPtr[k_ext][x_ext] * (1 + 6*coeff)
+					error += (dataType)pow(currentPtr[k_ext][x_ext] * (1 + 6.0*coeff)
 						- coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
 							+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)] + currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 							+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)] + currentPtr[k_ext + 1][x_ext]

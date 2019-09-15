@@ -325,9 +325,9 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	phi = theta = psi;
 #endif // UNIFORM
 	// Scale denominator
-	dataType inv_sx2 = 1 / (sx*sx);
-	dataType inv_sy2 = 1 / (sy*sy);
-	dataType inv_sz2 = 1 / (sz*sz);
+	dataType inv_sx2 = (dataType)(1.0 / (sx*sx));
+	dataType inv_sy2 = (dataType)(1.0 / (sy*sy));
+	dataType inv_sz2 = (dataType)(1.0 / (sz*sz));
 
 	// Begin Evaluation
 	for (k = 0; k < imageHeight; k++)
@@ -343,7 +343,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 				if (NFunction(destPtr[k][x], distTrans[k][x], NDelta) == 1)
 				{
 					// Store the distance function difference
-					distDifference = (destPtr[k][x] - distTrans[k][x]) * 2;
+					distDifference = (dataType)((destPtr[k][x] - distTrans[k][x]) * 2.0);
 
 					// Directional component vector derivatives - i, j, k
 					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
@@ -831,9 +831,9 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 #endif // UNIFORM
 			//==============================================================================
 			// Scale denominator
-			dataType inv_sx2 = 1 / (sx*sx);
-			dataType inv_sy2 = 1 / (sy*sy);
-			dataType inv_sz2 = 1 / (sz*sz);
+			dataType inv_sx2 = (dataType)(1.0 / (sx*sx));
+			dataType inv_sy2 = (dataType)(1.0 / (sy*sy));
+			dataType inv_sz2 = (dataType)(1.0 / (sz*sz));
 			//==============================================================================
 			// Loop throguh some of the data
 #ifdef MEASURE_TIME
@@ -867,7 +867,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 					l = l + 1;
 					//==============================================================================
 					// Store the distance function difference
-					distDifference = (destPtr[k][x] - distTransPtr[k][x]) * 2;
+					distDifference = (dataType)((destPtr[k][x] - distTransPtr[k][x]) * 2.0);
 					//==============================================================================
 					// Directional component vector derivatives - i, j, k
 					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;

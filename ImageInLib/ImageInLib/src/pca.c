@@ -141,11 +141,11 @@ void triDian(dataType d[], dataType e[], const size_t n, dataType ** z)
 			if (m != l)
 			{
 				if (iter++ == 30) erhand("No convergence in TLQI.");
-				g = (d[l + 1] - d[l]) / (2 * e[l]);
-				r = (dataType)sqrt((g * g) + 1);
+				g = (dataType)((d[l + 1] - d[l]) / (2.0 * e[l]));
+				r = (dataType)sqrt((g * g) + 1.0);
 				g = (dataType)(d[m] - d[l] + e[l] / (g + SIGN(r, g)));
-				s = c = 1;
-				p = 0;
+				s = c = (dataType)(1.0);
+				p = (dataType)(0.0);
 				for (i = m - 1; i >= l; i--)
 				{
 					f = s * e[i];
@@ -155,17 +155,17 @@ void triDian(dataType d[], dataType e[], const size_t n, dataType ** z)
 						c = g / f;
 						r = (dataType)sqrt((c * c) + 1.0);
 						e[i + 1] = f * r;
-						c *= (s = 1 / r);
+						c *= (s = (dataType)(1.0 / r));
 					}
 					else
 					{
 						s = f / g;
 						r = (dataType)sqrt((s * s) + 1);
 						e[i + 1] = g * r;
-						s *= (c = 1 / r);
+						s *= (c = (dataType)(1.0 / r));
 					}
 					g = d[i + 1] - p;
-					r = (d[i] - g) * s + 2 * c * b;
+					r = (dataType)((d[i] - g) * s + 2.0 * c * b);
 					p = s * r;
 					d[i + 1] = g + p;
 					g = c * r - b;

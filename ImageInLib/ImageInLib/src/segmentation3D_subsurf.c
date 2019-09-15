@@ -406,7 +406,7 @@ bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t 
 			}
 		}
 	}
-	quotient = 1 / (max - min);
+	quotient = (dataType)(1. / (max - min));
 	offset = min * quotient;
 	//Rescale values to interval (0, 1)
 	for (k = 0; k < height; k++)
@@ -460,7 +460,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					size_t x_n = x_new(i, j, length);
 					// Set Value
 					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
-					new_value = (1 / ((dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1 / (R + v));
+					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
 					if (s == 0)
 					{
 						if (norm_of_distance > R)
@@ -511,8 +511,8 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	size_t height_ext = inputImageData.height + 2;
 	size_t length_ext = inputImageData.length + 2;
 	size_t width_ext = inputImageData.width + 2;
-	dataType quotient = 4 * segParameters.h;
-	dataType inverse = 1 / (VTK_MAX_HEADER_LINE_LENGTH - 1);
+	dataType quotient = (dataType)(4.0 * segParameters.h);
+	dataType inverse = (dataType)(1.0 / (VTK_MAX_HEADER_LINE_LENGTH - 1));
 	dataType ux, uy, uz; //change in x, y and z respectively
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
@@ -649,7 +649,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 	size_t height_ext = inputImageData.height + 2;
 	size_t length_ext = inputImageData.length + 2;
 	size_t width_ext = inputImageData.width + 2;
-	dataType quotient = 4 * segParameters.h;
+	dataType quotient = (dataType)(4.0 * segParameters.h);
 	dataType orig_ux, orig_uy, orig_uz; //change in x, y and z respectively
 	dataType orig_u, orig_uN, orig_uS, orig_uE, orig_uW, orig_uNW, orig_uNE, orig_uSE, orig_uSW, orig_Tu, orig_TuN, orig_TuS,
 		orig_TuE, orig_TuW, orig_TuNW, orig_TuNE, orig_TuSE, orig_TuSW, //current and surrounding voxel values
@@ -759,18 +759,18 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 				orig_b = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + segParameters.eps2);
 
 				// evaluation of norm of gradient of image at each voxel
-				average_face_coef = ((orig_e + orig_w + orig_n + orig_s + orig_t + orig_b) / 6);
+				average_face_coef = (dataType)(((orig_e + orig_w + orig_n + orig_s + orig_t + orig_b) / 6.0));
 
 				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + segParameters.eps2);
 
 				/* evaluation of norm of gradient of image at each voxel, norm of gradient of presmoothed
 				image at each voxel face and reciprocal of norm of gradient of image at each voxel face*/
-				CoefPtrs.e_Ptr[k][x] = voxel_coef * GPtrs.GePtr[k][x] * (1 / orig_e);//east coefficient
-				CoefPtrs.w_Ptr[k][x] = voxel_coef * GPtrs.GwPtr[k][x] * (1 / orig_w);//west coefficient
-				CoefPtrs.n_Ptr[k][x] = voxel_coef * GPtrs.GnPtr[k][x] * (1 / orig_n);//north coefficient
-				CoefPtrs.s_Ptr[k][x] = voxel_coef * GPtrs.GsPtr[k][x] * (1 / orig_s);//south coefficient
-				CoefPtrs.t_Ptr[k][x] = voxel_coef * GPtrs.GtPtr[k][x] * (1 / orig_t);//top coefficient
-				CoefPtrs.b_Ptr[k][x] = voxel_coef * GPtrs.GbPtr[k][x] * (1 / orig_b);//bottom coefficient
+				CoefPtrs.e_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GePtr[k][x] * (1.0 / orig_e));//east coefficient
+				CoefPtrs.w_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GwPtr[k][x] * (1.0 / orig_w));//west coefficient
+				CoefPtrs.n_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GnPtr[k][x] * (1.0 / orig_n));//north coefficient
+				CoefPtrs.s_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GsPtr[k][x] * (1.0 / orig_s));//south coefficient
+				CoefPtrs.t_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GtPtr[k][x] * (1.0 / orig_t));//top coefficient
+				CoefPtrs.b_Ptr[k][x] = (dataType)(voxel_coef * GPtrs.GbPtr[k][x] * (1.0 / orig_b));//bottom coefficient
 			}
 		}
 	}
