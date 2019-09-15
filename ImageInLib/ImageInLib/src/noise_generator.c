@@ -287,7 +287,7 @@ void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t
 	{
 		for (j = 0; j < imageWidth; j++)
 		{
-			imageDataPtr[i][j] = imageDataPtr[i][j] + (randomUniformNumber(lower, upper) / (upper / 2))*imageDataPtr[i][j];
+			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)((randomUniformNumber(lower, upper) / (upper / 2.))*imageDataPtr[i][j]);
 		}
 	}
 }
@@ -308,8 +308,8 @@ void addStructuralNoise(dataType ** imageDataPtr, int imageHeight, int imageWidt
 		for (j = 0; j < imageWidth; j++)
 		{
 			// This formula is modifiable, any sinusoid equation combination can be used!
-			periodicNoise[i][j] = (dataType)(100*cos(2*M_PI*((12 * j) / 512 + (16 * i) / 512)) + 100);
-			imageDataPtr[i][j] = (imageDataPtr[i][j] + (periodicNoise[i][j] / 2)) / 2;
+			periodicNoise[i][j] = (dataType)(100*cos(2*M_PI*((12. * j) / 512. + (16. * i) / 512.)) + 100.);
+			imageDataPtr[i][j] = (imageDataPtr[i][j] + (dataType)((periodicNoise[i][j] / 2.)) / 2);
 		}
 	}
 }
