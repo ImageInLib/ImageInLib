@@ -118,49 +118,49 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 
 				// Calculation of coefficients in east direction
 				ux = (uE - u) / explicitParameters.h;
-				uy = ((uN + uNE) - (uS + uSE))
-					/ (4 * explicitParameters.h);
-				uz = ((Tu + TuE) - (Bu + BuE))
-					/ (4 * explicitParameters.h);
+				uy = (dataType)(((uN + uNE) - (uS + uSE))
+					/ (4.0 * explicitParameters.h));
+				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
+					/ (4.0 * explicitParameters.h));
 				e_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / explicitParameters.h;
-				uy = ((uNW + uN) - (uSW + uS))
-					/ (4 * explicitParameters.h);
-				uz = ((TuW + Tu) - (BuW + Bu))
-					/ (4 * explicitParameters.h);
+				uy = (dataType)(((uNW + uN) - (uSW + uS))
+					/ (4.0 * explicitParameters.h));
+				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
+					/ (4.0 * explicitParameters.h));
 				w_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in north direction
-				ux = ((uNE + uE) - (uNW + uW))
-					/ (4 * explicitParameters.h);
+				ux = (dataType)(((uNE + uE) - (uNW + uW))
+					/ (4.0 * explicitParameters.h));
 				uy = (uN - u) / explicitParameters.h;
-				uz = ((TuN + Tu) - (BuN + Bu))
-					/ (4 * explicitParameters.h);
+				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
+					/ (4.0 * explicitParameters.h));
 				n_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in south direction
-				ux = ((uE + uSE) - (uW + uSW))
-					/ (4 * explicitParameters.h);
+				ux = (dataType)(((uE + uSE) - (uW + uSW))
+					/ (4.0 * explicitParameters.h));
 				uy = (uS - u) / explicitParameters.h;
-				uz = ((TuS + Tu) - (BuS + Bu))
-					/ (4 * explicitParameters.h);
+				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
+					/ (4.0 * explicitParameters.h));
 				s_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in top direction
-				ux = ((TuE + uE) - (TuW + uW))
-					/ (4 * explicitParameters.h);
-				uy = ((TuN + uN) - (TuS + uS))
-					/ (4 * explicitParameters.h);
+				ux = (dataType)(((TuE + uE) - (TuW + uW))
+					/ (4.0 * explicitParameters.h));
+				uy = (dataType)(((TuN + uN) - (TuS + uS))
+					/ (4.0 * explicitParameters.h));
 				uz = (Tu - u) / explicitParameters.h;
 				t_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in bottom direction
-				ux = ((BuW + uW) - (BuE + uE))
-					/ (4 * explicitParameters.h);
-				uy = ((BuN + uN) - (BuS + uS))
-					/ (4 * explicitParameters.h);
+				ux = (dataType)(((BuW + uW) - (BuE + uE))
+					/ (4.0 * explicitParameters.h));
+				uy = (dataType)(((BuN + uN) - (BuS + uS))
+					/ (4.0 * explicitParameters.h));
 				uz = (Bu - u) / explicitParameters.h;
 				b_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
