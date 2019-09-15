@@ -52,7 +52,7 @@ bool setBoundaryExactValues3D(dataType **inputDataArrayPtr, size_t length, size_
 					|| k == 0 || k == heightminus)
 				{
 					inputDataArrayPtr[k][x_n] = (dataType)((pow(x, 2) + pow(y, 2)
-						+ pow(z, 2) - pow(sphereRadius, 2)) / 4) + t;
+						+ pow(z, 2) - pow(sphereRadius, 2)) / 4.0) + t;
 				}
 			}
 		}
