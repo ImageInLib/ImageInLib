@@ -2,23 +2,23 @@
 #include "data_load.h"
 #include "data_storage.h"
 
-bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
+bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
 	const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags)
 {
 	bool status = false; // Initial Status, only changed to true if the operation is successful
 	switch (operation)
 	{
 	case LOAD_DATA_RAW:
-		status = load3dDataArrayRAW((dataType **)imageDataPtr, length, width, height, pathPtr, dType);
+		status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
 		break;
 	case STORE_DATA_RAW:
 		switch (dType)
 		{
 		case BINARY_DATA:
-			status = store3dDataArrayD((double **)imageDataPtr, length, width, height, pathPtr, flags);
+			status = store3dDataArrayD(imageDataPtr, length, width, height, pathPtr, flags);
 			break;
 		case ASCII_DATA:
-			status = store3dDataArrayASCII((double **)imageDataPtr, length, width, height, pathPtr, flags);
+			status = store3dDataArrayASCII(imageDataPtr, length, width, height, pathPtr, flags);
 			break;
 		default:
 			break;

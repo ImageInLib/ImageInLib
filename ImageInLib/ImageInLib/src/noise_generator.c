@@ -240,7 +240,7 @@ bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const siz
 	{
 		for (s = 0; s < dim2DK; s++) {
 			i = rand() % (dim2D + 1);
-			array3DPtr[k][i] = (rand() % 2) * 255;
+			array3DPtr[k][i] = (dataType)(rand() % 2) * 255;
 		}
 	}
 
@@ -268,7 +268,7 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 	// Addition of salt and pepper noise to 2D image
 	for (k = 0; k < dim2DK; k++) {
 		i = rand() % (dim2D + 1);
-		array2DPtr[i] = (rand() % 2) * 255;
+		array2DPtr[i] = (dataType)(rand() % 2) * 255;
 	}
 	return true;
 }
@@ -287,7 +287,7 @@ void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t
 	{
 		for (j = 0; j < imageWidth; j++)
 		{
-			imageDataPtr[i][j] = imageDataPtr[i][j] + (randomUniformNumber(lower, upper) / (upper / 2.))*imageDataPtr[i][j];
+			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)((randomUniformNumber(lower, upper) / (upper / 2.))*imageDataPtr[i][j]);
 		}
 	}
 }
@@ -308,15 +308,15 @@ void addStructuralNoise(dataType ** imageDataPtr, int imageHeight, int imageWidt
 		for (j = 0; j < imageWidth; j++)
 		{
 			// This formula is modifiable, any sinusoid equation combination can be used!
-			periodicNoise[i][j] = 100*cos(2*M_PI*((12. * j) / 512. + (16. * i) / 512.)) + 100.;
-			imageDataPtr[i][j] = (imageDataPtr[i][j] + (periodicNoise[i][j] / 2.)) / 2.;
+			periodicNoise[i][j] = (dataType)(100*cos(2*M_PI*((12. * j) / 512. + (16. * i) / 512.)) + 100.);
+			imageDataPtr[i][j] = (imageDataPtr[i][j] + (dataType)((periodicNoise[i][j] / 2.)) / 2);
 		}
 	}
 }
 
 dataType upperBValue(dataType v)
 {
-	return sqrt(12 * v);
+	return (dataType)sqrt(12 * v);
 }
 
 dataType randomUniformNumber(dataType lowerValue, dataType upperValue)

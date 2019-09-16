@@ -808,7 +808,7 @@ dataType compute3dDistance(size_t i_n, size_t k, const size_t xDim, const size_t
 		}
 		else
 		{
-			temp3dPtr[k][i_n] = (double)(a_1 + a_2 + sqrt((2 * h * h) - (pow((a_1 - a_2), 2)))) / 2;
+			temp3dPtr[k][i_n] = (dataType)(a_1 + a_2 + sqrt((2 * h * h) - (pow((a_1 - a_2), 2)))) / 2;
 		}
 		if (temp3dPtr[k][i_n] < a_3)
 		{
@@ -819,7 +819,7 @@ dataType compute3dDistance(size_t i_n, size_t k, const size_t xDim, const size_t
 			lastCheck = 2 * ((a_1 * a_1) + (a_2 * a_2) + (a_3 * a_3) - ((a_1 * a_2) + (a_1 * a_3) + (a_2 * a_3)));
 			if (lastCheck <= (3 * h * h))
 			{
-				temp3dPtr[k][i_n] = (double)(a_1 + a_2 + a_3 + sqrt((3 * h * h) - lastCheck)) / 3;
+				temp3dPtr[k][i_n] = (dataType)(a_1 + a_2 + a_3 + sqrt((3 * h * h) - lastCheck)) / 3;
 			}
 			distance3DPtr[k][i_n] = temp3dPtr[k][i_n];
 		}
@@ -884,7 +884,7 @@ dataType compute2dDistance(size_t i_n, const size_t xDim, const size_t yDim, dat
 	}
 	else
 	{
-		temp2dPtr[i_n] = (double)(a + b + sqrt((2 * h * h) - (pow((a - b), 2)))) / 2;
+		temp2dPtr[i_n] = (dataType)(a + b + sqrt((2 * h * h) - (pow((a - b), 2)))) / 2;
 	}
 
 	distance2DPtr[i_n] = min(distance2DPtr[i_n], temp2dPtr[i_n]);

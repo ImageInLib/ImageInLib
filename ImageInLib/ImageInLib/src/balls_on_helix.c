@@ -16,7 +16,7 @@ bool ballsOnHelix(dataType ** image3DPtr, dataType radius, size_t xDim, size_t y
 	if (image3DPtr == NULL)
 		return false;
 
-	dataType t, pi;
+	double t, pi;
 	pi = 2 * M_PI * pitch;// * pitch
 	Point3D ballCenter;
 
