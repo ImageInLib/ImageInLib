@@ -46,7 +46,7 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** transformPointsPtr,
 	dataType sz = scaling.z, sy = scaling.y, sx = scaling.x;
 	dataType tz = translation.z, ty = translation.y, tx = translation.x;
 	//==============================================================================
-	int x;
+	size_t x;
 	//==============================================================================
 	if (parallelize)
 	{
@@ -91,13 +91,13 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** transformPointsPtr,
 						// Use Interpolation to get the values
 						// Locations for Tri-linear Interpolation
 						// Z
-						bottom = floor(k_t);
+						bottom = (int)floor(k_t);
 						top = bottom + 1;
 						// X
-						left = floor(i_t);
+						left = (int)floor(i_t);
 						right = left + 1;
 						// Y
-						begin = floor(j_t);
+						begin = (int)floor(j_t);
 						end = begin + 1;
 						//==============================================================================
 						// Check if within limits
@@ -167,13 +167,13 @@ void transform3DImage(dataType ** sourceDataPtr, dataType ** transformPointsPtr,
 				// Use Interpolation to get the values
 				// Locations for Tri-linear Interpolation
 				// Z
-				bottom = floor(k_t);
+				bottom = (int)floor(k_t);
 				top = bottom + 1;
 				// X
-				left = floor(i_t);
+				left = (int)floor(i_t);
 				right = left + 1;
 				// Y
-				begin = floor(j_t);
+				begin = (int)floor(j_t);
 				end = begin + 1;
 				//==============================================================================
 				// Check if within limits
@@ -317,11 +317,11 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** imageDataPtr
 void coordinate_rotate(dataType z, dataType x, dataType y, dataType theta, dataType psi, dataType phi, dataType * k_t, dataType * i_t, dataType * j_t)
 {
 	//==============================================================================
-	dataType _cos_psi_theta = cos(psi)*cos(theta), _cos_phi_psi = cos(phi)*cos(psi), _cos_phi_theta = cos(phi)*cos(theta);
-	dataType _sin_phi_theta = sin(phi)*sin(theta), _sin_phi_psi = sin(phi)*sin(psi), _sin_theta_psi = sin(theta)*sin(psi);
+	dataType _cos_psi_theta = (dataType)(cos(psi)*cos(theta)), _cos_phi_psi = (dataType)(cos(phi)*cos(psi)), _cos_phi_theta = (dataType)(cos(phi)*cos(theta));
+	dataType _sin_phi_theta = (dataType)(sin(phi)*sin(theta)), _sin_phi_psi = (dataType)(sin(phi)*sin(psi)), _sin_theta_psi = (dataType)(sin(theta)*sin(psi));
 
-	dataType _sin_theta = sin(theta), _sin_psi = sin(psi), _sin_phi = sin(phi);
-	dataType _cos_theta = cos(theta), _cos_psi = cos(psi), _cos_phi = cos(phi);
+	dataType _sin_theta = (dataType)sin(theta), _sin_psi = (dataType)sin(psi), _sin_phi = (dataType)sin(phi);
+	dataType _cos_theta = (dataType)cos(theta), _cos_psi = (dataType)cos(psi), _cos_phi = (dataType)cos(phi);
 	//==============================================================================
 	// I
 	dataType _cos_theta_sin_psi = _cos_theta * _sin_psi;
