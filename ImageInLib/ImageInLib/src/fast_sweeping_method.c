@@ -251,7 +251,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	return true;
 }
 //==============================================================================
-void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, const unsigned char h, const dataType largeValue, const unsigned char fgroundValue, const ClipBox bestFit)
+void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, const dataType h, const dataType largeValue, const dataType fgroundValue, const ClipBox bestFit)
 {
 	size_t j, i, k, i_n;//i, j and k are loop counters. i_n is also a loop counter given by i_n = i + j * xDim
 	size_t sweepNumber = 0, sweepDirection;
