@@ -4,6 +4,7 @@ extern "C" {
 
 #pragma once
 #include "common_functions.h"
+#include <stdbool.h>
 
 	typedef struct
 	{
@@ -12,6 +13,8 @@ extern "C" {
 		Point3D rotation;
 		dataType centroid[3];
 		dataType imageBackground;
+		dataType imageForeground;
+		bool parallelize;
 	} Affine_Transform_Parameters;
 
 #ifdef __cplusplus
