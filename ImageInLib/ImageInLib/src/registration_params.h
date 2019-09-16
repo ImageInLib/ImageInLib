@@ -27,7 +27,12 @@ extern "C" {
 		Affine_Parameter affineResults;
 		dataType imageBackground;
 		dataType imageForeground;
+		dataType insideShapevalue;
 		bool displayRegistrationOutputs;
+		bool parallelize;
+		bool use_clipbox;
+		bool binary_nband;
+		bool use_FSM;
 		char fPathname[100];
 	} Registration_Params;
 

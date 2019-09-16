@@ -88,9 +88,9 @@ bool thresholding2dFunctionD(dataType * image2DPtr, const size_t xDim, const siz
 	// Thresholding of 2D slice with thresholdvalue
 	for (i = 0; i < dim2D; i++) {
 		if (image2DPtr[i] <= thresholdvalue)
-			image2DPtr[i] = inputbgvalue;
-		else
 			image2DPtr[i] = inputfgvalue;
+		else
+			image2DPtr[i] = inputbgvalue;
 	}
 
 
