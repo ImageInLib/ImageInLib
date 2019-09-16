@@ -5,8 +5,8 @@ extern "C" {
 #pragma once
 #ifndef COMMON_FUNCTIONS
 #define COMMON_FUNCTIONS
-	//==============================================================================
-	//debug constants
+//==============================================================================
+//debug constants
 #ifndef MEASURE_TIME
 #define MEASURE_TIME
 #endif
@@ -28,6 +28,7 @@ extern "C" {
 	//==============================================================================
 	// Includes
 #include <stddef.h>
+#include <omp.h>
 //==============================================================================
 // MACROs
 //==============================================================================
@@ -104,6 +105,14 @@ extern "C" {
 	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	//==============================================================================
+	typedef struct {
+		size_t k_min, i_min, j_min, k_max, i_max, j_max;
+	} ClipBox;
+	//==============================================================================
+	// Calc. centroid of image data
+	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
+	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
 #endif // !COMMON_FUNCTIONS
 

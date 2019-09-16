@@ -18,8 +18,7 @@ extern "C" {
 	* fgroundvalue is foreground input value
 	* bgroundvalue is background input value
 	*/
-	bool edgeDetection3dFunctionD(dataType ** image3DPtr, dataType ** edge3DPtr, const size_t xDim,
-		const size_t yDim, const size_t zDim, const dataType bgroundvalue, const dataType fgroundvalue);
+	void edgeDetection3dFunctionD(dataType** image3DPtr, dataType** edge3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType bgroundvalue, dataType fgroundvalue, dataType insideValue);
 
 	/* image3DPtr is pointer to the 3D input image, xDim, yDim and zDim are dimensions of x, y, and z respectively.
 	* edge3DPtr is pointer to the 3D output image containing edge values.
