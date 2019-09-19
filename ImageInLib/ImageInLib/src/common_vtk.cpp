@@ -96,7 +96,7 @@ int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo)
 	}
 	return EXIT_SUCCESS;
 }
-int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo)
+int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo, vtkDataForm dataForm)
 {
 	// Creates A new imageData Pointer
 	vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
@@ -104,11 +104,18 @@ int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo)
 	createVtkImageData(imageData, vtkMetaInfo);
 	// VTK Reader
 	// Create a Writer
-	vtkSmartPointer<vtkGenericDataObjectWriter> writeGenericVtk = vtkSmartPointer<vtkGenericDataObjectWriter>::New();
+	vtkSmartPointer<vtkDataWriter> writeGenericVtk = vtkSmartPointer<vtkDataWriter>::New();
 
 	writeGenericVtk->SetInputData(imageData);
 	writeGenericVtk->SetFileName(outputFilePath);
-	writeGenericVtk->SetFileTypeToASCII();
+	if (dataForm == dta_ascii)
+	{
+		writeGenericVtk->SetFileTypeToASCII();
+	}
+	else
+	{
+		writeGenericVtk->SetFileTypeToBinary();
+	}
 	try
 	{
 		writeGenericVtk->Update();
