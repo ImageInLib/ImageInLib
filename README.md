@@ -1,6 +1,6 @@
 # ImageInLife Image Processing Library
 
-ImageInLib is an image processing library created by the [ImageInLife](http://imageinlife.eu) teams from [Tatramed s.r.o](https://tatramed.sk) and [Slovak University of Technology](https://www.stuba.sk) for the **Training European Experts in Multilevel Bioimaging, Analysis and Modelling of Vertebrate Development and Disease**
+ImageInLib is an image processing library created by the [ImageInLife](http://imageinlife.eu) teams from [TatraMed Softwares s.r.o](https://tatramed.sk) and [Slovak University of Technology](https://www.stuba.sk) for the **Training European Experts in Multilevel Bioimaging, Analysis and Modelling of Vertebrate Development and Disease**
 
 ## Features of the **ImageInLib**
 
