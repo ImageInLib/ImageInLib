@@ -13,7 +13,7 @@ double norm3dDataArrayD(dataType ** dataArray3DPtr, const size_t xDim, const siz
 {
 	size_t i, k;//loop counter for z dimension
 	const size_t dim2D = xDim * yDim;
-	dataType norm, sumPower = 0;
+	double norm, sumPower = 0;
 
 	//checks if the memory was allocated
 	if (dataArray3DPtr == NULL)

@@ -14,7 +14,7 @@ bool l2norm3dDataArrayD(dataType ** dataArray3DPtr1, dataType ** dataArray3DPtr2
 {
 	size_t i, k;//loop counter for z dimension
 	const size_t dim2D = xDim * yDim;
-	dataType norm, sumPower = 0;
+	double norm, sumPower = 0;
 	dataType tau = h * h;
 	dataType hhh = h * h * h;
 
@@ -46,7 +46,7 @@ bool l2norm3dDataArrayD(dataType ** dataArray3DPtr1, dataType ** dataArray3DPtr2
 	return true;
 }
 
-dataType l2normD(double ** dataArray3DPtr1, double ** dataArray3DPtr2, const size_t xDim, const size_t yDim, const size_t zDim, double h)
+dataType l2normD(dataType ** dataArray3DPtr1, dataType ** dataArray3DPtr2, const size_t xDim, const size_t yDim, const size_t zDim, double h)
 {
 	size_t i, k;//loop counter for z dimension
 	const size_t dim2D = xDim * yDim;
@@ -67,5 +67,5 @@ dataType l2normD(double ** dataArray3DPtr1, double ** dataArray3DPtr2, const siz
 	}
 	l2norm = sqrt(sumPower);
 
-	return l2norm;
+	return (dataType)l2norm;
 }

@@ -15,7 +15,7 @@ extern "C" {
 		STORE_DATA_RAW
 	} OperationType;
 
-	bool manageFile(void  ** imageDataPtr, const size_t length, const size_t width,
+	bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
 		const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags);
 
 	/*Converts to doulbe*/

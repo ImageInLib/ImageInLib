@@ -11,7 +11,7 @@
 /*
 * Function to fill the points of Cuboid (block)
 */
-void fillBlock3D(double **inputDataArrayPtr, size_t inputHeight, size_t inputLength, size_t inputWidth, Point3D blockCorner, double *fillBlockDimension, double fillValue)
+void fillBlock3D(dataType **inputDataArrayPtr, size_t inputHeight, size_t inputLength, size_t inputWidth, Point3D blockCorner, dataType *fillBlockDimension, dataType fillValue)
 {
 	if (inputHeight < 1 || inputWidth < 1 || inputLength < 1)
 		return;
@@ -45,7 +45,7 @@ void fillBlock3D(double **inputDataArrayPtr, size_t inputHeight, size_t inputLen
 /*
 * Function to fill 3D Ball Shape Points
 */
-void fillBall3D(double **inputDataArrayPtr, size_t inputHeight, size_t inputLength, size_t inputWidth, double sphereRadius, Point3D sphereCenter, double fillValue)
+void fillBall3D(dataType **inputDataArrayPtr, size_t inputHeight, size_t inputLength, size_t inputWidth, dataType sphereRadius, Point3D sphereCenter, dataType fillValue)
 {
 	// Variables to be used to loop
 	size_t k, i, j;
@@ -86,8 +86,8 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 		return false;
 
 	size_t i, j, k, s;
-	dataType phi, theta, r = sphereRadius;
-	dataType point_in_circleX, point_in_circleY, point_in_circleZ;
+	double phi, theta, r = sphereRadius;
+	double point_in_circleX, point_in_circleY, point_in_circleZ;
 
 	center.x = (dataType)(length / 2);
 	center.y = (dataType)(width / 2);
@@ -149,7 +149,7 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 		return false;
 
 	size_t i, j, k, s;
-	dataType phi, theta, r = sphereRadius;
+	double phi, theta, r = sphereRadius;
 
 	center.x = (dataType)(length / 2);
 	center.y = (dataType)(width / 2);

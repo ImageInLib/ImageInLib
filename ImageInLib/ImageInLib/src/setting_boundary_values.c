@@ -14,7 +14,7 @@ bool setBoundaryExactValues3D(dataType **inputDataArrayPtr, size_t length, size_
 	size_t i, j, k;//loop counter for z dimension
 	const size_t dim2D = length * width;
 	dataType x, y, z;
-	dataType hh = (h / 2.) + 1.25;
+	dataType hh = (dataType)((h / 2.) + 1.25);
 	size_t dim2Dminus = dim2D - 1;
 	size_t widthminus = width - 1;
 	size_t lengthminus = length - 1;
@@ -51,8 +51,8 @@ bool setBoundaryExactValues3D(dataType **inputDataArrayPtr, size_t length, size_
 						|| ((x_n != lengthminus) && (x_n != dim2Dminus) && ((x_n % length) == lengthminus)))
 					|| k == 0 || k == heightminus)
 				{
-					inputDataArrayPtr[k][x_n] = ((pow(x, 2) + pow(y, 2)
-						+ pow(z, 2) - pow(sphereRadius, 2)) / 4.) + t;
+					inputDataArrayPtr[k][x_n] = (dataType)((pow(x, 2) + pow(y, 2)
+						+ pow(z, 2) - pow(sphereRadius, 2)) / 4.0) + t;
 				}
 			}
 		}
