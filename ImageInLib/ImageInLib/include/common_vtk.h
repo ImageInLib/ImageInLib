@@ -29,8 +29,13 @@ extern "C" {
 		vtkOperation operation;
 	} Vtk_File_Info;
 	//==============================================================================
+	typedef enum {
+		dta_ascii,
+		dta_binary
+	} vtkDataForm;
+	//==============================================================================
 	int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo);
-	int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo);
+	int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo, vtkDataForm dataForm);
 	//==============================================================================
 #ifdef __cplusplus
 }
