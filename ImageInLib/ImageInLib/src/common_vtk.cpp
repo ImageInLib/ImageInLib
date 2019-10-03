@@ -104,7 +104,7 @@ int storeVtkFile(const char * outputFilePath, Vtk_File_Info * vtkMetaInfo, vtkDa
 	createVtkImageData(imageData, vtkMetaInfo);
 	// VTK Reader
 	// Create a Writer
-	vtkSmartPointer<vtkDataWriter> writeGenericVtk = vtkSmartPointer<vtkDataWriter>::New();
+	vtkSmartPointer<vtkGenericDataObjectWriter> writeGenericVtk = vtkSmartPointer<vtkGenericDataObjectWriter>::New();
 
 	writeGenericVtk->SetInputData(imageData);
 	writeGenericVtk->SetFileName(outputFilePath);
