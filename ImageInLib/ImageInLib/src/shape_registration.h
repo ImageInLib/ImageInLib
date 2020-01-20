@@ -87,6 +87,8 @@ extern "C" {
 	// Cals Registration using Stochastic GD method
 	Affine_Parameter registrationStochastic3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	//==============================================================================
+	// Registration using Block Coordinate method
+	Affine_Parameter regCoorDescent3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
 	//==============================================================================
 	ClipBox findClipBoxSingle(dataType ** Source, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	ClipBox findClipBoxTwo(dataType ** destination, dataType ** source, size_t imageHeight, size_t imageLength, size_t imageWidth);
