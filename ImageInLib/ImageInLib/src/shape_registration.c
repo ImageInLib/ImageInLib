@@ -1130,6 +1130,11 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	//==============================================================================
 }
 //==============================================================================
+Affine_Parameter regCoorDescent3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params) 
+{
+
+}
+//==============================================================================
 Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
 {
 	//==============================================================================
