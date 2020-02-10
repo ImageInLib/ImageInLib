@@ -132,7 +132,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 					xyd = x_flat(i, j, k, length, width);
 
 					// center means
-					s_Shapes[l][xyd] = eigshapes[l].eigenShape[xyd]/* - dtaMeanShape[k][xd]*/;
+					s_Shapes[l][xyd] = eigshapes[l].eigenShape[xyd] - dtaMeanShape[k][xd];
 				}
 			}
 		}
@@ -236,26 +236,6 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	printf("\nWe have selected %zd principal components\n", (*princomp));
 	//==============================================================================
 	// Calculate the Eigenvalues and eigenvectos of S*S_transpose
-	// 1. Align the S - D by n matrix
-	for (k = 0; k < height; k++)
-	{
-		for (i = 0; i < length; i++)
-		{
-			for (j = 0; j < width; j++)
-			{
-				// 2D to 1D representation for i, j
-				xd = x_new(i, j, length);
-				// 3D to 1D flattening
-				xyd = x_flat(i, j, k, length, width);
-				for (l = 0; l < numShapes; l++)
-				{
-					// center means
-					transp[xyd][l] = transp[xyd][l] - dtaMeanShape[k][xd];
-				}
-			}
-		}
-	}
-	// 2. Matrix Multiplication to save the eigenvector
 	for (i = 0; i < dim3D; i++)
 	{
 		(*eigvectors)[i] = (dataType*)malloc(sizeof(dataType) * (*princomp));
