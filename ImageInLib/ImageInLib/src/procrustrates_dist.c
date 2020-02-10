@@ -8,7 +8,7 @@ void calc_mean(dataType **dtaMean, dataType ** dtaInput, size_t height, size_t l
 void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t m, const size_t n, const size_t n1);
 void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n);
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width);
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, dataType bound, const size_t princomp, const size_t height, const size_t length, const size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
@@ -370,7 +370,7 @@ void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t len
 		}
 	}
 }
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width)
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, dataType bound, const size_t princomp, const size_t height, const size_t length, const size_t width)
 {
 	size_t k, i, j, xd, xyd;
 	//==============================================================================
@@ -432,13 +432,13 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 			shp_projection[i] += trans_eigvectors[i][j] * shp_diff[j];
 		}
 		// Is this Thresholding applicable to general data?
-		if (shp_projection[i] > 3)
+		if (shp_projection[i] > bound * sqrtf(fabsf(eigenvalues[i])))
 		{
-			shp_projection[i] = 3;
+			shp_projection[i] = bound * sqrtf(fabsf(eigenvalues[i]));
 		}
-		else if (shp_projection[i] < -3)
+		else if (shp_projection[i] < -1 * bound * sqrtf(fabsf(eigenvalues[i])))
 		{
-			shp_projection[i] = -3;
+			shp_projection[i] = -1 * bound * sqrtf(fabsf(eigenvalues[i]));
 		}
 	}
 	//==============================================================================
@@ -457,9 +457,10 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	//==============================================================================
 	for (i = 0; i < princomp; i++)
 	{
+		tmp_results[i] = 0;
 		for (j = 0; j < princomp; j++)
 		{
-			tmp_results[i] = diag_eigvalues_inv[i][j] * shp_projection[j];
+			tmp_results[i] += diag_eigvalues_inv[i][j] * shp_projection[j];
 		}
 	}
 	//==============================================================================
@@ -471,49 +472,55 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	printf("\nEnergy of Shape Parameter: %.8lf\n", energy_param);
 	//==============================================================================
 	// Minimization of Energy
-	int iteration = 0, steps = 100;
-	double tolerance = 1.0e-04, error;
-	dataType eps = 1000;
+	int iteration = 0, steps = 1000;
+	double tolerance = 1.0e-06, error;
+	dataType eps = 1.0;
 	// Initialize pointers#
 	dataType * est_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
+	// Calc. Estimated U_k*a_k
 	for (i = 0; i < dim3D; i++)
 	{
 		est_shape[i] = 0;
+		for (j = 0; j < princomp; j++)
+		{
+			// Estimated shape
+			est_shape[i] += shp_projection[j] * eigenvectors[i][j];
+		}
+	}
+	//==============================================================================
+	// Construct shape prior model
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 2D to 1D representation for i, j
+				xd = x_new(i, j, length);
+				// 3D to 1D flattening
+				xyd = x_flat(i, j, k, length, width);
+				// Construct prior shape
+				shape[k][xd] = dtaMeanShape[k][xd] + est_shape[xyd];
+			}
+		}
 	}
 	//==============================================================================
 	do
 	{
 		//==============================================================================
-		// print shp projection
-		printf("\nShape Projection vector: ");
-		for (j = 0; j < princomp; j++) {
-			printf("%.4f\n", shp_projection[j]);
-		}
-		//==============================================================================
 		printf("Iteration: %d\n", iteration);
-		//==============================================================================
-		// Calc. Estimated U_k*a_k
-		for (i = 0; i < dim3D; i++)
-		{
-			for (j = 0; j < princomp; j++)
-			{
-				// Estimated shape
-				est_shape[i] += shp_projection[j] * (dataType)sqrt(eigenvalues[j]) * eigenvectors[i][j];
-			}
-		}
-		//==============================================================================
-		// Error
-		error = 0;
-		for (i = 0; i < princomp; i++)
-		{
-			error += shp_projection_trans[0][i] * tmp_results[i];
-		}
-		//error = energyFunction(dtaMeanShape, prior_Shape, height, length, width, h);
-		printf("Error is %.8lf\n", error);
 		//==============================================================================
 		for (i = 0; i < princomp; i++)
 		{
 			shp_projection[i] = shp_projection[i] - eps * tmp_results[i];
+			if (shp_projection[i] > bound * sqrtf(fabsf(eigenvalues[i])))
+			{
+				shp_projection[i] = bound * sqrtf(fabsf(eigenvalues[i]));
+			}
+			else if (shp_projection[i] < -1 * bound * sqrtf(fabsf(eigenvalues[i])))
+			{
+				shp_projection[i] = -1 * bound * sqrtf(fabsf(eigenvalues[i]));
+			}
 		}
 		//==============================================================================
 		// Update Shape Projection T
@@ -524,9 +531,28 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 		// Update the tmp results
 		for (i = 0; i < princomp; i++)
 		{
+			tmp_results[i] = 0.;
 			for (j = 0; j < princomp; j++)
 			{
-				tmp_results[i] = diag_eigvalues_inv[i][j] * shp_projection[j];
+				tmp_results[i] += diag_eigvalues_inv[i][j] * shp_projection[j];
+			}
+		}
+		//==============================================================================
+		// Error
+		energy_param = 0;
+		for (i = 0; i < princomp; i++)
+		{
+			energy_param += shp_projection_trans[0][i] * tmp_results[i];
+		}
+		//==============================================================================
+		// Calc. Estimated U_k*a_k
+		for (i = 0; i < dim3D; i++)
+		{
+			est_shape[i] = 0.;
+			for (j = 0; j < princomp; j++)
+			{
+				// Estimated shape
+				est_shape[i] += shp_projection[j] * eigenvectors[i][j];
 			}
 		}
 		//==============================================================================
