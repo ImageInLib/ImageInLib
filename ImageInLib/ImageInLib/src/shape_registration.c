@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <float.h>
 //==============================================================================
 #include "shape_registration.h"
 //==============================================================================
@@ -542,7 +543,7 @@ void nbPointsZ(dataType ** transformedBinaryData, dataType pixelSize, size_t x, 
 	}
 	else if (k >= imageHeight - 1) // Apply Backward Difference
 	{
-		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x,  bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
+		pv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k, x, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
 		qv = getDistance(transformedBinaryData, imageHeight, imageLength, dim2D, k - 1, x, bestfitBox, surface_points, ptsNum, insideShapevalue, parallelize);
 		//*qValue = distanceResultsPtr[k - 1][x];
 		*hh = pixelSize * 1;
@@ -700,6 +701,124 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	results.translation.y = results.translation.y / counter;
 	// Tz
 	results.translation.z = results.translation.z / counter;
+	return results;
+}
+//==============================================================================
+Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t updateComponent)
+{
+	Affine_Parameter results;
+	// Initialize the parameters
+	size_t k, i, j, x, counter = 0;
+	// Initialize the results
+	results.rotation.x = 0.0, results.rotation.y = 0.0, results.rotation.z = 0.0;
+	results.scaling.x = 0.0, results.scaling.y = 0.0, results.scaling.z = 0.0;
+	results.translation.x = 0.0, results.translation.y = 0.0, results.translation.z = 0.0;
+	// Forward difference parameters
+	dataType xFwd, yFwd, zFwd;
+	// Derivative component
+	dataType componentX, componentY, componentZ;
+	// Stores the difference between two distance pointers
+	dataType distDifference;
+	// Shorter Transformation names
+	dataType phi = params->rotation.x, theta = params->rotation.y, psi = params->rotation.z;
+	dataType sx = params->scaling.x, sy = params->scaling.y, sz = params->scaling.z;
+	dataType tx = params->translation.x, ty = params->translation.y, tz = params->translation.z;
+	// Begin Evaluation
+	for (k = 0; k < imageHeight; k++)
+	{
+		for (j = 0; j < imageWidth; j++)
+		{
+			x = x_new(0, j, imageLength);
+
+			for (i = 0; i < imageLength; i++)
+			{
+				// 2D to 1D representation for i, j
+				/*x = x_new(i, j, imageLength);*/
+				if (NFunction(destPtr[k][x], distTrans[k][x], NDelta) == 1)
+				{
+					counter++;
+					// Store the distance function difference
+					distDifference = (destPtr[k][x] - distTrans[k][x]) * 2.0;
+
+					// Directional component vector derivatives - i, j, k
+					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
+					// Trignometry functions inside the component evaluation equation
+					//T a = cos(phi), b = sin(phi), ab = cos(phi)*sin(phi), aa = cos(phi)*cos(phi), bb = sin(phi)*sin(phi), aaa = a * aa, bbb = b * bb, aab = aa * b, abb = a * bb;
+					//==============================================================================
+					// Apply Forward Differences to the distTrans pointer
+					xFwd = finiteDifX(distTrans, h, x, k, i, imageLength);
+					yFwd = finiteDifY(distTrans, h, k, i, j, imageLength, imageWidth);
+					zFwd = finiteDifZ(distTrans, h, x, k, i, imageLength, imageHeight);
+					//==============================================================================
+#ifdef DIRECTIONAL
+					// Begin update for Passed component
+					//==============================================================================
+					if (updateComponent == 1) // Rotation Component
+					{
+						componentX = yFwd * (((tmpI)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(psi)*sin(phi) - cos(phi)*sin(psi)*sin(theta)) / sy)) + ((-tmpK)*((cos(phi)*cos(theta)) / sy))) +
+							zFwd * (((tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sz)) + ((-tmpK)*((cos(theta) * sin(phi)) / sz)));
+						results.rotation.x += (componentX)*(distDifference);
+						componentY = xFwd * (((-tmpI)*((cos(psi)*sin(theta)) / sx)) + ((tmpJ)*((sin(psi)*sin(theta)) / sx)) + ((tmpK)*((cos(theta)) / sx))) +
+							yFwd * (((tmpI)*((cos(psi)*cos(theta)*sin(phi)) / sy)) + ((-tmpJ)*((cos(theta)*sin(phi)*sin(psi)) / sy)) + ((tmpK)*((sin(phi)*sin(theta)) / sy))) +
+							zFwd * (((-tmpI)*((cos(phi)*cos(psi)*cos(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(theta)*sin(psi)) / sz)) + ((-tmpK)*((cos(phi)*sin(theta)) / sz)));
+						results.rotation.y += (componentY)*(distDifference);
+						componentZ = xFwd * (((-tmpI)*((cos(theta)*sin(psi)) / sx)) + ((-tmpJ)*((cos(psi)*cos(theta)) / sx))) +
+							yFwd * (((tmpI)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(phi)*sin(psi) - cos(psi)*sin(phi)*sin(theta)) / sy))) +
+							zFwd * (((tmpI)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / sz)) + ((tmpJ)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sz)));
+						results.rotation.z += (componentZ)*(distDifference);
+					}
+					else if (updateComponent == 2) // Scaling Component
+					{
+						componentX = xFwd * ((-tmpI)*((cos(psi)*cos(theta)) / (sx*sx)) + ((tmpJ)*((cos(theta)*sin(psi)) / (sx*sx))) + ((-tmpK)*((sin(theta)) / (sx*sx))));
+						results.scaling.x += (componentX)*(distDifference);
+						componentY = yFwd * (((-tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / (sy*sy))) + ((-tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / (sy*sy))) + ((tmpK)*((cos(theta)*sin(phi)) / (sy*sy))));
+						results.scaling.y += (componentY)*(distDifference);
+						componentZ = zFwd * (((-tmpI)*((sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)) / (sz*sz))) + ((-tmpJ)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / (sz*sz))) + ((-tmpK)*((cos(phi)*cos(theta)) / (sz*sz))));
+						results.scaling.z += (componentZ)*(distDifference);
+					}
+					else if (updateComponent == 3) // Translation Component
+					{
+						// Tx
+						results.translation.x += (-xFwd)*(distDifference);
+						// Ty
+						results.translation.y += (-yFwd)*(distDifference);
+						// Tz
+						results.translation.z += (-zFwd)*(distDifference);
+					}
+					//==============================================================================
+#endif // DIRECTIONAL
+				}
+				x++;
+			}
+		}
+	}
+	// Normalize results
+	if (counter == 0)
+	{
+		counter = 1;
+	}
+
+	if (updateComponent == 1) // Rotation
+	{
+		results.rotation.x = results.rotation.x / counter;
+		results.rotation.y = results.rotation.y / counter;
+		results.rotation.z = results.rotation.z / counter;
+	}
+	else if (updateComponent == 2) // Scaling
+	{
+		results.scaling.x = results.scaling.x / counter;
+		results.scaling.y = results.scaling.y / counter;
+		results.scaling.z = results.scaling.z / counter;
+	}
+	else if (updateComponent == 3) // Translation
+	{
+		// Tx
+		results.translation.x = results.translation.x / counter;
+		// Ty
+		results.translation.y = results.translation.y / counter;
+		// Tz
+		results.translation.z = results.translation.z / counter;
+	}
 	return results;
 }
 //==============================================================================
@@ -992,7 +1111,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		else
 		{
 			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
-		}		
+		}
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1019,7 +1138,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		{
 			// Evaluate Energy Function - L2 Norm Between the two calc. distances
 			energyTmp = energyFunction(destPtr, distTransPtr, imageHeight, imageLength, imageWidth, params.h);
-		}		
+		}
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1083,7 +1202,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 			else
 			{
 				affineTmp = gradientComponents(destPtr, distTransPtr, params.h, &affineResult, imageHeight, imageLength, imageWidth);
-			}		
+			}
 			//==============================================================================
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1130,9 +1249,372 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	//==============================================================================
 }
 //==============================================================================
-Affine_Parameter regCoorDescent3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params) 
+Affine_Parameter regCoorDescent3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
 {
+	dataType rotation_weight = 1.0;
+	// Scaling
+	dataType scaling_weight = 1.0;
+	// Translation
+	dataType translation_weight = 1.0;
+	//==============================================================================
+	int components = 1, switchcomponent;
+	//==============================================================================
+	dataType stepsize = step_size;
+	//==============================================================================
+	size_t k, i, j, l, x, dim2D = imageLength * imageWidth;
+	int iteration = 0, max_ter = 1000;
+	int count_rejected = 0, state_accept, count_steps_reset = 0, max_resets = 9;
+	//==============================================================================
+	dataType firstCpuTime, secondCpuTime, regStartCpuTime, regStopCpuTime, regTotalCpuTimen = 0.;
+	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0.;
+	// Affine tmp prev init
+	Point3D rotationTran = { 0.0, 0.0, 0.0 };
+	Point3D scalingTran = { 1.0, 1.0, 1.0 };
+	Point3D translationTran = { 0.0, 0.0, 0.0 };
+	Affine_Parameter affineResult, affineTmp, affineTmp_prev, affinePrev;
+	affineTmp_prev.rotation = rotationTran, affineTmp_prev.scaling = scalingTran, affineTmp_prev.translation = translationTran;
+	// Create a new shape Pointers to be used
+	dataType ** destPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for destination
+	//==============================================================================
+	// USE_CLIP
+	ClipBox coordFixed, coordMoving, bestFit, coordMovingTmp; // Clipbox for bestFit of both fixed and moving images, Moving image clipbox
+	dataType ** movInitPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for Moving
+	if (params.use_clipbox)
+	{
+		for (i = 0; i < imageHeight; i++)
+		{
+			movInitPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+		}
+	}
+	//==============================================================================
+	// Initializations of Pointers
+	for (i = 0; i < imageHeight; i++)
+	{
+		destPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+	}
+	// Initialize to same background - default value is 255, 0, 0
+	//initialize3dArrayD(destPtr, imageLength, imageWidth, imageHeight, foregound);
+	//==============================================================================
+	// Instantiate Affine Parameters
+	affineResult.rotation = initTransform.rotation;
+	affineResult.scaling = initTransform.scaling;
+	affineResult.translation = initTransform.translation;
+	//==============================================================================
+	Point3D init_trans = { 0,0,0 };
+	Point3D init_rot = { 0,0,0 };
+	Point3D init_scale = { 1,1,1 };
+	affinePrev = affineResult; // Start sames as affine results
+	//==============================================================================
+	// Energy tmp optimal, stop boolean
+	dataType energyTmp, prev_energy = DBL_MAX;
+	bool stopCond = false;
+	// Apply distance function between transPtr and distTrans
+	// Begin Record Time
+#ifdef MEASURE_TIME
+	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+	//==============================================================================
+	// USE_CLIP
+	if (params.use_clipbox)
+	{
+		// Initial dist. fn for moving image before adding any transformation
+		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+	}
+	//==============================================================================
+#ifdef MEASURE_TIME
+	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	// Store the time
+	distanceTotalCpuTime += secondCpuTime - firstCpuTime;
+#endif
+	//==============================================================================
+	// USE_CLIP
+	if (params.use_clipbox)
+	{
+		//==============================================================================
+		// Finding the clip box points for the fixed image
+		coordFixed = findClipBoxSingle(destPtr, imageHeight, imageLength, imageWidth);
+		//==============================================================================
+		coordMoving = findClipBoxSingle(movInitPtr, imageHeight, imageLength, imageWidth);
+		//==============================================================================
+		// Free after
+		for (k = 0; k < imageHeight; k++)
+		{
+			free(movInitPtr[k]);
+		}
+		free(movInitPtr);
+		movInitPtr = NULL;
+		//==============================================================================
+	}
+	//==============================================================================
+#ifdef CONSOLE_OUTPUT
+	printf("Distance calc before Registration CPU time: %e secs\n\n", secondCpuTime - firstCpuTime);
+#endif
+	// Begin Registration of Distances between shapes
+	// Start Timing the Registration Process
+#ifdef MEASURE_TIME
+	regStartCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+	//==============================================================================
+	// Create a new shape Pointers to be used
+	dataType ** transPtr = (dataType**)malloc(sizeof(dataType*) * imageHeight); // Transformed Ptr
+	dataType ** distTransPtr = (dataType**)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
+	for (i = 0; i < imageHeight; i++)
+	{
+		transPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+		distTransPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+	}
+	//==============================================================================
+	while (!stopCond)
+	{
+		// Timing The Transformation Inside the registration function
+#ifdef MEASURE_TIME
+		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
+#ifdef MEASURE_TIME
+		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+		// Store the time
+		transformationTotalCpuTime += secondCpuTime - firstCpuTime;
+#endif
+		//==============================================================================
+	// USE_CLIP
+		if (params.use_clipbox)
+		{
+			//==============================================================================
+			// Transform the coordMoving clip box using calc. transform component results
+			// Copy to coordMovingTmp
+			coordMovingTmp = coordMoving;
+			transformClip(&coordMovingTmp, affineResult.translation, affineResult.scaling, affineResult.rotation, centroid, imageHeight, imageLength, imageWidth);
+			// Find the bestFit from transformed clip
+			bestFit.k_min = min(coordFixed.k_min, coordMovingTmp.k_min);
+			bestFit.i_min = min(coordFixed.i_min, coordMovingTmp.i_min);
+			bestFit.j_min = min(coordFixed.j_min, coordMovingTmp.j_min);
 
+			bestFit.k_max = max(coordFixed.k_max, coordMovingTmp.k_max);
+			bestFit.i_max = max(coordFixed.i_max, coordMovingTmp.i_max);
+			bestFit.j_max = max(coordFixed.j_max, coordMovingTmp.j_max);
+			//==============================================================================
+		}
+		//==============================================================================
+#ifdef CONSOLE_OUTPUT
+		printf("Registration Transformation calc. CPU time at iteration %4d: %e secs\n", iteration, secondCpuTime - firstCpuTime);
+#endif
+		// Apply distance function between transPtr and distTrans
+		// Begin Record Time
+#ifdef MEASURE_TIME
+		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+		//==============================================================================
+// USE_CLIP
+		if (params.use_clipbox)
+		{
+			// fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, foregound, bestFit);
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+		}
+		else
+		{
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+		}
+		//==============================================================================
+#ifdef MEASURE_TIME
+		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+		// Store the time
+		distanceTotalCpuTime += secondCpuTime - firstCpuTime;
+#endif
+#ifdef CONSOLE_OUTPUT
+		printf("Distance calc during Registration CPU time at iteration %4d: %e secs\n", iteration, secondCpuTime - firstCpuTime);
+#endif
+		// Evaluate Energy Function - L2 Norm Between the two calc. distances
+		// Begin Record Time
+#ifdef MEASURE_TIME
+		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+		//==============================================================================
+		// Evaluate Energy Function - L2 Norm Between the two calc. distances within the band and clipbox
+// USE_CLIP
+		if (params.use_clipbox)
+		{
+			energyTmp = energyFunctionClip(destPtr, distTransPtr, bestFit, imageLength);
+			//energyTmp = energyFunction(destPtr, distTransPtr, imageHeight, imageLength, imageWidth, h);
+		}
+		else {
+			energyTmp = energyFunction(destPtr, distTransPtr, imageHeight, imageLength, imageWidth, params.h);
+		}
+		//==============================================================================
+#ifdef MEASURE_TIME
+		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+		// Store the time
+		energyTotalCpuTime += secondCpuTime - firstCpuTime;
+#endif
+		//==============================================================================
+		dataType diff_abs = fabs(energyTmp - prev_energy), accept_diff = 1e-04;
+		// Check if current energy has reduced from previous
+		if (energyTmp <= prev_energy)
+		{
+			prev_energy = energyTmp;
+			//==============================================================================
+			state_accept = 0;
+			//==============================================================================
+			affinePrev = affineResult;
+			//==============================================================================
+		}
+		else // Use a new component to calculate the energy if current gives worse
+		{
+			state_accept = 1;
+			//==============================================================================
+			// Use previous components that were accepted and recalculate the previous distance pointer.
+			affineResult = affinePrev;
+			//==============================================================================
+		}
+		//==============================================================================
+		// Adjust step size after a full cycle through components
+		if (count_rejected >= 3) // Maximum rejections
+		{
+			// Adjust step size after a full cycle through components
+			stepsize = stepsize / 2.0;
+			//==============================================================================
+			count_rejected = 0; // Reset
+			//==============================================================================
+		}
+		//==============================================================================
+		// Check if gone lower than acceptable minimum
+		if (stepsize < 0.004)
+		{
+			stepsize = step_size; // Reset to orignal to start all over again
+			count_steps_reset++;
+		}
+		//==============================================================================
+		if ((state_accept == 1))
+		{
+			count_rejected++; // Increment
+			//==============================================================================
+		}
+		else if (state_accept == 0)
+		{
+			count_rejected = 0; // Reset
+			count_steps_reset = 0;
+			//==============================================================================
+		}
+		//==============================================================================
+#ifdef CONSOLE_OUTPUT
+		printf("Energy Function calc. CPU time at iteration %4d: %e secs\n\n", iteration, secondCpuTime - firstCpuTime);
+#endif
+		// Print Pre-evaluate affine values
+#ifdef CONSOLE_OUTPUT
+		printf("Energy = %5.5lf, iteration %4d, Phi = %3.5lf, Theta = %3.5lf, Psi = %3.5lf, Sx = %2.5lf, Sy = %2.5lf, Sz = %2.5lf, Tx = %2.5lf, Ty = %2.5lf, Tz = %2.5lf\n",
+			energyTmp, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
+			affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
+#endif
+		//==============================================================================
+		// Check Stoping condition with tolerance and number of ierations
+		if (energyTmp < tol || iteration == max_ter || count_steps_reset == max_resets)
+		{
+			//==============================================================================
+			affineResult = affinePrev;
+			stopCond = true;
+			//==============================================================================
+			printf("Total distance Function calc. CPU Time is: %e secs\n", distanceTotalCpuTime);
+			printf("Total energy Function calc. CPU Time is: %e secs\n", energyTotalCpuTime);
+			printf("Total Coordinate Descent Function calc. CPU Time is: %e secs\n", gradientTotalCpuTime);
+			printf("Total transformation Function calc. CPU Time is: %e secs\n", transformationTotalCpuTime);
+			//==============================================================================
+			// Print the Calculated Transformation Parameters At the End of Registration
+			printf("Energy = %8.8lf, iteration %4d, Phi = %3.8lf, Theta = %3.8lf, Psi = %3.8lf, Sx = %2.8lf, Sy = %2.8lf, Sz = %2.8lf, Tx = %2.8lf, Ty = %2.8lf, Tz = %2.8lf\n",
+				prev_energy, iteration, affineResult.rotation.x, affineResult.rotation.y, affineResult.rotation.z, affineResult.scaling.x, affineResult.scaling.y,
+				affineResult.scaling.z, affineResult.translation.x, affineResult.translation.y, affineResult.translation.z);
+			//==============================================================================
+			for (k = 0; k < imageHeight; k++)
+			{
+				free(destPtr[k]);
+				free(transPtr[k]);
+				free(distTransPtr[k]);
+			}
+			free(destPtr);
+			destPtr = NULL;
+			//
+			free(transPtr);
+			transPtr = NULL;
+			//
+			free(distTransPtr);
+			distTransPtr = NULL;
+			//==============================================================================
+		}
+		else
+		{
+			// Begin Record Time
+#ifdef MEASURE_TIME
+			firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+#endif
+			//==============================================================================
+			if (components > 3)
+			{
+				components = 1; // Reset to the first component to start all over again
+			}
+			//==============================================================================
+			switchcomponent = components;
+			//==============================================================================
+			// USE_CLIP
+			if (params.use_clipbox)
+			{
+				// affineTmp = gradCoorDescentCompClip(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent, bestFit);
+				affineTmp = gradCoorDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
+			}
+			else
+			{
+				affineTmp = gradCoorDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
+			}
+			//==============================================================================
+			switch (switchcomponent)
+			{
+			case 1:
+				// Set new values for affine temp results
+				// Rotation
+				affineResult.rotation.x += rotation_weight * stepsize*affineTmp.rotation.x;
+				affineResult.rotation.y += rotation_weight * stepsize*affineTmp.rotation.y;
+				affineResult.rotation.z += rotation_weight * stepsize*affineTmp.rotation.z;
+				//==============================================================================
+				components++;
+				break;
+			case 2:
+				// Scaling
+				affineResult.scaling.x += scaling_weight * stepsize*affineTmp.scaling.x;
+				affineResult.scaling.y += scaling_weight * stepsize*affineTmp.scaling.y;
+				affineResult.scaling.z += scaling_weight * stepsize*affineTmp.scaling.z;
+				//==============================================================================
+				components++;
+				break;
+			case 3:
+				//Translation
+				affineResult.translation.x += translation_weight * stepsize*affineTmp.translation.x;
+				affineResult.translation.y += translation_weight * stepsize*affineTmp.translation.y;
+				affineResult.translation.z += translation_weight * stepsize*affineTmp.translation.z;
+				//==============================================================================
+				components++;
+				break;
+			default:
+				break;
+			}
+			//==============================================================================
+			affineTmp_prev = affineTmp;
+			//==============================================================================
+			// Increase Iteration
+			iteration++;
+		}
+	}
+	//==============================================================================
+#ifdef MEASURE_TIME
+	regStopCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	// Store Time For Each Registration run
+	regTotalCpuTimen = regStopCpuTime - regStartCpuTime;
+#endif
+
+#ifdef CONSOLE_OUTPUT
+	printf("Total Registration Function calc. CPU Time is: %e secs\n\n", regTotalCpuTimen);
+#endif
+	//==============================================================================
+	return affineResult;
+	//==============================================================================
 }
 //==============================================================================
 Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** movingData, Affine_Parameter initTransform, dataType step_size, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params)
@@ -1201,7 +1683,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		{
 			edgeMovingPointer[i] = malloc(sizeof(dataType) * dim2D);
 		}
-	}	
+	}
 	//==============================================================================
 	// Apply distance function between transPtr and distTrans
 	// Begin Record Time
@@ -1245,7 +1727,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			fillNarrowBandArea(movInitPtr, movingNBandPtr, imageHeight, imageLength, imageWidth, params.imageForeground, params.imageBackground);
 			// Centroid for moving narrow band area
 			centroidImage(movingNBandPtr, centroidMovingBandArea, imageHeight, imageLength, imageWidth, params.imageBackground);
-		}		
+		}
 		//==============================================================================
 		// Free after
 		for (k = 0; k < imageHeight; k++)
@@ -1297,7 +1779,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			tmpPtr = movingNBandPtr;
 			movingNBandPtr = transMovingPtr;
 			transMovingPtr = tmpPtr;
-		}		
+		}
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 		// Store the time
@@ -1414,7 +1896,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 				{
 					// free moving edge transfromed
 					free(edgeMovingPointer[k]);
-				}				
+				}
 				//
 				free(transMovingPtr[k]);
 				//
@@ -1437,7 +1919,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 				// free moving edge transfromed
 				free(edgeMovingPointer);
 				edgeMovingPointer = NULL;
-			}			
+			}
 			//
 			free(transMovingPtr);
 			transMovingPtr = NULL;
@@ -1544,7 +2026,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 			if (!params.use_FSM)
 			{
 				edgeDetection3dFunctionD(transPtr, edgeMovingPointer, imageLength, imageWidth, imageHeight, params.imageBackground, params.imageForeground, params.insideShapevalue);
-			}			
+			}
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 			// Store the time recorded
@@ -1591,7 +2073,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 						}
 					}
 				}
-			}			
+			}
 			//==============================================================================
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1665,8 +2147,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 							}
 						}
 					}
-
-					} while ((loop) && (l <= params.rand_points));
+				} while ((loop) && (l <= params.rand_points));
 			}
 			//==============================================================================
 #ifdef MEASURE_TIME
@@ -1777,7 +2258,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 					}
 					//==============================================================================
 				}
-			}			
+			}
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 			// Store the time recorded
@@ -1815,7 +2296,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 					tmpFwd->zFwd = finiteDifAll(pv_tmp, qv_tmp, h_tmp);
 					//==============================================================================
 				}
-			}			
+			}
 			//==============================================================================
 #ifdef MEASURE_TIME
 			secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1981,7 +2462,6 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 							}
 						}
 					}
-					
 				} while ((loop) && (l <= params.rand_points));
 			}
 			else
@@ -2432,7 +2912,7 @@ dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLe
 		}
 		//==============================================================================
 	}
-	else // Run parallelized 
+	else // Run parallelized
 	{
 		//==============================================================================
 		// OpenMp
@@ -2440,7 +2920,7 @@ dataType getDistance(dataType ** binaryImage, size_t imageHeight, size_t imageLe
 		dataType distances[NUM_THREADS][PAD];
 		omp_set_dynamic(0); // Disable dynamic adjustment of threads
 		omp_set_num_threads(NUM_THREADS);
-	#pragma omp parallel
+#pragma omp parallel
 		{
 			int i, id, nthrds;
 			dataType dx, dy, dz, dist, distPv;
