@@ -15,7 +15,7 @@ extern "C" {
 	// Includes
 #include "common_functions.h"
 	//==============================================================================
-	dataType mean_hausdorff(dataType ** curveA_Pointer, dataType curveB_Pointer, dataType curveIntensity, size_t height, size_t length, size_t width);
+	dataType mean_hausdorff(dataType ** curveA_Pointer, dataType ** curveB_Pointer, dataType curveIntensity, size_t height, size_t length, size_t width);
 	//==============================================================================
 #endif // !MHD
 
