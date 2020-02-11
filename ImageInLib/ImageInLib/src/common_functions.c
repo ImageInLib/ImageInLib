@@ -137,6 +137,23 @@ void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extend
 	}
 }
 //==============================================================================
+void copyDataPointer(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width)
+{
+	size_t k, i, j, xd;
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 2D flattening
+				xd = x_new(i, j, length);
+				destination[k][xd] = source[k][xd];
+			}
+		}
+	}
+}
+//==============================================================================
 size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heightIndex, const size_t rowLength, const size_t columnLength)
 {
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)

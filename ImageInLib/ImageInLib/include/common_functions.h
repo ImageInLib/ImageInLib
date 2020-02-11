@@ -106,6 +106,9 @@ extern "C" {
 	//==============================================================================
 	void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
+	// Copy from one pointer to another pointer
+	void copyDataPointer(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width);
+	//==============================================================================
 	typedef struct {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
 	} ClipBox;
