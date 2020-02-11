@@ -489,7 +489,6 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	//==============================================================================
 	// Minimization of Energy
 	int iteration = 0;
-	double error;
 	// Initialize pointers#
 	dataType * e_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
 	// Calc. Estimated U_k*a_k
@@ -573,9 +572,9 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 		//==============================================================================
 		iteration++;
 		//==============================================================================
-	} while ((error > estParams->tolerance) && (iteration < estParams->steps));
+	} while ((energy_param > estParams->tolerance) && (iteration < estParams->steps));
 	printf("\nThe number of iterations to calc. prior shape is %d\n", iteration);
-	printf("\nError during calc.: %.8lf\n", error);
+	printf("\nError during calc.: %.8e\n", energy_param);
 	//==============================================================================
 	// Rewrite the to old estmate shape
 	// Rescale the data?

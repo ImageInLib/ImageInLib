@@ -28,11 +28,6 @@ extern "C" {
 	//==============================================================================
 	void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, dataType ** estimatedShape, shape_Analysis_Parameters shapeParam, estimate_Params * estParams, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold);
 	//==============================================================================
-	typedef struct {
-		int steps, estMethod;
-		dataType bound, eps, tolerance, h;
-	} estimate_Params;
-	//==============================================================================
 #endif // !PROCRUSTATESSDIST
 
 #ifdef __cplusplus
