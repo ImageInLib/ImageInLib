@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mean_hausdorff_distance.c" />
     <ClCompile Include="src\balls_on_cirlce.c" />
     <ClCompile Include="src\balls_on_helix.c" />
     <ClCompile Include="src\brute_force_algorithm.c" />
@@ -72,6 +73,7 @@
     <ClInclude Include="include\shapeGeneration.h" />
     <ClInclude Include="include\statistics.h" />
     <ClInclude Include="include\transformation.h" />
+    <ClInclude Include="mean_hausdorff_distance.h" />
     <ClInclude Include="src\common_functions.h" />
     <ClInclude Include="src\data_initialization.h" />
     <ClInclude Include="src\data_load.h" />

@@ -287,6 +287,9 @@
     <ClCompile Include="src\common_vtk.cpp">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
+    <ClCompile Include="mean_hausdorff_distance.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -423,6 +426,9 @@
     </ClInclude>
     <ClInclude Include="include\common_math.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="mean_hausdorff_distance.h">
+      <Filter>Header Files\Distance Function</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
