@@ -1,6 +1,7 @@
 //==============================================================================
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 //==============================================================================
 #include "procrustrates_dist.h"
 //==============================================================================
@@ -10,6 +11,8 @@ void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
 void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
 void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
+// Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
@@ -845,5 +848,47 @@ dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t leng
 		}
 	}
 	return (dataType)sqrt(procTmp);
+}
+//==============================================================================
+// Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width)
+{
+	int i, j, k, l, xd;
+	dataType min_energy = DBL_MAX, initial_value = 0.;
+	int min_shape = -1;
+	// Tmp Mean shape
+	dataType ** tmpMean = (dataType **)malloc(sizeof(dataType*)*height);
+	for (k = 0; k < height; k++)
+	{
+		tmpMean[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
+	}
+	initialize3dArrayD(tmpMean, length, width, height, initial_value);
+	// Find mean shape
+	for (i = 0; i < num_shapes; i++)
+	{
+		calc_mean(tmpMean, set_shapes[i].shp, height, length, width, num_shapes);
+	}
+	// Find l2 diff btn shapes and mean shape
+	for (i = 0; i < num_shapes; i++)
+	{
+		dataType error = errorCalc(tmpMean, set_shapes[i].shp, height, length, width, h);
+		printf("Error btn %d shape and Mean %.8e\n", i + 1, error);
+		if (error <= min_energy)
+		{
+			min_energy = error;
+			min_shape = i + 1;
+		}
+	}
+	// Display console info
+	printf("Selected reference shape %d, error and mean shape %.8e\n", min_shape, min_energy);
+	// Copy selected to the reference pointer
+	copyDataPointer(set_shapes[min_shape].shp, referenceShape, height, length, width);
+	// Free memory
+	for (k = 0; k < height; k++)
+	{
+		free(tmpMean[k]);
+	}
+	free(tmpMean);
+	tmpMean = NULL;
 }
 //==============================================================================
