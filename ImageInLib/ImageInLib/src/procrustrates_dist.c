@@ -16,6 +16,7 @@ void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
+	//==============================================================================
 	size_t k, i, j, xd;
 	char st[160];
 	for (i = 0; i < 160; i++)
@@ -30,23 +31,29 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		initEstimate[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
 	}
 	//==============================================================================
-	// Choose and initial estimate of the mean shape
-	for (k = 0; k < height; k++)
+	// Struct Pointer to store registered shapes
+	Shapes * reg_shapes = (Shapes*)malloc(numShapes * sizeof(Shapes));
+	dataType initial_value = 0.;
+	for (i = 0; i < numShapes; i++) 
 	{
-		for (i = 0; i < length; i++)
+		reg_shapes[i].num = i + 1;
+		reg_shapes[i].shp = (dataType**)(dataType **)malloc(sizeof(dataType*)*height);
+		for (j = 0; j < height; j++) 
 		{
-			for (j = 0; j < width; j++)
-			{
-				// 1D Conversion of row and column
-				xd = x_new(i, j, length);
-				initEstimate[k][xd] = shapes[params.initEstimateShape].shp[k][xd]; // 1st shape as the estimate initial
-			}
+			reg_shapes[i].shp[j] = (dataType*)malloc(sizeof(dataType)*(length*width));
 		}
+		// Initialize reg_shapes
+		//==============================================================================
+		initialize3dArrayD(reg_shapes[i].shp, length, width, height, initial_value);
+		//==============================================================================
 	}
+	//==============================================================================
+	// Choose and initial reference shape from the set of shapes - As similar to the sample mean
+	setReferenceShape(shapes, initEstimate, numShapes, params.regParams.h, height, length, width);
 	//==============================================================================
 	// Step two - Register/Align the eigen shapes with the selected mean shape
 	int z;
-	double error, tol_proc = 1.0e-02;
+	double error, tol_proc = 1.0e-04;
 	z = 0;
 	do
 	{
@@ -58,20 +65,24 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		printf("Iteration %d\n", z);
 		printf("%s\n\n", st);
 		//==============================================================================
+		// Initial dtaMeanShape
+		initialize3dArrayD(dtaMnShp, length, width, height, initial_value);
+		//==============================================================================
 		for (k = 0; k < numShapes; k++)
 		{
 			printf("Shape %zd\n", k + 1);
-			run_registration(shapes[k].shp, initEstimate, shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
+			run_registration(shapes[k].shp, initEstimate, reg_shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
 			// Calculate the Mean shape
-			calc_mean(dtaMnShp, shapes[k].shp, height, length, width, numShapes);
+			calc_mean(dtaMnShp, reg_shapes[k].shp, height, length, width, numShapes);
 			printf("%s\n", st);
 			printf("\n");
 		}
 		//==============================================================================
+		// Check error btn new mean shape and original set reference shape
 		error = energyFunction(dtaMnShp, initEstimate, height, length, width, params.regParams.h);
 		printf("Error is %e\n", error);
 		//==============================================================================
-		// Update the new estimated mean
+		// Update to the new estimated mean
 		for (k = 0; k < height; k++)
 		{
 			for (i = 0; i < length; i++)
@@ -90,6 +101,13 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	} while ((error > tol_proc) && (z < params.meanCalcSteps));
 	printf("The number of iterations to calc. mean shape is %d\n", z);
 	printf("Error is %e\n", error);
+	//==============================================================================
+	// Copy reg shapes to the original shapes
+	for (k = 0; k < numShapes; k++) 
+	{
+		copyDataPointer(reg_shapes[k].shp, shapes[k].shp, height, length, width);
+	}
+	//==============================================================================
 	// Free memory
 	for (k = 0; k < height; k++)
 	{
@@ -97,6 +115,9 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	}
 	free(initEstimate);
 	initEstimate = NULL;
+	free(reg_shapes);
+	reg_shapes = NULL;
+	//==============================================================================
 }
 void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType ** eigvalues, size_t * princomp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
