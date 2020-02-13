@@ -71,7 +71,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		for (k = 0; k < numShapes; k++)
 		{
 			printf("Shape %zd\n", k + 1);
-			run_registration(shapes[k].shp, initEstimate, reg_shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
+			run_registration(initEstimate, shapes[k].shp, reg_shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
 			// Calculate the Mean shape
 			calc_mean(dtaMnShp, reg_shapes[k].shp, height, length, width, numShapes);
 			printf("%s\n", st);
@@ -902,7 +902,7 @@ void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_
 	// Display console info
 	printf("Selected reference shape %d, error and mean shape %.8e\n", min_shape, min_energy);
 	// Copy selected to the reference pointer
-	copyDataPointer(set_shapes[min_shape].shp, referenceShape, height, length, width);
+	copyDataPointer(set_shapes[min_shape - 1].shp, referenceShape, height, length, width);
 	// Free memory
 	for (k = 0; k < height; k++)
 	{
