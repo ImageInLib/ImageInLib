@@ -39,7 +39,8 @@ extern "C" {
 	typedef enum
 	{
 		GRADIENT_DESCENT = 1,
-		STOCHASTIC_DESCENT
+		STOCHASTIC_DESCENT,
+		BLOCK_COORDINATE_DESCENT
 	} Optimization_Method;
 
 #ifdef __cplusplus

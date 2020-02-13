@@ -88,6 +88,10 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	{
 		finalResults = registrationStochastic3D(fixedData, movingData, finalResults, step_size, tol, zDim, xDim, yDim, movingCentroid, params);
 	}
+	else if (gdescentMethod == BLOCK_COORDINATE_DESCENT)
+	{
+		finalResults = regCoorDescent3D(fixedData, movingData, finalResults, step_size, tol, zDim, xDim, yDim, movingCentroid, params);
+	}
 	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
