@@ -17,9 +17,10 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	const size_t dim2D = xDim * yDim;
 	dataType ** temp3dPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array used in the computation of distance
 	dataType ** tmpcurve3DPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array to copy curve3DPtr
+	const size_t memory_alloc_size = sizeof(dataType) * dim2D;
 	for (i = 0; i < zDim; i++) {
-		temp3dPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-		tmpcurve3DPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		temp3dPtr[i] = (dataType *)malloc(memory_alloc_size);
+		tmpcurve3DPtr[i] = (dataType *)malloc(memory_alloc_size);
 	}
 
 	//checks if the memory was allocated
@@ -276,9 +277,10 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 	const size_t dim2D = (xDim) * (yDim);
 	dataType ** temp3dPtr = (dataType **)malloc(sizeof(dataType*) * (zDim));// temporary array used in the computation of distance
 	dataType ** tmpcurve3DPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array to copy curve3DPtr
+	const size_t memory_alloc_size = sizeof(dataType) * dim2D;
 	for (i = 0; i < zDim; i++) {
-		temp3dPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-		tmpcurve3DPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		temp3dPtr[i] = (dataType *)malloc(memory_alloc_size);
+		tmpcurve3DPtr[i] = (dataType *)malloc(memory_alloc_size);
 	}
 	//==============================================================================
 	// curve3DPtr is in the range 0-1 binary
