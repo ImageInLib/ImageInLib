@@ -16,8 +16,11 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	size_t sweepNumber = 0, sweepDirection;
 	const size_t dim2D = xDim * yDim;
 	dataType ** temp3dPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array used in the computation of distance
-	for (i = 0; i < zDim; i++)
+	dataType ** tmpcurve3DPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array to copy curve3DPtr
+	for (i = 0; i < zDim; i++) {
 		temp3dPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		tmpcurve3DPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+	}
 
 	//checks if the memory was allocated
 	for (i = 0; i < zDim; i++)
@@ -39,7 +42,9 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	//Checks for 2D case
 	if (zDim == 1)
 		return false;
-
+	//==============================================================================
+	// curve3DPtr is in the range 0-1 binary
+	double threshold = 0.5, range = 0.5 / 255.0;
 	//Initialization stage
 	for (k = 0; k < zDim; k++)
 	{
@@ -48,13 +53,15 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 			for (j = 0; j < yDim; j++)
 			{
 				i_n = i + j * xDim;
-				if (curve3DPtr[k][i_n] == fgroundValue)
+
+				if (curve3DPtr[k][i_n] < threshold + range)
 				{
-					distance3DPtr[k][i_n] = fgroundValue;
+					tmpcurve3DPtr[k][i_n] = distance3DPtr[k][i_n] = fgroundValue;
 				}
 				else
 				{
 					distance3DPtr[k][i_n] = largeValue;
+					tmpcurve3DPtr[k][i_n] = curve3DPtr[k][i_n];
 				}
 			}
 		}
@@ -74,7 +81,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = (yDim - 1); j >= 0; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -95,7 +102,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = (yDim - 1); j >= 0; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -119,7 +126,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = 0; j < yDim; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -140,7 +147,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = 0; j < yDim; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -159,7 +166,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = (yDim - 1); j >= 0; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -182,7 +189,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = 0; j < yDim; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -205,7 +212,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = (yDim - 1); j >= 0; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -231,7 +238,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 					for (j = 0; j < yDim; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -245,9 +252,13 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 	for (i = 0; i < zDim; i++)
 	{
 		free(temp3dPtr[i]);
+		free(tmpcurve3DPtr[i]);
 	}
 
 	free(temp3dPtr);
+	free(tmpcurve3DPtr);
+	temp3dPtr = NULL;
+	tmpcurve3DPtr = NULL;
 	return true;
 }
 //==============================================================================
@@ -264,9 +275,14 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 	//const size_t dim2D = (i_max + 1) * (j_max + 1);
 	const size_t dim2D = (xDim) * (yDim);
 	dataType ** temp3dPtr = (dataType **)malloc(sizeof(dataType*) * (zDim));// temporary array used in the computation of distance
-	for (i = 0; i < zDim; i++)
+	dataType ** tmpcurve3DPtr = (dataType **)malloc(sizeof(dataType*) * zDim);// temporary array to copy curve3DPtr
+	for (i = 0; i < zDim; i++) {
 		temp3dPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		tmpcurve3DPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+	}
 	//==============================================================================
+	// curve3DPtr is in the range 0-1 binary
+	double threshold = 0.5, range = 0.5 / 255.0;
 	//Initialization stage
 	for (k = 0; k < zDim; k++)
 	{
@@ -275,13 +291,14 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 			for (j = 0; j < yDim; j++)
 			{
 				i_n = i + j * xDim;
-				if (curve3DPtr[k][i_n] == fgroundValue)
+				if (curve3DPtr[k][i_n] < threshold + range)
 				{
-					distance3DPtr[k][i_n] = fgroundValue;
+					tmpcurve3DPtr[k][i_n] = distance3DPtr[k][i_n] = fgroundValue;
 				}
 				else
 				{
 					distance3DPtr[k][i_n] = largeValue;
+					tmpcurve3DPtr[k][i_n] = curve3DPtr[k][i_n];
 				}
 			}
 		}
@@ -322,7 +339,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_max; j >= j_min; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -343,7 +360,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_max; j >= j_min; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -367,7 +384,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_min; j < j_max + 1; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -389,7 +406,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					{
 						i_n = i + j * xDim;
 						//i_n = i + j * xD;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -408,7 +425,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_max; j >= j_min; j--)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -431,7 +448,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_min; j < j_max + 1; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -453,7 +470,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					{
 						i_n = i + j * xDim;
 						//i_n = i + j * xD;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							//compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
@@ -480,7 +497,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 					for (j = j_min; j < j_max + 1; j++)
 					{
 						i_n = i + j * xDim;
-						if (curve3DPtr[k][i_n] != fgroundValue)
+						if (tmpcurve3DPtr[k][i_n] != fgroundValue)
 						{
 							compute3dDistance(i_n, k, xDim, yDim, zDim, distance3DPtr, temp3dPtr, dim2D, h);
 						}
@@ -495,9 +512,12 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 	for (i = 0; i < (k_max + 1); i++)
 	{
 		free(temp3dPtr[i]);
+		free(tmpcurve3DPtr[i]);
 	}
 	free(temp3dPtr);
+	free(tmpcurve3DPtr);
 	temp3dPtr = NULL;
+	tmpcurve3DPtr = NULL;
 }
 //==============================================================================
 bool fastSweepingFunction_2D(dataType * distance2DPtr, dataType * curve2DPtr, const size_t xDim, const size_t yDim,

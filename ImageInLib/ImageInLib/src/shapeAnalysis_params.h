@@ -4,7 +4,7 @@ extern "C" {
 
 #pragma once
 #include "registration_params.h"
-
+	//==============================================================================
 	typedef struct
 	{
 		Registration_Params regParams;
@@ -12,7 +12,7 @@ extern "C" {
 		size_t initEstimateShape;
 		size_t meanCalcSteps;
 	} shape_Analysis_Parameters;
-
+	//==============================================================================
 	typedef struct
 	{
 		dataType ** eigenvectors;
@@ -20,6 +20,12 @@ extern "C" {
 		size_t princomp;
 	} PCA_Params;
 
+	//==============================================================================
+	typedef struct {
+		int steps, estMethod;
+		dataType bound, eps, tolerance, h;
+	} estimate_Params;
+	//==============================================================================
 #ifdef __cplusplus
 }
 #endif

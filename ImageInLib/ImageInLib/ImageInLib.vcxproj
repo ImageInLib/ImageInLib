@@ -39,6 +39,7 @@
     <ClCompile Include="src\l2_norm.c" />
     <ClCompile Include="src\linked_list.c" />
     <ClCompile Include="src\mean_curvature_equation.c" />
+    <ClCompile Include="src\mean_hausdorff_distance.c" />
     <ClCompile Include="src\noiseGeneration.c" />
     <ClCompile Include="src\noise_generator.c" />
     <ClCompile Include="src\pca.c" />
@@ -48,6 +49,7 @@
     <ClCompile Include="src\rouy_tourin_function.c" />
     <ClCompile Include="src\segmentation.c" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
+    <ClCompile Include="src\segmentation3D_common.c" />
     <ClCompile Include="src\segmentation3D_subsurf.c" />
     <ClCompile Include="src\setting_boundary_values.c" />
     <ClCompile Include="src\shapeGeneration.c" />
@@ -87,6 +89,7 @@
     <ClInclude Include="src\image_norm.h" />
     <ClInclude Include="src\interpolations.h" />
     <ClInclude Include="src\linked_list.h" />
+    <ClInclude Include="src\mean_hausdorff_distance.h" />
     <ClInclude Include="src\noise_generator.h" />
     <ClInclude Include="src\non_linear_heat_equation.h" />
     <ClInclude Include="src\pca.h" />

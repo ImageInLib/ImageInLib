@@ -1,6 +1,7 @@
 //==============================================================================
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 //==============================================================================
 #include "procrustrates_dist.h"
 //==============================================================================
@@ -8,10 +9,14 @@ void calc_mean(dataType **dtaMean, dataType ** dtaInput, size_t height, size_t l
 void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t m, const size_t n, const size_t n1);
 void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n);
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width);
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
+void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
+// Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
+	//==============================================================================
 	size_t k, i, j, xd;
 	char st[160];
 	for (i = 0; i < 160; i++)
@@ -26,23 +31,29 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		initEstimate[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
 	}
 	//==============================================================================
-	// Choose and initial estimate of the mean shape
-	for (k = 0; k < height; k++)
+	// Struct Pointer to store registered shapes
+	Shapes * reg_shapes = (Shapes*)malloc(numShapes * sizeof(Shapes));
+	dataType initial_value = 0.;
+	for (i = 0; i < numShapes; i++) 
 	{
-		for (i = 0; i < length; i++)
+		reg_shapes[i].num = i + 1;
+		reg_shapes[i].shp = (dataType**)(dataType **)malloc(sizeof(dataType*)*height);
+		for (j = 0; j < height; j++) 
 		{
-			for (j = 0; j < width; j++)
-			{
-				// 1D Conversion of row and column
-				xd = x_new(i, j, length);
-				initEstimate[k][xd] = shapes[params.initEstimateShape].shp[k][xd]; // 1st shape as the estimate initial
-			}
+			reg_shapes[i].shp[j] = (dataType*)malloc(sizeof(dataType)*(length*width));
 		}
+		// Initialize reg_shapes
+		//==============================================================================
+		initialize3dArrayD(reg_shapes[i].shp, length, width, height, initial_value);
+		//==============================================================================
 	}
+	//==============================================================================
+	// Choose and initial reference shape from the set of shapes - As similar to the sample mean
+	setReferenceShape(shapes, initEstimate, numShapes, params.regParams.h, height, length, width);
 	//==============================================================================
 	// Step two - Register/Align the eigen shapes with the selected mean shape
 	int z;
-	double error, tol_proc = 1.0e-02;
+	double error, tol_proc = 1.0e-04;
 	z = 0;
 	do
 	{
@@ -54,20 +65,24 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		printf("Iteration %d\n", z);
 		printf("%s\n\n", st);
 		//==============================================================================
+		// Initial dtaMeanShape
+		initialize3dArrayD(dtaMnShp, length, width, height, initial_value);
+		//==============================================================================
 		for (k = 0; k < numShapes; k++)
 		{
 			printf("Shape %zd\n", k + 1);
-			run_registration(shapes[k].shp, initEstimate, shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
+			run_registration(shapes[k].shp, initEstimate, reg_shapes[k].shp, height, length, width, params.regParams, params.gdescentMethod);
 			// Calculate the Mean shape
-			calc_mean(dtaMnShp, shapes[k].shp, height, length, width, numShapes);
+			calc_mean(dtaMnShp, reg_shapes[k].shp, height, length, width, numShapes);
 			printf("%s\n", st);
 			printf("\n");
 		}
 		//==============================================================================
+		// Check error btn new mean shape and original set reference shape
 		error = energyFunction(dtaMnShp, initEstimate, height, length, width, params.regParams.h);
 		printf("Error is %e\n", error);
 		//==============================================================================
-		// Update the new estimated mean
+		// Update to the new estimated mean
 		for (k = 0; k < height; k++)
 		{
 			for (i = 0; i < length; i++)
@@ -86,6 +101,13 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	} while ((error > tol_proc) && (z < params.meanCalcSteps));
 	printf("The number of iterations to calc. mean shape is %d\n", z);
 	printf("Error is %e\n", error);
+	//==============================================================================
+	// Copy reg shapes to the original shapes
+	for (k = 0; k < numShapes; k++) 
+	{
+		copyDataPointer(reg_shapes[k].shp, shapes[k].shp, height, length, width);
+	}
+	//==============================================================================
 	// Free memory
 	for (k = 0; k < height; k++)
 	{
@@ -93,6 +115,9 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	}
 	free(initEstimate);
 	initEstimate = NULL;
+	free(reg_shapes);
+	reg_shapes = NULL;
+	//==============================================================================
 }
 void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType ** eigvalues, size_t * princomp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
@@ -132,7 +157,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 					xyd = x_flat(i, j, k, length, width);
 
 					// center means
-					s_Shapes[l][xyd] = eigshapes[l].eigenShape[xyd]/* - dtaMeanShape[k][xd]*/;
+					s_Shapes[l][xyd] = eigshapes[l].eigenShape[xyd] - dtaMeanShape[k][xd];
 				}
 			}
 		}
@@ -236,26 +261,6 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	printf("\nWe have selected %zd principal components\n", (*princomp));
 	//==============================================================================
 	// Calculate the Eigenvalues and eigenvectos of S*S_transpose
-	// 1. Align the S - D by n matrix
-	for (k = 0; k < height; k++)
-	{
-		for (i = 0; i < length; i++)
-		{
-			for (j = 0; j < width; j++)
-			{
-				// 2D to 1D representation for i, j
-				xd = x_new(i, j, length);
-				// 3D to 1D flattening
-				xyd = x_flat(i, j, k, length, width);
-				for (l = 0; l < numShapes; l++)
-				{
-					// center means
-					transp[xyd][l] = transp[xyd][l] - dtaMeanShape[k][xd];
-				}
-			}
-		}
-	}
-	// 2. Matrix Multiplication to save the eigenvector
 	for (i = 0; i < dim3D; i++)
 	{
 		(*eigvectors)[i] = (dataType*)malloc(sizeof(dataType) * (*princomp));
@@ -299,7 +304,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	selected_eigvectors = NULL;
 	//==============================================================================
 }
-void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shape_Analysis_Parameters shapeParam, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
+void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, dataType ** estimatedShape, shape_Analysis_Parameters shapeParam, estimate_Params * estParams, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
 	size_t k;
 	// Init mean shape pointer
@@ -324,8 +329,20 @@ void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, shape_Anal
 	pca_analysis(meanShape, &(*pcaParam).eigenvectors, &(*pcaParam).eigenvalues, &(*pcaParam).princomp, atlasShapes, height, length, width, numShapes, pca_Threshold);
 	//==============================================================================
 	// Estimate the Given Shape using the evaluated Pca Parameters
-	//==============================================================================
-	shapeEstimate(meanShape, shapeToEstimate, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, (*pcaParam).princomp, height, length, width);
+	if (estParams->estMethod == 1)
+	{
+
+		// Minimising of probability methods
+		shapeEstimate(meanShape, shapeToEstimate, estimatedShape, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, estParams, (*pcaParam).princomp, height, length, width);
+		//==============================================================================
+	}
+	else if (estParams->estMethod == 2)
+	{
+
+		// Minimising of Energy btn two dist. fn's
+		shapeEstimateJU(meanShape, shapeToEstimate, estimatedShape, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, estParams, (*pcaParam).princomp, height, length, width);
+		//==============================================================================
+	}
 	//==============================================================================
 	free((*pcaParam).eigenvectors);
 	free(pcaParam);
@@ -390,7 +407,7 @@ void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t len
 		}
 	}
 }
-void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigenvalues, dataType ** eigenvectors, const size_t princomp, const size_t height, const size_t length, const size_t width)
+void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
 {
 	size_t k, i, j, xd, xyd;
 	//==============================================================================
@@ -452,13 +469,13 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 			shp_projection[i] += trans_eigvectors[i][j] * shp_diff[j];
 		}
 		// Is this Thresholding applicable to general data?
-		if (shp_projection[i] > 3)
+		if (shp_projection[i] > estParams->bound * sqrtf(fabsf(eigenvalues[i])))
 		{
-			shp_projection[i] = 3;
+			shp_projection[i] = estParams->bound * sqrtf(fabsf(eigenvalues[i]));
 		}
-		else if (shp_projection[i] < -3)
+		else if (shp_projection[i] < -1 * estParams->bound * sqrtf(fabsf(eigenvalues[i])))
 		{
-			shp_projection[i] = -3;
+			shp_projection[i] = -1 * estParams->bound * sqrtf(fabsf(eigenvalues[i]));
 		}
 	}
 	//==============================================================================
@@ -477,9 +494,10 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	//==============================================================================
 	for (i = 0; i < princomp; i++)
 	{
+		tmp_results[i] = 0;
 		for (j = 0; j < princomp; j++)
 		{
-			tmp_results[i] = diag_eigvalues_inv[i][j] * shp_projection[j];
+			tmp_results[i] += diag_eigvalues_inv[i][j] * shp_projection[j];
 		}
 	}
 	//==============================================================================
@@ -491,49 +509,53 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	printf("\nEnergy of Shape Parameter: %.8lf\n", energy_param);
 	//==============================================================================
 	// Minimization of Energy
-	int iteration = 0, steps = 100;
-	double tolerance = 1.0e-04, error;
-	dataType eps = 1000;
+	int iteration = 0;
 	// Initialize pointers#
-	dataType * est_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
+	dataType * e_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
+	// Calc. Estimated U_k*a_k
 	for (i = 0; i < dim3D; i++)
 	{
-		est_shape[i] = 0;
+		e_shape[i] = 0;
+		for (j = 0; j < princomp; j++)
+		{
+			// Estimated shape
+			e_shape[i] += shp_projection[j] * eigenvectors[i][j];
+		}
+	}
+	//==============================================================================
+	// Construct shape prior model
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 2D to 1D representation for i, j
+				xd = x_new(i, j, length);
+				// 3D to 1D flattening
+				xyd = x_flat(i, j, k, length, width);
+				// Construct prior shape
+				est_shape[k][xd] = dtaMeanShape[k][xd] + e_shape[xyd];
+			}
+		}
 	}
 	//==============================================================================
 	do
 	{
 		//==============================================================================
-		// print shp projection
-		printf("\nShape Projection vector: ");
-		for (j = 0; j < princomp; j++) {
-			printf("%.4f\n", shp_projection[j]);
-		}
-		//==============================================================================
 		printf("Iteration: %d\n", iteration);
 		//==============================================================================
-		// Calc. Estimated U_k*a_k
-		for (i = 0; i < dim3D; i++)
+		for (i = 0; i < princomp; i++)
 		{
-			for (j = 0; j < princomp; j++)
+			shp_projection[i] = shp_projection[i] - estParams->eps * tmp_results[i];
+			if (shp_projection[i] > estParams->bound * sqrtf(fabsf(eigenvalues[i])))
 			{
-				// Estimated shape
-				est_shape[i] += shp_projection[j] * (dataType)sqrt(eigenvalues[j]) * eigenvectors[i][j];
+				shp_projection[i] = estParams->bound * sqrtf(fabsf(eigenvalues[i]));
 			}
-		}
-		//==============================================================================
-		// Error
-		error = 0;
-		for (i = 0; i < princomp; i++)
-		{
-			error += shp_projection_trans[0][i] * tmp_results[i];
-		}
-		//error = energyFunction(dtaMeanShape, prior_Shape, height, length, width, h);
-		printf("Error is %.8lf\n", error);
-		//==============================================================================
-		for (i = 0; i < princomp; i++)
-		{
-			shp_projection[i] = shp_projection[i] - eps * tmp_results[i];
+			else if (shp_projection[i] < -1 * estParams->bound * sqrtf(fabsf(eigenvalues[i])))
+			{
+				shp_projection[i] = -1 * estParams->bound * sqrtf(fabsf(eigenvalues[i]));
+			}
 		}
 		//==============================================================================
 		// Update Shape Projection T
@@ -544,17 +566,36 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 		// Update the tmp results
 		for (i = 0; i < princomp; i++)
 		{
+			tmp_results[i] = 0.;
 			for (j = 0; j < princomp; j++)
 			{
-				tmp_results[i] = diag_eigvalues_inv[i][j] * shp_projection[j];
+				tmp_results[i] += diag_eigvalues_inv[i][j] * shp_projection[j];
+			}
+		}
+		//==============================================================================
+		// Error
+		energy_param = 0;
+		for (i = 0; i < princomp; i++)
+		{
+			energy_param += shp_projection_trans[0][i] * tmp_results[i];
+		}
+		//==============================================================================
+		// Calc. Estimated U_k*a_k
+		for (i = 0; i < dim3D; i++)
+		{
+			e_shape[i] = 0.;
+			for (j = 0; j < princomp; j++)
+			{
+				// Estimated shape
+				e_shape[i] += shp_projection[j] * eigenvectors[i][j];
 			}
 		}
 		//==============================================================================
 		iteration++;
 		//==============================================================================
-	} while ((error > tolerance) && (iteration < steps));
+	} while ((energy_param > estParams->tolerance) && (iteration < estParams->steps));
 	printf("\nThe number of iterations to calc. prior shape is %d\n", iteration);
-	printf("\nError during calc.: %.8lf\n", error);
+	printf("\nError during calc.: %.8e\n", energy_param);
 	//==============================================================================
 	// Rewrite the to old estmate shape
 	// Rescale the data?
@@ -570,7 +611,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 				// 3D to 1D flattening
 				xyd = x_flat(i, j, k, length, width);
 				// Construct prior shape
-				shape[k][xd] = dtaMeanShape[k][xd] + est_shape[xyd];
+				est_shape[k][xd] = dtaMeanShape[k][xd] + e_shape[xyd];
 			}
 		}
 	}
@@ -603,6 +644,193 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType * eigen
 	free(shp_projection);
 	//==============================================================================
 }
+void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
+{
+	int k, i, j, xd, xyd, l;
+	//==============================================================================
+	size_t dim3D = height * length * width, dim2D = length * width;
+	//==============================================================================
+	// Create k by 1 bounded eigen vectors
+	dataType *bound_eigvalues = (dataType*)malloc(sizeof(dataType) * princomp); // K by 1
+	for (i = 0; i < princomp; i++)
+	{
+		bound_eigvalues[i] = estParams->bound * sqrtf(fabsf(eigenvalues[i]));
+	}
+	//==============================================================================
+	// Transpose the eigenvectors
+	dataType ** trans_eigvectors = (dataType**)malloc(sizeof(dataType*) * princomp); // K by D
+	for (i = 0; i < princomp; i++)
+	{
+		trans_eigvectors[i] = (dataType*)malloc(sizeof(dataType) * dim3D);
+	}
+	transpose(trans_eigvectors, eigenvectors, dim3D, princomp);
+	//==============================================================================
+	// Difference btn shape and mean shape - D by 1 ---> Center the shape
+	dataType * shp_diff = (dataType*)malloc(sizeof(dataType) * dim3D); // D by 1
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 2D to 1D representation for i, j
+				xd = x_new(i, j, length);
+				// 3D to 1D flattening
+				xyd = x_flat(i, j, k, length, width);
+				// Difference btweeen shape and mean shape
+				shp_diff[xyd] = shape[k][xd] - dtaMeanShape[k][xd];
+			}
+		}
+	}
+	//==============================================================================
+	// Projection of the shape - k by 1
+	dataType * shp_projection = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
+	// Multiplication
+	for (i = 0; i < princomp; i++)
+	{
+		shp_projection[i] = 0;
+	}
+	//==============================================================================
+	// Estimated shape from atlas
+	for (l = 0; l < princomp; l++)
+	{
+		for (k = 0; k < height; k++)
+		{
+			for (i = 0; i < length; i++)
+			{
+				for (j = 0; j < width; j++)
+				{
+					// 2D to 1D representation for i, j
+					xd = x_new(i, j, length);
+					// 3D to 1D flattening
+					xyd = x_flat(i, j, k, length, width);
+					est_shape[k][xd] = (eigenvectors[xyd][l] * (shp_projection[l])) + dtaMeanShape[k][xd];
+				}
+			}
+		}
+	}
+	//==============================================================================
+	dataType * grad_energy = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
+	for (l = 0; l < princomp; l++)
+	{
+		grad_energy[l] = 0;
+		for (k = 0; k < height; k++)
+		{
+			for (i = 0; i < length; i++)
+			{
+				for (j = 0; j < width; j++)
+				{
+					// 2D to 1D representation for i, j
+					xd = x_new(i, j, length);
+					// 3D to 1D flattening
+					xyd = x_flat(i, j, k, length, width);
+					// Difference btn est. and reg. shapes
+					grad_energy[l] += (2 * (trans_eigvectors[l][xyd] * (est_shape[k][xd] - shape[k][xd]))) / dim3D;
+				}
+			}
+		}
+	}
+	//==============================================================================
+	// Minimization of Energy
+	int iteration = 0;
+	dataType energy_param = errorCalc(est_shape, shape, height, length, width, estParams->h);
+	//==============================================================================
+	bool stp_condition = false;
+	while (!stp_condition)
+	{
+		if (energy_param < estParams->tolerance || iteration == estParams->steps)
+		{
+			stp_condition = true;
+		}
+		else
+		{
+			// Estimated shape from atlas
+			for (l = 0; l < princomp; l++)
+			{
+				shp_projection[l] = shp_projection[l] - estParams->eps * grad_energy[l];
+				// Boundary check
+				if (shp_projection[l] > bound_eigvalues[l])
+				{
+					shp_projection[l] = bound_eigvalues[l];
+				}
+				else if (shp_projection[l] < (-1 * bound_eigvalues[l]))
+				{
+					shp_projection[l] = -1 * bound_eigvalues[l];
+				}
+			}
+			// Estimated shape from atlas
+			for (l = 0; l < princomp; l++)
+			{
+				for (k = 0; k < height; k++)
+				{
+					for (i = 0; i < length; i++)
+					{
+						for (j = 0; j < width; j++)
+						{
+							// 2D to 1D representation for i, j
+							xd = x_new(i, j, length);
+							// 3D to 1D flattening
+							xyd = x_flat(i, j, k, length, width);
+							est_shape[k][xd] = (eigenvectors[xyd][l] * (shp_projection[l])) + dtaMeanShape[k][xd];
+						}
+					}
+				}
+			}
+			//==============================================================================
+			// To skip or not?
+			//ReDistFn(est_shape, height, length, width);
+			//==============================================================================
+			// Grad_energy
+			// Estimated shape from atlas
+			for (l = 0; l < princomp; l++)
+			{
+				grad_energy[l] = 0;
+				for (k = 0; k < height; k++)
+				{
+					for (i = 0; i < length; i++)
+					{
+						for (j = 0; j < width; j++)
+						{
+							// 2D to 1D representation for i, j
+							xd = x_new(i, j, length);
+							// 3D to 1D flattening
+							xyd = x_flat(i, j, k, length, width);
+							// Difference btn est. and reg. shapes
+							grad_energy[l] += (2 * (trans_eigvectors[l][xyd] * (est_shape[k][xd] - shape[k][xd]))) / dim3D;
+						}
+					}
+				}
+			}
+			// Difference btn est. and reg. shapes
+			energy_param = errorCalc(est_shape, shape, height, length, width, estParams->h);
+			//==============================================================================
+			iteration++;
+			//==============================================================================
+		}
+	}
+	//==============================================================================
+	printf("\nThe number of iterations to calc. prior shape is %d\n", iteration);
+	//==============================================================================
+	printf("\nMEnergy minimized at end is %.8f\n", energy_param);
+	//==============================================================================
+	printf("\nShape Projection vector:\n");
+	for (j = 0; j < princomp; j++) {
+		printf("%.4f\n", shp_projection[j]);
+	}
+	//==============================================================================
+	// Free Memory
+	for (i = 0; i < princomp; i++)
+	{
+		free(trans_eigvectors[i]);
+	}
+	free(trans_eigvectors);
+	free(shp_projection);
+	free(shp_diff);
+	shp_projection = NULL;
+	trans_eigvectors = NULL;
+	//==============================================================================
+}
+//==============================================================================
 //==============================================================================
 // Perform two matrices multiplication Function
 void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t  m, const size_t  n, const size_t n1)
@@ -640,5 +868,47 @@ dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t leng
 		}
 	}
 	return (dataType)sqrt(procTmp);
+}
+//==============================================================================
+// Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width)
+{
+	int i, j, k, l, xd;
+	dataType min_energy = DBL_MAX, initial_value = 0.;
+	int min_shape = -1;
+	// Tmp Mean shape
+	dataType ** tmpMean = (dataType **)malloc(sizeof(dataType*)*height);
+	for (k = 0; k < height; k++)
+	{
+		tmpMean[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
+	}
+	initialize3dArrayD(tmpMean, length, width, height, initial_value);
+	// Find mean shape
+	for (i = 0; i < num_shapes; i++)
+	{
+		calc_mean(tmpMean, set_shapes[i].shp, height, length, width, num_shapes);
+	}
+	// Find l2 diff btn shapes and mean shape
+	for (i = 0; i < num_shapes; i++)
+	{
+		dataType error = errorCalc(tmpMean, set_shapes[i].shp, height, length, width, h);
+		printf("Error btn %d shape and Mean %.8e\n", i + 1, error);
+		if (error <= min_energy)
+		{
+			min_energy = error;
+			min_shape = i + 1;
+		}
+	}
+	// Display console info
+	printf("Selected reference shape %d, error and mean shape %.8e\n", min_shape, min_energy);
+	// Copy selected to the reference pointer
+	copyDataPointer(set_shapes[min_shape].shp, referenceShape, height, length, width);
+	// Free memory
+	for (k = 0; k < height; k++)
+	{
+		free(tmpMean[k]);
+	}
+	free(tmpMean);
+	tmpMean = NULL;
 }
 //==============================================================================

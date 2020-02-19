@@ -26,7 +26,7 @@ extern "C" {
 	// Registered shapes!
 	dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t length, size_t width);
 	//==============================================================================
-	void estimateShape(Shapes *atlasShapes, dataType ** shapeToEstimate, shape_Analysis_Parameters shapeParam, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold);
+	void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, dataType ** estimatedShape, shape_Analysis_Parameters shapeParam, estimate_Params * estParams, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold);
 	//==============================================================================
 #endif // !PROCRUSTATESSDIST
 

@@ -24,6 +24,13 @@ extern "C" {
 // Global Variables
 //==============================================================================
 // Function Prototypes
+// Function to approximate value n + 1 U_pq, 1st order accurate, implicit in time, upwind method
+	// Inputs - step n + 1 Up, step n + 1 Uq, step n Apq 
+	// Eq - 82
+	dataType approx_U_pq(dataType U_p, dataType U_q, dataType A_pq);
+//==============================================================================
+	// Function to calclate the gamma parameter - eq 91
+	dataType chooseGamma(dataType value, dataType dist1, dataType dist2);
 //==============================================================================
 #endif // !SEGMENTATIO3D_COMMON
 
