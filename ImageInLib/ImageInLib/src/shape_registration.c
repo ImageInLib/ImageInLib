@@ -574,36 +574,32 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	Affine_Parameter results;
 	// Initialize the parameters
 	size_t k, i, j, x, counter = 0;
-
 	// Initialize the results
 	results.rotation.x = 0.0, results.rotation.y = 0.0, results.rotation.z = 0.0;
 	results.scaling.x = 0.0, results.scaling.y = 0.0, results.scaling.z = 0.0;
 	results.translation.x = 0.0, results.translation.y = 0.0, results.translation.z = 0.0;
-
 	// Forward difference parameters
 	dataType xFwd, yFwd, zFwd;
-
 	// Derivative component
 	dataType componentX, componentY, componentZ;
-
 	// Stores the difference between two distance pointers
 	dataType distDifference;
-
 	// Shorter Transformation names
 	dataType phi = params->rotation.x, theta = params->rotation.y, psi = params->rotation.z;
 	dataType sx = params->scaling.x, sy = params->scaling.y, sz = params->scaling.z;
 	dataType tx = params->translation.x, ty = params->translation.y, tz = params->translation.z;
-
-	// Setting same if uniform scale and rotation
-#ifdef UNIFORM
-	sx = sy = sz;
-	phi = theta = psi;
-#endif // UNIFORM
-	// Scale denominator
-	dataType inv_sx2 = (dataType)(1.0 / (sx*sx));
-	dataType inv_sy2 = (dataType)(1.0 / (sy*sy));
-	dataType inv_sz2 = (dataType)(1.0 / (sz*sz));
-
+	// Trigonometric functions as const
+	// Rotation
+	const double neg_sin_phi_sin_psi = -sin(phi)*sin(psi), _cos_phi_cos_psi_sin_theta = cos(phi)*cos(psi)*sin(theta), neg_cos_psi_sin_phi = -cos(psi)*sin(phi), _cos_phi_sin_psi_sin_theta = cos(phi)*sin(psi)*sin(theta), _cos_phi_cos_theta = cos(phi)*cos(theta);
+	const double _cos_phi_sin_psi = cos(phi)*sin(psi), neg_cos_phi_sin_psi = -cos(phi)*sin(psi), _cos_psi_sin_phi_sin_theta = cos(psi)*sin(phi)*sin(theta), _cos_phi_cos_psi = cos(phi)*cos(psi), _sin_phi_sin_psi_sin_theta = sin(phi)*sin(psi)*sin(theta), _cos_theta_sin_phi = cos(theta) * sin(phi);
+	const double _cos_psi_sin_theta = cos(psi)*sin(theta), _sin_psi_sin_theta = sin(psi)*sin(theta), _cos_theta = cos(theta), _cos_psi_cos_theta_sin_phi = cos(psi)*cos(theta)*sin(phi), _cos_theta_sin_phi_sin_psi = cos(theta)*sin(phi)*sin(psi), _sin_phi_sin_theta = sin(phi)*sin(theta);
+	const double _cos_phi_cos_psi_cos_theta = cos(phi)*cos(psi)*cos(theta), _cos_phi_cos_theta_sin_psi_ = cos(phi)*cos(theta)*sin(psi), _cos_phi_sin_theta = cos(phi)*sin(theta);
+	// Scaling
+	const double _cos_psi_cos_theta = cos(psi)*cos(theta), _cos_theta_sin_psi = cos(theta)*sin(psi), _sin_theta = sin(theta);
+	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
+	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
+	// Scales
+	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 	// Begin Evaluation
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -620,59 +616,33 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 					counter++;
 					// Store the distance function difference
 					distDifference = (dataType)((destPtr[k][x] - distTrans[k][x]) * 2.0);
-
 					// Directional component vector derivatives - i, j, k
 					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
-
-					// Trignometry functions inside the component evaluation equation
-					double a = cos(phi), b = sin(phi), ab = cos(phi)*sin(phi), aa = cos(phi)*cos(phi), bb = sin(phi)*sin(phi), aaa = a * aa, bbb = b * bb, aab = aa * b, abb = a * bb;
-
 					// Apply Forward Differences to the distTrans pointer
 					xFwd = finiteDifX(distTrans, h, x, k, i, imageLength);
 					yFwd = finiteDifY(distTrans, h, k, i, j, imageLength, imageWidth);
 					zFwd = finiteDifZ(distTrans, h, x, k, i, imageLength, imageHeight);
 					// Evaluate Individual Gradient Components
-#ifdef UNIFORM
-					// Uniform Rotations Angles
-					component = xFwd * ((-2.0*tmpI)*(ab / sx) + ((tmpJ)*((bb - aa) / sx)) + ((tmpK)*(a / sx))) +
-						yFwd * (((tmpI)*((aa + 2.0 * aab - bb - bbb) / sy)) + ((tmpJ)*((-2.0 * ab - 3.0 * abb) / sy)) + ((tmpK)*((bb - aa) / sy))) +
-						zFwd * (((tmpI)*((-aaa + 2.0 * ab + 2.0 * abb) / sz)) + ((tmpJ)*((aa + 2.0 * aa - bb - bbb) / sz)) + ((tmpK)*((-2.0 * ab) / sz)));
-					// Set the Rotation - Uniform Angles
-					results.rotation.x += (component)*(distDifference);
-					results.rotation.y += (component)*(distDifference);
-					results.rotation.z += (component)*(distDifference);
-					// Scaling Parameters
-					Uniform Scale Component
-						component = xFwd * (((tmpI)*((-aa) * inv_sx2)) + ((tmpJ)*(ab * inv_sx2)) + ((tmpK)*((-b) * inv_sx2))) +
-						yFwd * (((-tmpI)*((ab + abb)  * inv_sy2)) + ((-tmpJ)*((aa - bbb) * inv_sy2)) + ((tmpK)*(ab * inv_sy2))) +
-						zFwd * (((-tmpI)*((-aab + bb) * inv_sz2)) + ((-tmpJ)*((ab + abb) * inv_sz2)) + ((-tmpK)*(aa * inv_sz2)));
-					// Set the Scales - Uniform Scale
-					results.scaling.x += (component)*(distDifference);
-					results.scaling.y += (component)*(distDifference);
-					results.scaling.z += (component)*(distDifference);
-#endif // UNIFORM
 #ifdef DIRECTIONAL
 					// Rotation Components - Directionnal
-					componentX = (dataType)(yFwd * (((tmpI)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(psi)*sin(phi) - cos(phi)*sin(psi)*sin(theta)) / sy)) + ((-tmpK)*((cos(phi)*cos(theta)) / sy))) +
-						zFwd * (((tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sz)) + ((-tmpK)*((cos(theta) * sin(phi)) / sz))));
-					componentY = (dataType)(xFwd * (((-tmpI)*((cos(psi)*sin(theta)) / sx)) + ((tmpJ)*((sin(psi)*sin(theta)) / sx)) + ((tmpK)*((cos(theta)) / sx))) +
-						yFwd * (((tmpI)*((cos(psi)*cos(theta)*sin(phi)) / sy)) + ((-tmpJ)*((cos(theta)*sin(phi)*sin(psi)) / sy)) + ((tmpK)*((sin(phi)*sin(theta)) / sy))) +
-						zFwd * (((-tmpI)*((cos(phi)*cos(psi)*cos(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(theta)*sin(psi)) / sz)) + ((-tmpK)*((cos(phi)*sin(theta)) / sz))));
-					componentZ = (dataType)(xFwd * (((-tmpI)*((cos(theta)*sin(psi)) / sx)) + ((-tmpJ)*((cos(psi)*cos(theta)) / sx))) +
-						yFwd * (((tmpI)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(phi)*sin(psi) - cos(psi)*sin(phi)*sin(theta)) / sy))) +
-						zFwd * (((tmpI)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / sz)) + ((tmpJ)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sz))));
-					// Set the Rotations - Directional
+					componentX = (dataType)(yFwd * (((tmpI)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_psi_sin_phi - _cos_phi_sin_psi_sin_theta) / sy)) + ((-tmpK)*((_cos_phi_cos_theta) / sy))) +
+						zFwd * (((tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sz)) + ((-tmpK)*((_cos_theta_sin_phi) / sz))));
 					results.rotation.x += (componentX)*(distDifference);
+					componentY = (dataType)(xFwd * (((-tmpI)*((_cos_psi_sin_theta) / sx)) + ((tmpJ)*((_sin_psi_sin_theta) / sx)) + ((tmpK)*((_cos_theta) / sx))) +
+						yFwd * (((tmpI)*((_cos_psi_cos_theta_sin_phi) / sy)) + ((-tmpJ)*((_cos_theta_sin_phi_sin_psi) / sy)) + ((tmpK)*((_sin_phi_sin_theta) / sy))) +
+						zFwd * (((-tmpI)*((_cos_phi_cos_psi_cos_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_theta_sin_psi_) / sz)) + ((-tmpK)*(_cos_phi_sin_theta / sz))));
 					results.rotation.y += (componentY)*(distDifference);
+					componentZ = (dataType)(xFwd * (((-tmpI)*((_cos_theta_sin_psi) / sx)) + ((-tmpJ)*((_cos_psi_cos_theta) / sx))) +
+						yFwd * (((tmpI)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_phi_sin_psi - _cos_psi_sin_phi_sin_theta) / sy))) +
+						zFwd * (((tmpI)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / sz)) + ((tmpJ)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sz))));					
 					results.rotation.z += (componentZ)*(distDifference);
 					// Directional Scale Components
-					componentX = (dataType)(xFwd * ((-tmpI)*((cos(psi)*cos(theta)) / (sx*sx)) + ((tmpJ)*((cos(theta)*sin(psi)) / (sx*sx))) + ((-tmpK)*((sin(theta)) / (sx*sx)))));
-					componentY = (dataType)(yFwd * (((-tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / (sy*sy))) + ((-tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / (sy*sy))) + ((tmpK)*((cos(theta)*sin(phi)) / (sy*sy)))));
-					componentZ = (dataType)(zFwd * (((-tmpI)*((sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)) / (sz*sz))) + ((-tmpJ)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / (sz*sz))) + ((-tmpK)*((cos(phi)*cos(theta)) / (sz*sz)))));
-					// Set the Scales - Directional Scales
+					componentX = (dataType)(xFwd * ((-tmpI)*((_cos_psi_cos_theta) / (_sx_sx)) + ((tmpJ)*((_cos_theta_sin_psi) / (_sx_sx))) + ((-tmpK)*((_sin_theta) / (_sx_sx)))));
 					results.scaling.x += (componentX)*(distDifference);
+					componentY = (dataType)(yFwd * (((-tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / (_sy_sy))) + ((-tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / (_sy_sy))) + ((tmpK)*((_cos_theta_sin_phi) / (_sy_sy)))));
 					results.scaling.y += (componentY)*(distDifference);
-					results.scaling.z += (componentZ)*(distDifference);
+					componentZ = (dataType)(zFwd * (((-tmpI)*((_sin_phi_sin_psi - _cos_phi_cos_psi_sin_theta) / (_sz_sz))) + ((-tmpJ)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / (_sz_sz))) + ((-tmpK)*((_cos_phi_cos_theta) / (_sz_sz)))));
+					results.scaling.z += (componentZ)*(distDifference);			
 #endif // DIRECTIONAL
 					// Translation Parameters - Always directional
 					// Tx
@@ -691,7 +661,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	{
 		counter = 1;
 	}
-
+	// NORMALIZATION
 	results.scaling.x = results.scaling.x / counter;
 	results.scaling.y = results.scaling.y / counter;
 	results.scaling.z = results.scaling.z / counter;
@@ -708,7 +678,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	return results;
 }
 //==============================================================================
-Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t updateComponent)
+Affine_Parameter gradientCoorDinateDescentComp(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t updateComponent)
 {
 	Affine_Parameter results;
 	// Initialize the parameters
@@ -727,6 +697,18 @@ Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans,
 	dataType phi = params->rotation.x, theta = params->rotation.y, psi = params->rotation.z;
 	dataType sx = params->scaling.x, sy = params->scaling.y, sz = params->scaling.z;
 	dataType tx = params->translation.x, ty = params->translation.y, tz = params->translation.z;
+	// Trigonometric functions as const
+	// Rotation
+	const double neg_sin_phi_sin_psi = -sin(phi)*sin(psi), _cos_phi_cos_psi_sin_theta = cos(phi)*cos(psi)*sin(theta), neg_cos_psi_sin_phi = -cos(psi)*sin(phi), _cos_phi_sin_psi_sin_theta = cos(phi)*sin(psi)*sin(theta), _cos_phi_cos_theta = cos(phi)*cos(theta);
+	const double _cos_phi_sin_psi = cos(phi)*sin(psi), neg_cos_phi_sin_psi = -cos(phi)*sin(psi), _cos_psi_sin_phi_sin_theta = cos(psi)*sin(phi)*sin(theta), _cos_phi_cos_psi = cos(phi)*cos(psi), _sin_phi_sin_psi_sin_theta = sin(phi)*sin(psi)*sin(theta), _cos_theta_sin_phi = cos(theta) * sin(phi);
+	const double _cos_psi_sin_theta = cos(psi)*sin(theta), _sin_psi_sin_theta = sin(psi)*sin(theta), _cos_theta = cos(theta), _cos_psi_cos_theta_sin_phi = cos(psi)*cos(theta)*sin(phi), _cos_theta_sin_phi_sin_psi = cos(theta)*sin(phi)*sin(psi), _sin_phi_sin_theta = sin(phi)*sin(theta);
+	const double _cos_phi_cos_psi_cos_theta = cos(phi)*cos(psi)*cos(theta), _cos_phi_cos_theta_sin_psi_ = cos(phi)*cos(theta)*sin(psi), _cos_phi_sin_theta = cos(phi)*sin(theta);
+	// Scaling
+	const double _cos_psi_cos_theta = cos(psi)*cos(theta), _cos_theta_sin_psi = cos(theta)*sin(psi), _sin_theta = sin(theta);
+	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
+	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
+	// Scales
+	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 	// Begin Evaluation
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -759,25 +741,25 @@ Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans,
 					//==============================================================================
 					if (updateComponent == 1) // Rotation Component
 					{
-						componentX = yFwd * (((tmpI)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(psi)*sin(phi) - cos(phi)*sin(psi)*sin(theta)) / sy)) + ((-tmpK)*((cos(phi)*cos(theta)) / sy))) +
-							zFwd * (((tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sz)) + ((-tmpK)*((cos(theta) * sin(phi)) / sz)));
+						componentX = (dataType)(yFwd * (((tmpI)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_psi_sin_phi - _cos_phi_sin_psi_sin_theta) / sy)) + ((-tmpK)*((_cos_phi_cos_theta) / sy))) +
+							zFwd * (((tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sz)) + ((-tmpK)*((_cos_theta_sin_phi) / sz))));
 						results.rotation.x += (componentX)*(distDifference);
-						componentY = xFwd * (((-tmpI)*((cos(psi)*sin(theta)) / sx)) + ((tmpJ)*((sin(psi)*sin(theta)) / sx)) + ((tmpK)*((cos(theta)) / sx))) +
-							yFwd * (((tmpI)*((cos(psi)*cos(theta)*sin(phi)) / sy)) + ((-tmpJ)*((cos(theta)*sin(phi)*sin(psi)) / sy)) + ((tmpK)*((sin(phi)*sin(theta)) / sy))) +
-							zFwd * (((-tmpI)*((cos(phi)*cos(psi)*cos(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(theta)*sin(psi)) / sz)) + ((-tmpK)*((cos(phi)*sin(theta)) / sz)));
+						componentY = (dataType)(xFwd * (((-tmpI)*((_cos_psi_sin_theta) / sx)) + ((tmpJ)*((_sin_psi_sin_theta) / sx)) + ((tmpK)*((_cos_theta) / sx))) +
+							yFwd * (((tmpI)*((_cos_psi_cos_theta_sin_phi) / sy)) + ((-tmpJ)*((_cos_theta_sin_phi_sin_psi) / sy)) + ((tmpK)*((_sin_phi_sin_theta) / sy))) +
+							zFwd * (((-tmpI)*((_cos_phi_cos_psi_cos_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_theta_sin_psi_) / sz)) + ((-tmpK)*(_cos_phi_sin_theta / sz))));
 						results.rotation.y += (componentY)*(distDifference);
-						componentZ = xFwd * (((-tmpI)*((cos(theta)*sin(psi)) / sx)) + ((-tmpJ)*((cos(psi)*cos(theta)) / sx))) +
-							yFwd * (((tmpI)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(phi)*sin(psi) - cos(psi)*sin(phi)*sin(theta)) / sy))) +
-							zFwd * (((tmpI)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / sz)) + ((tmpJ)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sz)));
+						componentZ = (dataType)(xFwd * (((-tmpI)*((_cos_theta_sin_psi) / sx)) + ((-tmpJ)*((_cos_psi_cos_theta) / sx))) +
+							yFwd * (((tmpI)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_phi_sin_psi - _cos_psi_sin_phi_sin_theta) / sy))) +
+							zFwd * (((tmpI)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / sz)) + ((tmpJ)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sz))));
 						results.rotation.z += (componentZ)*(distDifference);
 					}
 					else if (updateComponent == 2) // Scaling Component
 					{
-						componentX = xFwd * ((-tmpI)*((cos(psi)*cos(theta)) / (sx*sx)) + ((tmpJ)*((cos(theta)*sin(psi)) / (sx*sx))) + ((-tmpK)*((sin(theta)) / (sx*sx))));
+						componentX = (dataType)(xFwd * ((-tmpI)*((_cos_psi_cos_theta) / (_sx_sx)) + ((tmpJ)*((_cos_theta_sin_psi) / (_sx_sx))) + ((-tmpK)*((_sin_theta) / (_sx_sx)))));
 						results.scaling.x += (componentX)*(distDifference);
-						componentY = yFwd * (((-tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / (sy*sy))) + ((-tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / (sy*sy))) + ((tmpK)*((cos(theta)*sin(phi)) / (sy*sy))));
+						componentY = (dataType)(yFwd * (((-tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / (_sy_sy))) + ((-tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / (_sy_sy))) + ((tmpK)*((_cos_theta_sin_phi) / (_sy_sy)))));
 						results.scaling.y += (componentY)*(distDifference);
-						componentZ = zFwd * (((-tmpI)*((sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)) / (sz*sz))) + ((-tmpJ)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / (sz*sz))) + ((-tmpK)*((cos(phi)*cos(theta)) / (sz*sz))));
+						componentZ = (dataType)(zFwd * (((-tmpI)*((_sin_phi_sin_psi - _cos_phi_cos_psi_sin_theta) / (_sz_sz))) + ((-tmpJ)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / (_sz_sz))) + ((-tmpK)*((_cos_phi_cos_theta) / (_sz_sz)))));
 						results.scaling.z += (componentZ)*(distDifference);
 					}
 					else if (updateComponent == 3) // Translation Component
@@ -801,7 +783,7 @@ Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans,
 	{
 		counter = 1;
 	}
-
+	// NORMALIZATION
 	if (updateComponent == 1) // Rotation
 	{
 		results.rotation.x = results.rotation.x / counter;
@@ -850,16 +832,18 @@ Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTra
 	dataType phi = params->rotation.x, theta = params->rotation.y, psi = params->rotation.z;
 	dataType sx = params->scaling.x, sy = params->scaling.y, sz = params->scaling.z;
 	dataType tx = params->translation.x, ty = params->translation.y, tz = params->translation.z;
-
-	// Setting same if uniform scale and rotation
-#ifdef UNIFORM
-	sx = sy = sz;
-	phi = theta = psi;
-#endif // UNIFORM
-	// Scale denominator
-	dataType inv_sx2 = (dataType)(1.0 / (sx*sx));
-	dataType inv_sy2 = (dataType)(1.0 / (sy*sy));
-	dataType inv_sz2 = (dataType)(1.0 / (sz*sz));
+	// Trigonometric functions as const
+	// Rotation
+	const double neg_sin_phi_sin_psi = -sin(phi)*sin(psi), _cos_phi_cos_psi_sin_theta = cos(phi)*cos(psi)*sin(theta), neg_cos_psi_sin_phi = -cos(psi)*sin(phi), _cos_phi_sin_psi_sin_theta = cos(phi)*sin(psi)*sin(theta), _cos_phi_cos_theta = cos(phi)*cos(theta);
+	const double _cos_phi_sin_psi = cos(phi)*sin(psi), neg_cos_phi_sin_psi = -cos(phi)*sin(psi), _cos_psi_sin_phi_sin_theta = cos(psi)*sin(phi)*sin(theta), _cos_phi_cos_psi = cos(phi)*cos(psi), _sin_phi_sin_psi_sin_theta = sin(phi)*sin(psi)*sin(theta), _cos_theta_sin_phi = cos(theta) * sin(phi);
+	const double _cos_psi_sin_theta = cos(psi)*sin(theta), _sin_psi_sin_theta = sin(psi)*sin(theta), _cos_theta = cos(theta), _cos_psi_cos_theta_sin_phi = cos(psi)*cos(theta)*sin(phi), _cos_theta_sin_phi_sin_psi = cos(theta)*sin(phi)*sin(psi), _sin_phi_sin_theta = sin(phi)*sin(theta);
+	const double _cos_phi_cos_psi_cos_theta = cos(phi)*cos(psi)*cos(theta), _cos_phi_cos_theta_sin_psi_ = cos(phi)*cos(theta)*sin(psi), _cos_phi_sin_theta = cos(phi)*sin(theta);
+	// Scaling
+	const double _cos_psi_cos_theta = cos(psi)*cos(theta), _cos_theta_sin_psi = cos(theta)*sin(psi), _sin_theta = sin(theta);
+	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
+	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
+	// Scales
+	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 
 	// Begin Evaluation
 	for (k = bestFit.k_min; k < bestFit.k_max + 1; k++)
@@ -877,58 +861,32 @@ Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTra
 					counter++;
 					// Store the distance function difference
 					distDifference = (dataType)((destPtr[k][x] - distTrans[k][x]) * 2.0);
-
 					// Directional component vector derivatives - i, j, k
 					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
-
-					// Trignometry functions inside the component evaluation equation
-					double a = cos(phi), b = sin(phi), ab = cos(phi)*sin(phi), aa = cos(phi)*cos(phi), bb = sin(phi)*sin(phi), aaa = a * aa, bbb = b * bb, aab = aa * b, abb = a * bb;
-
 					// Apply Forward Differences to the distTrans pointer
 					xFwd = finiteDifX(distTrans, h, x, k, i, imageLength);
 					yFwd = finiteDifY(distTrans, h, k, i, j, imageLength, imageWidth);
 					zFwd = finiteDifZ(distTrans, h, x, k, i, imageLength, imageHeight);
 					// Evaluate Individual Gradient Components
-#ifdef UNIFORM
-					// Uniform Rotations Angles
-					component = xFwd * ((-2.0*tmpI)*(ab / sx) + ((tmpJ)*((bb - aa) / sx)) + ((tmpK)*(a / sx))) +
-						yFwd * (((tmpI)*((aa + 2.0 * aab - bb - bbb) / sy)) + ((tmpJ)*((-2.0 * ab - 3.0 * abb) / sy)) + ((tmpK)*((bb - aa) / sy))) +
-						zFwd * (((tmpI)*((-aaa + 2.0 * ab + 2.0 * abb) / sz)) + ((tmpJ)*((aa + 2.0 * aa - bb - bbb) / sz)) + ((tmpK)*((-2.0 * ab) / sz)));
-					// Set the Rotation - Uniform Angles
-					results.rotation.x += (component)*(distDifference);
-					results.rotation.y += (component)*(distDifference);
-					results.rotation.z += (component)*(distDifference);
-					// Scaling Parameters
-					Uniform Scale Component
-						component = xFwd * (((tmpI)*((-aa) * inv_sx2)) + ((tmpJ)*(ab * inv_sx2)) + ((tmpK)*((-b) * inv_sx2))) +
-						yFwd * (((-tmpI)*((ab + abb)  * inv_sy2)) + ((-tmpJ)*((aa - bbb) * inv_sy2)) + ((tmpK)*(ab * inv_sy2))) +
-						zFwd * (((-tmpI)*((-aab + bb) * inv_sz2)) + ((-tmpJ)*((ab + abb) * inv_sz2)) + ((-tmpK)*(aa * inv_sz2)));
-					// Set the Scales - Uniform Scale
-					results.scaling.x += (component)*(distDifference);
-					results.scaling.y += (component)*(distDifference);
-					results.scaling.z += (component)*(distDifference);
-#endif // UNIFORM
 #ifdef DIRECTIONAL
 					// Rotation Components - Directionnal
-					componentX = (dataType)(yFwd * (((tmpI)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(psi)*sin(phi) - cos(phi)*sin(psi)*sin(theta)) / sy)) + ((-tmpK)*((cos(phi)*cos(theta)) / sy))) +
-						zFwd * (((tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sz)) + ((-tmpK)*((cos(theta) * sin(phi)) / sz))));
-					componentY = (dataType)(xFwd * (((-tmpI)*((cos(psi)*sin(theta)) / sx)) + ((tmpJ)*((sin(psi)*sin(theta)) / sx)) + ((tmpK)*((cos(theta)) / sx))) +
-						yFwd * (((tmpI)*((cos(psi)*cos(theta)*sin(phi)) / sy)) + ((-tmpJ)*((cos(theta)*sin(phi)*sin(psi)) / sy)) + ((tmpK)*((sin(phi)*sin(theta)) / sy))) +
-						zFwd * (((-tmpI)*((cos(phi)*cos(psi)*cos(theta)) / sz)) + ((tmpJ)*((cos(phi)*cos(theta)*sin(psi)) / sz)) + ((-tmpK)*((cos(phi)*sin(theta)) / sz))));
-					componentZ = (dataType)(xFwd * (((-tmpI)*((cos(theta)*sin(psi)) / sx)) + ((-tmpJ)*((cos(psi)*cos(theta)) / sx))) +
-						yFwd * (((tmpI)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / sy)) + ((tmpJ)*((-cos(phi)*sin(psi) - cos(psi)*sin(phi)*sin(theta)) / sy))) +
-						zFwd * (((tmpI)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / sz)) + ((tmpJ)*((-sin(phi)*sin(psi) + cos(phi)*cos(psi)*sin(theta)) / sz))));
-					// Set the Rotations - Directional
+					componentX = (dataType)(yFwd * (((tmpI)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_psi_sin_phi - _cos_phi_sin_psi_sin_theta) / sy)) + ((-tmpK)*((_cos_phi_cos_theta) / sy))) +
+						zFwd * (((tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sz)) + ((-tmpK)*((_cos_theta_sin_phi) / sz))));
 					results.rotation.x += (componentX)*(distDifference);
+					componentY = (dataType)(xFwd * (((-tmpI)*((_cos_psi_sin_theta) / sx)) + ((tmpJ)*((_sin_psi_sin_theta) / sx)) + ((tmpK)*((_cos_theta) / sx))) +
+						yFwd * (((tmpI)*((_cos_psi_cos_theta_sin_phi) / sy)) + ((-tmpJ)*((_cos_theta_sin_phi_sin_psi) / sy)) + ((tmpK)*((_sin_phi_sin_theta) / sy))) +
+						zFwd * (((-tmpI)*((_cos_phi_cos_psi_cos_theta) / sz)) + ((tmpJ)*((_cos_phi_cos_theta_sin_psi_) / sz)) + ((-tmpK)*(_cos_phi_sin_theta / sz))));
 					results.rotation.y += (componentY)*(distDifference);
+					componentZ = (dataType)(xFwd * (((-tmpI)*((_cos_theta_sin_psi) / sx)) + ((-tmpJ)*((_cos_psi_cos_theta) / sx))) +
+						yFwd * (((tmpI)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / sy)) + ((tmpJ)*((neg_cos_phi_sin_psi - _cos_psi_sin_phi_sin_theta) / sy))) +
+						zFwd * (((tmpI)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / sz)) + ((tmpJ)*((neg_sin_phi_sin_psi + _cos_phi_cos_psi_sin_theta) / sz))));
 					results.rotation.z += (componentZ)*(distDifference);
 					// Directional Scale Components
-					componentX = (dataType)(xFwd * ((-tmpI)*((cos(psi)*cos(theta)) / (sx*sx)) + ((tmpJ)*((cos(theta)*sin(psi)) / (sx*sx))) + ((-tmpK)*((sin(theta)) / (sx*sx)))));
-					componentY = (dataType)(yFwd * (((-tmpI)*((cos(phi)*sin(psi) + cos(psi)*sin(phi)*sin(theta)) / (sy*sy))) + ((-tmpJ)*((cos(phi)*cos(psi) - sin(phi)*sin(psi)*sin(theta)) / (sy*sy))) + ((tmpK)*((cos(theta)*sin(phi)) / (sy*sy)))));
-					componentZ = (dataType)(zFwd * (((-tmpI)*((sin(phi)*sin(psi) - cos(phi)*cos(psi)*sin(theta)) / (sz*sz))) + ((-tmpJ)*((cos(psi)*sin(phi) + cos(phi)*sin(psi)*sin(theta)) / (sz*sz))) + ((-tmpK)*((cos(phi)*cos(theta)) / (sz*sz)))));
-					// Set the Scales - Directional Scales
+					componentX = (dataType)(xFwd * ((-tmpI)*((_cos_psi_cos_theta) / (_sx_sx)) + ((tmpJ)*((_cos_theta_sin_psi) / (_sx_sx))) + ((-tmpK)*((_sin_theta) / (_sx_sx)))));
 					results.scaling.x += (componentX)*(distDifference);
+					componentY = (dataType)(yFwd * (((-tmpI)*((_cos_phi_sin_psi + _cos_psi_sin_phi_sin_theta) / (_sy_sy))) + ((-tmpJ)*((_cos_phi_cos_psi - _sin_phi_sin_psi_sin_theta) / (_sy_sy))) + ((tmpK)*((_cos_theta_sin_phi) / (_sy_sy)))));
 					results.scaling.y += (componentY)*(distDifference);
+					componentZ = (dataType)(zFwd * (((-tmpI)*((_sin_phi_sin_psi - _cos_phi_cos_psi_sin_theta) / (_sz_sz))) + ((-tmpJ)*((_cos_psi_sin_phi + _cos_phi_sin_psi_sin_theta) / (_sz_sz))) + ((-tmpK)*((_cos_phi_cos_theta) / (_sz_sz)))));
 					results.scaling.z += (componentZ)*(distDifference);
 #endif // DIRECTIONAL
 					// Translation Parameters - Always directional
@@ -948,7 +906,7 @@ Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTra
 	{
 		counter = 1;
 	}
-
+	// NORMALIZATION
 	results.scaling.x = results.scaling.x / counter;
 	results.scaling.y = results.scaling.y / counter;
 	results.scaling.z = results.scaling.z / counter;
@@ -1562,11 +1520,11 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 			if (params.use_clipbox)
 			{
 				// affineTmp = gradCoorDescentCompClip(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent, bestFit);
-				affineTmp = gradCoorDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
+				affineTmp = gradientCoorDinateDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
 			}
 			else
 			{
-				affineTmp = gradCoorDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
+				affineTmp = gradientCoorDinateDescentComp(destPtr, distTransPtr, 1.0, &affineResult, imageHeight, imageLength, imageWidth, switchcomponent);
 			}
 			//==============================================================================
 			switch (switchcomponent)
