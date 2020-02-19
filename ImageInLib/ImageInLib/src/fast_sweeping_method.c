@@ -44,7 +44,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 		return false;
 	//==============================================================================
 	// curve3DPtr is in the range 0-1 binary
-	double threshold = 0.5, range = 0.5 / 255.0;
+	const double threshold = 0.5, range = 0.5 / 255.0;
 	//Initialization stage
 	for (k = 0; k < zDim; k++)
 	{
@@ -282,7 +282,7 @@ void fSweeping3D(dataType ** distance3DPtr, dataType ** curve3DPtr, const size_t
 	}
 	//==============================================================================
 	// curve3DPtr is in the range 0-1 binary
-	double threshold = 0.5, range = 0.5 / 255.0;
+	const double threshold = 0.5, range = 0.5 / 255.0;
 	//Initialization stage
 	for (k = 0; k < zDim; k++)
 	{
