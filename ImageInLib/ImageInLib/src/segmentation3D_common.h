@@ -3,7 +3,7 @@ extern "C" {
 #endif
 
 #pragma once
-#ifndef SEGMENTATIO3D_COMMON
+#ifndef SEGMENTATION3D_COMMON
 #define SEGMENTATION3D_COMMON
 	//==============================================================================
 	/*
@@ -32,7 +32,7 @@ extern "C" {
 	// Function to calclate the gamma parameter - eq 91
 	dataType chooseGamma(dataType value, dataType dist1, dataType dist2);
 //==============================================================================
-#endif // !SEGMENTATIO3D_COMMON
+#endif // !SEGMENTATION3D_COMMON
 
 #ifdef __cplusplus
 }
