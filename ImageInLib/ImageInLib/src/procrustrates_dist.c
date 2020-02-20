@@ -10,9 +10,9 @@ void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const siz
 void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n);
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
 void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
-void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
+void shapeEstimateJU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
 // Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
-void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width);
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, size_t num_shapes, dataType h, size_t height, size_t length, size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
@@ -24,11 +24,16 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 		st[i] = '=';
 	}
 	st[159] = '\0';
+	//==============================================================================
+	const size_t dim2D = length * width;
+	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
+	const size_t mem_alloc_1D_block = sizeof(dataType*) * height;
+	//==============================================================================
 	// Initialize the dtaMeanShape and initial estimate shape
-	dataType ** initEstimate = (dataType **)malloc(sizeof(dataType*)*height);
+	dataType ** initEstimate = (dataType **)malloc(mem_alloc_1D_block);
 	for (k = 0; k < height; k++)
 	{
-		initEstimate[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
+		initEstimate[k] = (dataType*)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	// Struct Pointer to store registered shapes
@@ -37,10 +42,10 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	for (i = 0; i < numShapes; i++) 
 	{
 		reg_shapes[i].num = i + 1;
-		reg_shapes[i].shp = (dataType**)(dataType **)malloc(sizeof(dataType*)*height);
+		reg_shapes[i].shp = (dataType**)(dataType **)malloc(mem_alloc_1D_block);
 		for (j = 0; j < height; j++) 
 		{
-			reg_shapes[i].shp[j] = (dataType*)malloc(sizeof(dataType)*(length*width));
+			reg_shapes[i].shp[j] = (dataType*)malloc(mem_alloc_2D_block);
 		}
 		// Initialize reg_shapes
 		//==============================================================================
@@ -105,7 +110,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	// Copy reg shapes to the original shapes
 	for (k = 0; k < numShapes; k++) 
 	{
-		copyDataPointer(reg_shapes[k].shp, shapes[k].shp, height, length, width);
+		copyDataToAnotherArray(reg_shapes[k].shp, shapes[k].shp, height, length, width);
 	}
 	//==============================================================================
 	// Free memory
@@ -121,15 +126,24 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 }
 void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType ** eigvalues, size_t * princomp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
-	size_t k, i, j, l, xd, xyd, dim3D = height * length * width;
+	size_t k, i, j, l, xd, xyd;
+	//==============================================================================
+	const size_t dim2D = length * width;
+	const size_t dim3D = height * length * width;
+	const size_t mem_alloc_2D_block_shape = sizeof(dataType) * numShapes;
+	const size_t mem_alloc_1D_block_shape = sizeof(dataType*) * numShapes;
+	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
+	const size_t mem_alloc_3D_block = sizeof(dataType) * dim3D;
+	const size_t mem_alloc_1D_block = sizeof(dataType*) * height;
+	//==============================================================================
 	// Initialize pointer functions
 	dataType **matrix(), *vector();
 	// Calculate the center shapes according to mean shape
 	// Create saved pointers for the alligned shapes
-	dataType ** s_Shapes = (dataType**)malloc(sizeof(dataType*) * numShapes); // S_Transpoe - n by D
+	dataType ** s_Shapes = (dataType**)malloc(mem_alloc_1D_block_shape); // S_Transpoe - n by D
 	for (i = 0; i < numShapes; i++)
 	{
-		s_Shapes[i] = malloc(sizeof(dataType) * dim3D);
+		s_Shapes[i] = malloc(mem_alloc_3D_block);
 	}
 	//==============================================================================
 	//Create feature vector for shapes - D by 1 dimension
@@ -137,7 +151,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	// Alloc. and copy
 	for (i = 0; i < numShapes; i++)
 	{
-		eigshapes[i].eigenShape = malloc((dim3D) * sizeof(dataType**));
+		eigshapes[i].eigenShape = malloc(mem_alloc_3D_block);
 		// Copy values
 		copyShapes(eigshapes[i].eigenShape, shapes[i].shp, height, length, width);
 	}
@@ -170,7 +184,7 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	dataType ** transp = (dataType**)malloc(sizeof(dataType*) * dim3D); // S - D by n
 	for (i = 0; i < dim3D; i++)
 	{
-		transp[i] = malloc(sizeof(dataType) * numShapes);
+		transp[i] = malloc(mem_alloc_2D_block_shape);
 	}
 	transpose(transp, s_Shapes, numShapes, dim3D);
 	// Free
@@ -260,21 +274,22 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 	}
 	printf("\nWe have selected %zd principal components\n", (*princomp));
 	//==============================================================================
+	const size_t mem_alloc_princomp = sizeof(dataType) * (*princomp);
 	// Calculate the Eigenvalues and eigenvectos of S*S_transpose
 	for (i = 0; i < dim3D; i++)
 	{
-		(*eigvectors)[i] = (dataType*)malloc(sizeof(dataType) * (*princomp));
+		(*eigvectors)[i] = (dataType*)malloc(mem_alloc_princomp);
 	}
-	(*eigvalues) = (dataType*)malloc(sizeof(dataType) * (*princomp));
+	(*eigvalues) = (dataType*)malloc(mem_alloc_princomp);
 	for (j = 0; j < (*princomp); j++)
 	{
 		(*eigvalues)[j] = eig_values[j + 1];
 	}
 	free_vector(eig_values, numShapes);
-	dataType **selected_eigvectors = (dataType**)malloc(sizeof(dataType*) * numShapes);
+	dataType **selected_eigvectors = (dataType**)malloc(mem_alloc_1D_block_shape);
 	for (i = 0; i < numShapes; i++)
 	{
-		selected_eigvectors[i] = (dataType*)malloc(sizeof(dataType) * (*princomp));
+		selected_eigvectors[i] = (dataType*)malloc(mem_alloc_princomp);
 	}
 	for (j = 1; j <= numShapes; j++) {
 		for (i = numShapes; i > numShapes - (*princomp); i--)
@@ -307,12 +322,13 @@ void pca_analysis(dataType ** dtaMeanShape, dataType *** eigvectors, dataType **
 void estimateShape(Shapes * atlasShapes, dataType ** shapeToEstimate, dataType ** estimatedShape, shape_Analysis_Parameters shapeParam, estimate_Params * estParams, size_t height, size_t length, size_t width, size_t numShapes, dataType pca_Threshold)
 {
 	size_t k;
-	// Init mean shape pointer
+	const size_t dim2D = length * width;
+	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
 	// Initialize the dtaMeanShape and initial estimate shape
 	dataType ** meanShape = (dataType **)malloc(sizeof(dataType*)*height);
 	for (k = 0; k < height; k++)
 	{
-		meanShape[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
+		meanShape[k] = (dataType*)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	initialize3dArrayD(meanShape, length, width, height, 0);
@@ -411,13 +427,15 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 {
 	size_t k, i, j, xd, xyd;
 	//==============================================================================
-	size_t dim3D = height * length * width;
+	const size_t dim3D = height * length * width;
+	const size_t mem_alloc_3D_block = sizeof(dataType) * dim3D;
+	const size_t mem_alloc_princomp = sizeof(dataType) * princomp;
 	//==============================================================================
 	// Create a diagonal eigenvalues matrix inverse
-	dataType **diag_eigvalues_inv = (dataType**)malloc(sizeof(dataType*) * princomp); // K by k
+	dataType **diag_eigvalues_inv = (dataType**)malloc(mem_alloc_princomp); // K by k
 	for (i = 0; i < princomp; i++)
 	{
-		diag_eigvalues_inv[i] = (dataType*)malloc(sizeof(dataType) * princomp);
+		diag_eigvalues_inv[i] = (dataType*)malloc(mem_alloc_princomp);
 		for (j = 0; j < princomp; j++)
 		{
 			if (i == j)
@@ -435,12 +453,12 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	dataType ** trans_eigvectors = (dataType**)malloc(sizeof(dataType*) * princomp); // K by D
 	for (i = 0; i < princomp; i++)
 	{
-		trans_eigvectors[i] = (dataType*)malloc(sizeof(dataType) * dim3D);
+		trans_eigvectors[i] = (dataType*)malloc(mem_alloc_3D_block);
 	}
 	transpose(trans_eigvectors, eigenvectors, dim3D, princomp);
 	//==============================================================================
 	// Difference btn shape and mean shape - D by 1
-	dataType * shp_diff = (dataType*)malloc(sizeof(dataType) * dim3D); // D by 1
+	dataType * shp_diff = (dataType*)malloc(mem_alloc_3D_block); // D by 1
 	for (k = 0; k < height; k++)
 	{
 		for (i = 0; i < length; i++)
@@ -458,8 +476,8 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	}
 	//==============================================================================
 	// Projection of the shape - k by 1
-	dataType * shp_projection = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
-	dataType * tmp_results = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
+	dataType * shp_projection = (dataType*)malloc(mem_alloc_princomp); // k by 1
+	dataType * tmp_results = (dataType*)malloc(mem_alloc_princomp); // k by 1
 	// Multiplication
 	for (i = 0; i < princomp; i++)
 	{
@@ -485,7 +503,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	dataType ** shp_projection_trans = (dataType**)malloc(sizeof(dataType *) * 1); // 1 by k
 	for (i = 0; i < 1; i++)
 	{
-		shp_projection_trans[i] = (dataType*)malloc(sizeof(dataType) * princomp);
+		shp_projection_trans[i] = (dataType*)malloc(mem_alloc_princomp);
 	}
 	for (i = 0; i < princomp; i++)
 	{
@@ -511,7 +529,7 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	// Minimization of Energy
 	int iteration = 0;
 	// Initialize pointers#
-	dataType * e_shape = (dataType*)malloc(sizeof(dataType*) * dim3D); // S - D by 1 components
+	dataType * e_shape = (dataType*)malloc(mem_alloc_3D_block); // S - D by 1 components
 	// Calc. Estimated U_k*a_k
 	for (i = 0; i < dim3D; i++)
 	{
@@ -644,29 +662,32 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	free(shp_projection);
 	//==============================================================================
 }
-void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
+void shapeEstimateJU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
 {
-	int k, i, j, xd, xyd, l;
+	size_t k, i, j, xd, xyd, l;
 	//==============================================================================
 	size_t dim3D = height * length * width, dim2D = length * width;
+	const size_t mem_alloc_3D_block = sizeof(dataType) * dim3D;
+	const size_t mem_alloc_princomp = sizeof(dataType) * princomp;
+	//==============================================================================
 	//==============================================================================
 	// Create k by 1 bounded eigen vectors
-	dataType *bound_eigvalues = (dataType*)malloc(sizeof(dataType) * princomp); // K by 1
+	dataType *bound_eigvalues = (dataType*)malloc(mem_alloc_princomp); // K by 1
 	for (i = 0; i < princomp; i++)
 	{
 		bound_eigvalues[i] = estParams->bound * sqrtf(fabsf(eigenvalues[i]));
 	}
 	//==============================================================================
 	// Transpose the eigenvectors
-	dataType ** trans_eigvectors = (dataType**)malloc(sizeof(dataType*) * princomp); // K by D
+	dataType ** trans_eigvectors = (dataType**)malloc(mem_alloc_princomp); // K by D
 	for (i = 0; i < princomp; i++)
 	{
-		trans_eigvectors[i] = (dataType*)malloc(sizeof(dataType) * dim3D);
+		trans_eigvectors[i] = (dataType*)malloc(mem_alloc_3D_block);
 	}
 	transpose(trans_eigvectors, eigenvectors, dim3D, princomp);
 	//==============================================================================
 	// Difference btn shape and mean shape - D by 1 ---> Center the shape
-	dataType * shp_diff = (dataType*)malloc(sizeof(dataType) * dim3D); // D by 1
+	dataType * shp_diff = (dataType*)malloc(mem_alloc_3D_block); // D by 1
 	for (k = 0; k < height; k++)
 	{
 		for (i = 0; i < length; i++)
@@ -684,7 +705,7 @@ void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est
 	}
 	//==============================================================================
 	// Projection of the shape - k by 1
-	dataType * shp_projection = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
+	dataType * shp_projection = (dataType*)malloc(mem_alloc_princomp); // k by 1
 	// Multiplication
 	for (i = 0; i < princomp; i++)
 	{
@@ -710,7 +731,7 @@ void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est
 		}
 	}
 	//==============================================================================
-	dataType * grad_energy = (dataType*)malloc(sizeof(dataType) * princomp); // k by 1
+	dataType * grad_energy = (dataType*)malloc(mem_alloc_princomp); // k by 1
 	for (l = 0; l < princomp; l++)
 	{
 		grad_energy[l] = 0;
@@ -831,7 +852,6 @@ void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est
 	//==============================================================================
 }
 //==============================================================================
-//==============================================================================
 // Perform two matrices multiplication Function
 void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const size_t  m, const size_t  n, const size_t n1)
 {
@@ -871,16 +891,19 @@ dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t leng
 }
 //==============================================================================
 // Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
-void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width)
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, size_t num_shapes, dataType h, size_t height, size_t length, size_t width)
 {
-	int i, j, k, l, xd;
-	dataType min_energy = DBL_MAX, initial_value = 0.;
+	int i, k;
+	const size_t dim2D = length * width;
+	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
+	double min_energy = DBL_MAX;
+	dataType initial_value = 0.;
 	int min_shape = -1;
 	// Tmp Mean shape
 	dataType ** tmpMean = (dataType **)malloc(sizeof(dataType*)*height);
 	for (k = 0; k < height; k++)
 	{
-		tmpMean[k] = (dataType*)malloc(sizeof(dataType)*(length*width));
+		tmpMean[k] = (dataType*)malloc(mem_alloc_2D_block);
 	}
 	initialize3dArrayD(tmpMean, length, width, height, initial_value);
 	// Find mean shape
@@ -902,7 +925,7 @@ void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_
 	// Display console info
 	printf("Selected reference shape %d, error and mean shape %.8e\n", min_shape, min_energy);
 	// Copy selected to the reference pointer
-	copyDataPointer(set_shapes[min_shape - 1].shp, referenceShape, height, length, width);
+	copyDataToAnotherArray(set_shapes[min_shape - 1].shp, referenceShape, height, length, width);
 	// Free memory
 	for (k = 0; k < height; k++)
 	{

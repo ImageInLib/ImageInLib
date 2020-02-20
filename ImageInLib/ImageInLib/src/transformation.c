@@ -6,7 +6,7 @@ void transformImage(Image_Data image, dataType **outputTransformedImage, Affine_
 	switch (transform)
 	{
 	case FORWARD_TRANSFORM:
-		transform3DImage(image.imageDataPtr, outputTransformedImage, affineTransformParam.translation, affineTransformParam.scaling, affineTransformParam.rotation, image.height, image.length, image.width, affineTransformParam.imageBackground, affineTransformParam.centroid, affineTransformParam.imageForeground, affineTransformParam.parallelize);
+		transform3DImage(image.imageDataPtr, outputTransformedImage, affineTransformParam.translation, affineTransformParam.scaling, affineTransformParam.rotation, image.height, image.length, image.width, affineTransformParam.imageBackground, affineTransformParam.centroid, affineTransformParam.parallelize);
 		break;
 	case INVERSE_TRANSFORM:
 		transformInverse3DImage(image.imageDataPtr, outputTransformedImage, affineTransformParam.translation, affineTransformParam.scaling, affineTransformParam.rotation, image.height, image.length, image.width, affineTransformParam.imageBackground, affineTransformParam.centroid, affineTransformParam.parallelize);

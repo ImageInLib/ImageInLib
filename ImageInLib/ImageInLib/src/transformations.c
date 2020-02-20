@@ -273,13 +273,13 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** transformPoi
 						// Use Interpolation to get the values
 						// Locations for Tri-linear Interpolation
 						// Z
-						bottom = floor(k_t);
+						bottom = (int)floor(k_t);
 						top = bottom + 1;
 						// X
-						left = floor(i_t);
+						left = (int)floor(i_t);
 						right = left + 1;
 						// Y
-						begin = floor(j_t);
+						begin = (int)floor(j_t);
 						end = begin + 1;
 						//==============================================================================
 						// Check if within limits
@@ -344,13 +344,13 @@ void transformInverse3DImage(dataType ** sourceDataPtr, dataType ** transformPoi
 					// Use Interpolation to get the values
 					// Locations for Tri-linear Interpolation
 					// Z
-					bottom = floor(k_t);
+					bottom = (int)floor(k_t);
 					top = bottom + 1;
 					// X
-					left = floor(i_t);
+					left = (int)floor(i_t);
 					right = left + 1;
 					// Y
-					begin = floor(j_t);
+					begin = (int)floor(j_t);
 					end = begin + 1;
 					// Check if within limits
 					if (bottom >= 0 && top < imageHeight && left >= 0 && right < imageLength && begin >= 0 && end < imageWidth)

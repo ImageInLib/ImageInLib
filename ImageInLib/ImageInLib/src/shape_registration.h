@@ -81,7 +81,7 @@ extern "C" {
 	inline dataType finiteDifZ(dataType ** distPtr, dataType h, size_t x, size_t k, size_t i, size_t imageLength, size_t imageHeight);
 	// Calc. and return the gradient descent components
 	Affine_Parameter gradientComponents(dataType **destPtr, dataType **distTrans, dataType h, Affine_Parameter *params, size_t imageHeight, size_t imageLength, size_t imageWidth);
-	Affine_Parameter gradCoorDescentComp(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t updateComponent);
+	Affine_Parameter gradientCoorDinateDescentComp(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t updateComponent);
 	Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTrans, dataType h, Affine_Parameter * params, size_t imageHeight, size_t imageLength, size_t imageWidth, ClipBox bestFit);
 	// Calc the transformation parameters from Registration of two images using Simple GD method
 	Affine_Parameter registration3D(dataType ** destination, dataType ** source, Affine_Parameter initTransform, dataType steps, dataType tol, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType centroid[3], Registration_Params params);
@@ -96,6 +96,8 @@ extern "C" {
 	void fillNarrowBandArea(dataType ** sourceDist, dataType ** bandContainer, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType insideValue, dataType outsideValue);
 	//==============================================================================
 	void transformClip(ClipBox *bestfit, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth);
+	//==============================================================================
+	dataType errorCalc(dataType ** aPtr, dataType ** bPtr, size_t height, size_t length, size_t width, dataType h_val);
 	//==============================================================================
 #endif // !SHAPE_REGISTRATION
 
