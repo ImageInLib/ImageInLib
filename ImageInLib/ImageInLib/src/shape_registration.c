@@ -105,7 +105,7 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
-	transform3DImage(movingData, resultPtr, finalResults.translation, finalResults.scaling, finalResults.rotation, zDim, xDim, yDim, params.imageBackground, movingCentroid, params.imageForeground, params.parallelize);
+	transform3DImage(movingData, resultPtr, finalResults.translation, finalResults.scaling, finalResults.rotation, zDim, xDim, yDim, params.imageBackground, movingCentroid, params.parallelize);
 	//==============================================================================
 #ifdef MEASURE_TIME
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -599,7 +599,7 @@ Affine_Parameter gradientComponents(dataType ** destPtr, dataType ** distTrans, 
 	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
 	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
 	// Scales
-	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
+	const dataType _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 	// Begin Evaluation
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -708,7 +708,7 @@ Affine_Parameter gradientCoorDinateDescentComp(dataType ** destPtr, dataType ** 
 	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
 	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
 	// Scales
-	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
+	const dataType _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 	// Begin Evaluation
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -724,7 +724,7 @@ Affine_Parameter gradientCoorDinateDescentComp(dataType ** destPtr, dataType ** 
 				{
 					counter++;
 					// Store the distance function difference
-					distDifference = (destPtr[k][x] - distTrans[k][x]) * 2.0;
+					distDifference = (dataType)((destPtr[k][x] - distTrans[k][x]) * 2.0);
 
 					// Directional component vector derivatives - i, j, k
 					dataType tmpI = i / (dataType)imageLength, tmpJ = j / (dataType)imageWidth, tmpK = k / (dataType)imageHeight;
@@ -843,7 +843,7 @@ Affine_Parameter gradientComponentsClip(dataType ** destPtr, dataType ** distTra
 	const double _sin_phi_sin_psi = sin(phi)*sin(psi);
 	const double _cos_psi_sin_phi = cos(psi)*sin(phi);
 	// Scales
-	const _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
+	const dataType _sx_sx = sx * sx, _sy_sy = sy * sy, _sz_sz = sz * sz;
 
 	// Begin Evaluation
 	for (k = bestFit.k_min; k < bestFit.k_max + 1; k++)
@@ -1034,7 +1034,7 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 #ifdef MEASURE_TIME
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
-		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.parallelize);
 		//==============================================================================
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
@@ -1227,7 +1227,7 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 	//==============================================================================
 	dataType stepsize = step_size;
 	//==============================================================================
-	size_t k, i, j, l, x, dim2D = imageLength * imageWidth;
+	size_t k, i, dim2D = imageLength * imageWidth;
 	int iteration = 0, max_ter = 1000;
 	int count_rejected = 0, state_accept, count_steps_reset = 0, max_resets = 9;
 	//==============================================================================
@@ -1276,7 +1276,7 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 	affinePrev = affineResult; // Start sames as affine results
 	//==============================================================================
 	// Energy tmp optimal, stop boolean
-	dataType energyTmp, prev_energy = DBL_MAX;
+	double energyTmp, prev_energy = DBL_MAX;
 	bool stopCond = false;
 	// Apply distance function between transPtr and distTrans
 	// Begin Record Time
@@ -1341,7 +1341,7 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 #ifdef MEASURE_TIME
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
-		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.parallelize);
 #ifdef MEASURE_TIME
 		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 		// Store the time
@@ -1418,7 +1418,7 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 		energyTotalCpuTime += secondCpuTime - firstCpuTime;
 #endif
 		//==============================================================================
-		dataType diff_abs = fabs(energyTmp - prev_energy), accept_diff = 1e-04;
+		dataType diff_abs = (dataType)fabs(energyTmp - prev_energy), accept_diff = (dataType) 1e-04;
 		// Check if current energy has reduced from previous
 		if (energyTmp <= prev_energy)
 		{
@@ -1442,7 +1442,7 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 		if (count_rejected >= 3) // Maximum rejections
 		{
 			// Adjust step size after a full cycle through components
-			stepsize = stepsize / 2.0;
+			stepsize = (dataType)(stepsize / 2.0);
 			//==============================================================================
 			count_rejected = 0; // Reset
 			//==============================================================================
@@ -1743,11 +1743,11 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 		//==============================================================================
-		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.imageForeground, params.parallelize);
+		transform3DImage(movingData, transPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroid, params.parallelize);
 		if (params.binary_nband)
 		{
 			// Transform the moving narrow band area
-			transform3DImage(movingNBandPtr, transMovingPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroidMovingBandArea, params.imageForeground, params.parallelize);
+			transform3DImage(movingNBandPtr, transMovingPtr, affineResult.translation, affineResult.scaling, affineResult.rotation, imageHeight, imageLength, imageWidth, params.imageBackground, centroidMovingBandArea, params.parallelize);
 			// Copy back to movingNBandPtr
 			dataType ** tmpPtr = NULL;
 			tmpPtr = movingNBandPtr;
@@ -2989,5 +2989,34 @@ void converToSignedDist(dataType ** distFn, dataType ** originalData, size_t ima
 			}
 		}
 	}
+}
+//==============================================================================
+dataType errorCalc(dataType ** aPtr, dataType ** bPtr, size_t height, size_t length, size_t width, dataType h_val)
+{
+	dataType error = 0.0, tmp;
+	size_t i, j, k, xd, count = 0;
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+				// Error calculation
+				tmp = (aPtr[k][xd] - bPtr[k][xd]) * h_val;
+				error += (tmp*tmp);
+				count++;
+			}
+		}
+	}
+	// Mean Square Error
+	if (count == 0)
+	{
+		count = 1;
+	}
+	error = (dataType) ((error) / (2. * count));
+	//return sqrtf(error); // // Root Mean Square Error
+	return error; // // Mean Square Error
 }
 //==============================================================================

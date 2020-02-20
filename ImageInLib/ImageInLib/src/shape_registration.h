@@ -97,6 +97,8 @@ extern "C" {
 	//==============================================================================
 	void transformClip(ClipBox *bestfit, Point3D translation, Point3D scaling, Point3D rotation, dataType centroid[3], size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
+	dataType errorCalc(dataType ** aPtr, dataType ** bPtr, size_t height, size_t length, size_t width, dataType h_val);
+	//==============================================================================
 #endif // !SHAPE_REGISTRATION
 
 #ifdef __cplusplus

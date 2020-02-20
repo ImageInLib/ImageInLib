@@ -10,9 +10,9 @@ void multiplication(dataType **arr1, dataType **arr2, dataType **arr3, const siz
 void transpose(dataType **tposed, dataType **entry, const size_t m, const size_t n);
 void copyShapes(dataType * eigshape, dataType **shape, size_t height, size_t length, size_t width);
 void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
-void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
+void shapeEstimateJU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width);
 // Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
-void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width);
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, size_t num_shapes, dataType h, size_t height, size_t length, size_t width);
 //==============================================================================
 void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_t length, size_t width, size_t numShapes, shape_Analysis_Parameters params)
 {
@@ -110,7 +110,7 @@ void genProcMeanShape(dataType ** dtaMnShp, Shapes *shapes, size_t height, size_
 	// Copy reg shapes to the original shapes
 	for (k = 0; k < numShapes; k++) 
 	{
-		copyDataPointer(reg_shapes[k].shp, shapes[k].shp, height, length, width);
+		copyDataToAnotherArray(reg_shapes[k].shp, shapes[k].shp, height, length, width);
 	}
 	//==============================================================================
 	// Free memory
@@ -662,9 +662,9 @@ void shapeEstimate(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_
 	free(shp_projection);
 	//==============================================================================
 }
-void shapeEstimateU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
+void shapeEstimateJU(dataType ** dtaMeanShape, dataType ** shape, dataType ** est_shape, dataType * eigenvalues, dataType ** eigenvectors, estimate_Params * estParams, const size_t princomp, const size_t height, const size_t length, const size_t width)
 {
-	int k, i, j, xd, xyd, l;
+	size_t k, i, j, xd, xyd, l;
 	//==============================================================================
 	size_t dim3D = height * length * width, dim2D = length * width;
 	const size_t mem_alloc_3D_block = sizeof(dataType) * dim3D;
@@ -891,12 +891,13 @@ dataType procDist(dataType ** dta1, dataType ** dta2, size_t height, size_t leng
 }
 //==============================================================================
 // Selects and sets a reference shape from set of shape which is closest similar to the mean of the sets
-void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_shapes, dataType h, size_t height, size_t length, size_t width)
+void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, size_t num_shapes, dataType h, size_t height, size_t length, size_t width)
 {
-	int i, j, k, l, xd;
+	int i, k;
 	const size_t dim2D = length * width;
 	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
-	dataType min_energy = DBL_MAX, initial_value = 0.;
+	double min_energy = DBL_MAX;
+	dataType initial_value = 0.;
 	int min_shape = -1;
 	// Tmp Mean shape
 	dataType ** tmpMean = (dataType **)malloc(sizeof(dataType*)*height);
@@ -924,7 +925,7 @@ void setReferenceShape(Shapes * set_shapes, dataType ** referenceShape, int num_
 	// Display console info
 	printf("Selected reference shape %d, error and mean shape %.8e\n", min_shape, min_energy);
 	// Copy selected to the reference pointer
-	copyDataPointer(set_shapes[min_shape - 1].shp, referenceShape, height, length, width);
+	copyDataToAnotherArray(set_shapes[min_shape - 1].shp, referenceShape, height, length, width);
 	// Free memory
 	for (k = 0; k < height; k++)
 	{

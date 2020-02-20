@@ -137,7 +137,7 @@ void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extend
 	}
 }
 //==============================================================================
-void copyDataPointer(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width)
+void copyDataToAnotherArray(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width)
 {
 	size_t k, i, j, xd;
 	for (k = 0; k < height; k++)
