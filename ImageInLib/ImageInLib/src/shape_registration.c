@@ -942,18 +942,22 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	//==============================================================================
 	ClipBox coordFixed, coordMoving, bestFit, coordMovingTmp;
 	//==============================================================================
+	const size_t mem_alloc_2D_block = sizeof(dataType) * dim2D;
+	//==============================================================================
+	const dataType large_value = 50000;
+	//==============================================================================
 	if (params.use_clipbox)
 	{
 		for (i = 0; i < imageHeight; i++)
 		{
-			movInitPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+			movInitPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 		}
 	}
 	//==============================================================================
 	// Initializations of Pointers
 	for (i = 0; i < imageHeight; i++)
 	{
-		destPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		destPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	// Instantiate Affine Parameters
@@ -971,12 +975,12 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
-	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 	//==============================================================================
 	if (params.use_clipbox)
 	{
 		// Initial dist. fn for moving image before adding any transformation
-		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 	}
 	//==============================================================================
 #ifdef MEASURE_TIME
@@ -1019,8 +1023,8 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 	dataType ** distTransPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
 	for (i = 0; i < imageHeight; i++)
 	{
-		transPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-		distTransPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		transPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
+		distTransPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	while (!stopCond)
@@ -1068,11 +1072,11 @@ Affine_Parameter registration3D(dataType ** fixedData, dataType ** movingData, A
 		//==============================================================================
 		if (params.use_clipbox)
 		{
-			fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground, bestFit);
+			fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground, bestFit);
 		}
 		else
 		{
-			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 		}
 		//==============================================================================
 #ifdef MEASURE_TIME
@@ -1238,6 +1242,10 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 	// Create a new shape Pointers to be used
 	dataType ** destPtr = (dataType **)malloc(sizeof(dataType*) * imageHeight); // distances for destination
 	//==============================================================================
+	const size_t mem_alloc_2D_block = sizeof(dataType)*dim2D;
+	//==============================================================================
+	const dataType large_value = 50000;
+	//==============================================================================
 	// USE_CLIP
 	ClipBox coordFixed, coordMoving, bestFit, coordMovingTmp; // Clipbox for bestFit of both fixed and moving images, Moving image clipbox
 	dataType ** movInitPtr = (dataType **)malloc(sizeof(dataType *) * imageHeight); // distances for Moving
@@ -1245,14 +1253,14 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 	{
 		for (i = 0; i < imageHeight; i++)
 		{
-			movInitPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+			movInitPtr[i] = (dataType*)malloc(mem_alloc_2D_block);
 		}
 	}
 	//==============================================================================
 	// Initializations of Pointers
 	for (i = 0; i < imageHeight; i++)
 	{
-		destPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+		destPtr[i] = (dataType*)malloc(mem_alloc_2D_block);
 	}
 	// Initialize to same background - default value is 255, 0, 0
 	//initialize3dArrayD(destPtr, imageLength, imageWidth, imageHeight, foregound);
@@ -1275,13 +1283,13 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 #ifdef MEASURE_TIME
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
-	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 	//==============================================================================
 	// USE_CLIP
 	if (params.use_clipbox)
 	{
 		// Initial dist. fn for moving image before adding any transformation
-		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 	}
 	//==============================================================================
 #ifdef MEASURE_TIME
@@ -1323,8 +1331,8 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 	dataType ** distTransPtr = (dataType**)malloc(sizeof(dataType*) * imageHeight); // distances for Transformed Ptr
 	for (i = 0; i < imageHeight; i++)
 	{
-		transPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
-		distTransPtr[i] = (dataType*)malloc(sizeof(dataType) * dim2D);
+		transPtr[i] = (dataType*)malloc(mem_alloc_2D_block);
+		distTransPtr[i] = (dataType*)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	while (!stopCond)
@@ -1371,12 +1379,12 @@ Affine_Parameter registrationCoorDinateDescent3D(dataType ** fixedData, dataType
 // USE_CLIP
 		if (params.use_clipbox)
 		{
-			// fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, foregound, bestFit);
-			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+			// fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, large_value, foregound, bestFit);
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 		}
 		else
 		{
-			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, 1, 50000, params.imageForeground);
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 		}
 		//==============================================================================
 #ifdef MEASURE_TIME
@@ -1599,6 +1607,10 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	dataType firstCpuTime, secondCpuTime, regStartCpuTime, regStopCpuTime, regTotalCpuTimen = 0.;
 	dataType energyTotalCpuTime = 0., distanceTotalCpuTime = 0., gradientTotalCpuTime = 0., transformationTotalCpuTime = 0., conversionTotalCpuTime = 0., surfacePtsTotalCpuTime = 0., edgeDetectionTotalCpuTime = 0., generateRandomPtsTotalCpuTime = 0., distanceCalculateTotalCpuTime = 0., finiteDiffereceTotalCpuTime = 0.;
 	//==============================================================================
+	const size_t mem_alloc_2D_block = sizeof(dataType)*dim2D;
+	//==============================================================================
+	const dataType large_value = 50000;
+	//==============================================================================
 	Point3D * surface_points = malloc(sizeof(Point3D) * maxSurfacePts);
 	//==============================================================================
 	// Affine Parameters
@@ -1617,14 +1629,14 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	{
 		for (i = 0; i < imageHeight; i++)
 		{
-			movInitPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+			movInitPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 		}
 	}
 	//==============================================================================
 	// Initializations of Pointers
 	for (i = 0; i < imageHeight; i++)
 	{
-		destPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+		destPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	// Instantiate Affine Parameters
@@ -1643,7 +1655,7 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	{
 		for (i = 0; i < imageHeight; i++)
 		{
-			edgeMovingPointer[i] = malloc(sizeof(dataType) * dim2D);
+			edgeMovingPointer[i] = malloc(mem_alloc_2D_block);
 		}
 	}
 	//==============================================================================
@@ -1653,12 +1665,12 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 #endif
 	//==============================================================================
-	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+	fastSweepingFunction_3D(destPtr, fixedData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 	//==============================================================================
 	if (params.use_clipbox)
 	{
 		//==============================================================================
-		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+		fastSweepingFunction_3D(movInitPtr, movingData, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 		//==============================================================================
 	}
 	//==============================================================================
@@ -1681,8 +1693,8 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		{
 			for (i = 0; i < imageHeight; i++)
 			{
-				fixedNBandPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
-				movingNBandPtr[i] = (dataType *)malloc(sizeof(dataType) * dim2D);
+				fixedNBandPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
+				movingNBandPtr[i] = (dataType *)malloc(mem_alloc_2D_block);
 			}
 			// Fill the narrow band areas for fixed, moving respectively
 			fillNarrowBandArea(destPtr, fixedNBandPtr, imageHeight, imageLength, imageWidth, params.imageForeground, params.imageBackground);
@@ -1718,9 +1730,9 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	//==============================================================================
 	for (i = 0; i < imageHeight; i++)
 	{
-		transPtr[i] = malloc(sizeof(dataType) * dim2D);
-		transMovingPtr[i] = malloc(sizeof(dataType) * dim2D);
-		distTransPtr[i] = malloc(sizeof(dataType) * dim2D);
+		transPtr[i] = malloc(mem_alloc_2D_block);
+		transMovingPtr[i] = malloc(mem_alloc_2D_block);
+		distTransPtr[i] = malloc(mem_alloc_2D_block);
 	}
 	//==============================================================================
 	while (!stopCond)
@@ -1778,11 +1790,11 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 		//==============================================================================
 		if (params.use_clipbox)
 		{
-			fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground, bestFit);
+			fSweeping3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground, bestFit);
 		}
 		else
 		{
-			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, 50000, params.imageForeground);
+			fastSweepingFunction_3D(distTransPtr, transPtr, imageLength, imageWidth, imageHeight, params.h, large_value, params.imageForeground);
 		}
 		//==============================================================================
 #ifdef MEASURE_TIME
