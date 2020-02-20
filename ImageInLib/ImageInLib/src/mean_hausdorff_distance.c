@@ -9,8 +9,9 @@ dataType mean_hausdorff(dataType ** curveA_Pointer, dataType ** curveB_Pointer, 
 	dataType mhd = 0., shortest, dist, dz, dx, dy;
 	//==============================================================================
 	size_t k, i, j, xd;
-	size_t pts_a = 0, pts_b = 0, dim2D = (length)*(width);
-	size_t dim3D = (height)*dim2D;
+	size_t pts_a = 0, pts_b = 0;
+	const size_t dim2D = (length)*(width);
+	const size_t dim3D = (height)*dim2D;
 	Point3D * surface_points_a = (Point3D *)malloc(sizeof(Point3D) * dim3D);
 	Point3D * surface_points_b = (Point3D *)malloc(sizeof(Point3D) * dim3D);
 	//==============================================================================
