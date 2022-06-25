@@ -118,7 +118,7 @@ extern "C" {
 	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
 	// Rescales an array to a custom range
-	void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new);
+	void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new, dataType max_dta, dataType min_dta);
 	//==============================================================================
 #endif // !COMMON_FUNCTIONS
 
