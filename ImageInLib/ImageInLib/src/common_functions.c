@@ -159,11 +159,9 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)
 }
 //==============================================================================
-void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new)
+void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new, dataType max_dta, dataType min_dta)
 {
 	size_t k, i, j, xd;
-	dataType max_dta = (dataType)1.0e+38 * -1.0;
-	dataType min_dta = (dataType)1.0e+38;
 	// Find the Max Intensity
 	for (k = 0; k < height; k++)
 	{
