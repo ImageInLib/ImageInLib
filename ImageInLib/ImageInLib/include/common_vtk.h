@@ -13,7 +13,8 @@ extern "C" {
 		dta_Int,
 		dta_UInt,
 		dta_Flt,
-		dta_Dbl
+		dta_Dbl,
+		dta_Shrt
 	} VtkDataType;
 	//==============================================================================
 	typedef enum {
