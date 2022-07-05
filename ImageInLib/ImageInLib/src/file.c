@@ -40,3 +40,41 @@ void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const s
 		}
 	}
 }
+
+void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, double minNew, double maxNew) {
+	size_t k, i, j, xd;
+	dataType maxData = -32768; //SHRT_MAX;
+	dataType minData = 32767; //SHRT_MAX;
+
+	// Find the Max Intensity
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+
+				// 1D Conversion of row and column
+				xd = x_new(i, j, imageLength);
+				if (imageDataPtr[k][xd] > maxData) {
+					maxData = imageDataPtr[k][xd];
+				}
+				if (imageDataPtr[k][xd] < minData) {
+					minData = imageDataPtr[k][xd];
+				}
+			}
+		}
+	}
+	// Rescale from min_new to max_new
+	double diffOld = maxData - minData;
+	double diffNew = maxNew - minNew;
+	double scale_factor = (diffNew) / (diffOld);
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+				// 1D Conversion of row and column
+				xd = x_new(i, j, imageLength);
+				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - maxData) + maxNew;
+				// Alternatively
+				//dta[k][xd] = scale_factor * (dta[k][xd] - min_dta) + min_new; }
+			}
+		}
+	}
+}
