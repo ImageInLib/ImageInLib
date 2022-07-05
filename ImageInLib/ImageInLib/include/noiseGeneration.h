@@ -13,7 +13,7 @@ extern "C" {
 	} NoiseType;
 
 	void addNoiseToImage(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim,
-		dataType density, const NoiseType method);
+		float density, const NoiseType method, dataType pepper); //adding of pepper
 
 #ifdef __cplusplus
 }

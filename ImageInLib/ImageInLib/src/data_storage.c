@@ -105,9 +105,12 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 		{
 			for (size_t j = 0; j < dimXY; j++)
 			{
-				double tmp = array3DPtr[k][j];
-				revertBytes(&tmp, sizeof(double));
-				fwrite(&tmp, sizeof(double), 1, cfPtr);
+				//double tmp = array3DPtr[k][j];  //--> initial code
+				dataType tmp = array3DPtr[k][j];
+				//revertBytes(&tmp, sizeof(double)); //--> initial code
+				revertBytes(&tmp, sizeof(dataType));
+				//fwrite(&tmp, sizeof(double), 1, cfPtr); //--> initial code
+				fwrite(&tmp, sizeof(dataType), 1, cfPtr);
 			}
 		}
 	}
@@ -115,7 +118,8 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 	{
 		for (size_t k = 0; k < zDim; k++)
 		{
-			fwrite(array3DPtr[k], sizeof(double), dimXY, cfPtr);
+			//fwrite(array3DPtr[k], sizeof(double), dimXY, cfPtr); //--> initial code
+			fwrite(array3DPtr[k], sizeof(dataType), dimXY, cfPtr);
 		}
 	}
 

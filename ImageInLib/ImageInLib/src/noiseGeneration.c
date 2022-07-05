@@ -4,12 +4,12 @@
 
 // length == xDim, width == yDim, height == zDim
 void addNoiseToImage(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim,
-	dataType density, const NoiseType method)
+	float density, const NoiseType method, dataType pepper)
 {
 	switch (method)
 	{
 	case SALT_AND_PEPPER:
-		saltAndPepper3dNoise_D(array3DPtr, xDim, yDim, zDim, density);
+		saltAndPepper3dNoise_D(array3DPtr, xDim, yDim, zDim, density, pepper);
 		break;
 	case ADDITIVE_NOISE:
 		additive3dNoise_D(array3DPtr, xDim, yDim, zDim, density);
