@@ -147,6 +147,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 			}
 		}
 	}
+	//----
 
 	//change from little endian to big endian
 	for (k = 0; k < imageHeight; k++)
