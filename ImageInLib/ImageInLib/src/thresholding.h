@@ -25,6 +25,8 @@ extern "C" {
 		const size_t zDim, const dataType thresholdvalue, const dataType inputbgvalue,
 		const dataType inputfgvalue);
 
+	bool thresholding3dFunctionN(dataType** image3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType thres_min, dataType thres_max, dataType backGround, dataType overGround);
+
 #ifdef __cplusplus
 }
 #endif
