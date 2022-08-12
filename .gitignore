@@ -266,3 +266,6 @@ __pycache__/
 
 #RAW files
 *.raw
+
+#Build files
+*.build/
