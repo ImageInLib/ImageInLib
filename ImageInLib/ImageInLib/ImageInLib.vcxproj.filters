@@ -141,6 +141,12 @@
     <Filter Include="Source Files\Distance Function">
       <UniqueIdentifier>{529cb28c-1d6e-4db1-b6e6-3b2fe6d8cc75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Labelling">
+      <UniqueIdentifier>{6e8d466e-45e8-40e6-9ab7-31f58f2428ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Labelling">
+      <UniqueIdentifier>{441c6922-f006-4b26-9368-b8b3d41ec056}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\transformations.c">
@@ -296,6 +302,9 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Labelling.cpp">
+      <Filter>Source Files\Labelling</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -435,6 +444,12 @@
     </ClInclude>
     <ClInclude Include="src\mean_hausdorff_distance.h">
       <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Labelling.h">
+      <Filter>Header Files\Labelling</Filter>
+    </ClInclude>
+    <ClInclude Include="include\template_functions.h">
+      <Filter>Header Files\File Management</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
