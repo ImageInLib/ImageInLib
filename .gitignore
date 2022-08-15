@@ -272,6 +272,7 @@ __pycache__/
 
 #png files
 *.png
+*.PNG
 
 #pgm files
 *.pgm
