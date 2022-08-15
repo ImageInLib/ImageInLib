@@ -3,7 +3,7 @@
 #include<iostream>
 
 template <typename T>
-bool store3dRawData(T* imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, const char* pathPtr);
+bool store3dRawData(T** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, const char* pathPtr);
 
 template<typename T>
 inline bool store3dRawData(T** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, const char* pathPtr)
