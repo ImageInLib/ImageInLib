@@ -269,3 +269,9 @@ __pycache__/
 
 #Build files
 *.build/
+
+#png files
+*.png
+
+#pgm files
+*.pgm
