@@ -1,4 +1,4 @@
-//#include <iostream>
+#include <iostream>
 #include <climits>
 #include <crtdbg.h>
 #include <corecrt_malloc.h>
@@ -13,7 +13,7 @@
 
 using namespace std;
 
-//for 2D images
+//for 2D image using 2D arrays
 bool regionLabelling(int** imageDataPtr, int** segmentedImage, int xDim, int yDim, int background, int object)
 {
 	if (imageDataPtr == NULL) {
@@ -264,6 +264,8 @@ bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xD
 	return true;
 }
 
+
+//========================
 bool initialization2dArray(int** imageDataPtr, int xDim, int yDim, int value)
 {
 	if (imageDataPtr == NULL) {
@@ -332,7 +334,6 @@ bool rescalingTo2D(int** imageDataPtr, int xDim, int yDim, int minNew, int maxNe
 	return true;
 }
 
-//=================
 bool sortArray(int* valuePtr, int sizeArray) {
 	int i, j, max = 0, ind = 0, ech = 0;
 
@@ -354,142 +355,16 @@ bool sortArray(int* valuePtr, int sizeArray) {
 
 	return true;
 }
-
-//=================
+//=========================
 
 
 //for 3D images
-
-/*
-bool fixEquivalence(dataType** segmentedImage, size_t xDim, size_t x, size_t y, size_t z, dataType minV, dataType maxV, bool parallize, size_t nbtreads) {
+bool fixEquivalence(int** segmentedImage, const size_t xDim, size_t x, size_t y, size_t z, int minV, int maxV, bool parallize, size_t nbtreads) {
 
 	int l, m, n;
-
-	if (parallize == true) {
-		omp_set_dynamic(0);
-		omp_set_num_threads(nbtreads);
-
-		if (z == 0) {
-#pragma omp parallel
-			{
-				//do it just for x and y
-#pragma omp for private(m,n) schedule(static) nowait
-				for (m = x; m >= 0; m--) {
-					for (n = y; n >= 0; n--) {
-						if (segmentedImage[z][x_new(m, n, xDim)] == maxV) {
-							segmentedImage[z][x_new(m, n, xDim)] = minV;
-						}
-					}
-				}
-			}
-		}
-		else {
-			if (x == 0) {
-				//do it for k and y
-#pragma omp parallel
-				{
-#pragma omp for private(l,n) schedule(static) nowait
-					for (l = z; l >= 0; l--) {
-						for (n = y; n >= 0; n--) {
-							if (segmentedImage[l][x_new(x, n, xDim)] == maxV) {
-								segmentedImage[l][x_new(x, n, xDim)] = minV;
-							}
-						}
-					}
-				}
-			}
-			else {
-				if (y == 0) {
-					//do it for k and x
-#pragma omp parallel
-					{
-#pragma omp for private(l,m) schedule(static) nowait
-						for (l = z; l >= 0; l--) {
-							for (m = x; m >= 0; m--) {
-								if (segmentedImage[l][x_new(m, y, xDim)] == maxV) {
-									segmentedImage[l][x_new(m, y, xDim)] = minV;
-								}
-							}
-						}
-					}
-				}
-				else {
-					// do it for k,x,y
-#pragma omp parallel
-					{
-#pragma omp for private(l,m,n) schedule(static) nowait
-						for (l = z; l >= 0; l--) {
-							for (m = x; m >= 0; m--) {
-								for (n = y; n >= 0; n--) {
-									if (segmentedImage[l][x_new(m, n, xDim)] == maxV) {
-										segmentedImage[l][x_new(m, n, xDim)] = minV;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	else {
-		if (z == 0) {
-			//do it just for x and y
-			for (m = x; m >= 0; m--) {
-				for (n = y; n >= 0; n--) {
-					if (segmentedImage[z][x_new(m, n, xDim)] == maxV) {
-						segmentedImage[z][x_new(m, n, xDim)] = minV;
-					}
-				}
-			}
-		}
-		else {
-			if (x == 0) {
-				//do it for k and y
-				for (l = z; l >= 0; l--) {
-					for (n = y; n >= 0; n--) {
-						if (segmentedImage[l][x_new(x, n, xDim)] == maxV) {
-							segmentedImage[l][x_new(x, n, xDim)] = minV;
-						}
-					}
-				}
-			}
-			else {
-				if (y == 0) {
-					//do it for k and x
-					for (l = z; l >= 0; l--) {
-						for (m = x; m >= 0; m--) {
-							if (segmentedImage[l][x_new(m, y, xDim)] == maxV) {
-								segmentedImage[l][x_new(m, y, xDim)] = minV;
-							}
-						}
-					}
-				}
-				else {
-					// do it for k,x,y
-					for (l = z; l >= 0; l--) {
-						for (m = x; m >= 0; m--) {
-							for (n = y; n >= 0; n--) {
-								if (segmentedImage[l][x_new(m, n, xDim)] == maxV) {
-									segmentedImage[l][x_new(m, n, xDim)] = minV;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-	}
-
-	return true;
-}
-*/
-
-
-bool fixEquivalence(dataType** segmentedImage, const size_t xDim, size_t x, size_t y, size_t z, dataType minV, dataType maxV, bool parallize, size_t nbtreads) {
-
-	int l, m, n;
+	int iNew = (int)x;
+	int jNew = (int)y;
+	int kNew = (int)z;
 
 	if (parallize == true) {
 		omp_set_dynamic(0);
@@ -497,24 +372,24 @@ bool fixEquivalence(dataType** segmentedImage, const size_t xDim, size_t x, size
 #pragma omp parallel
 		{
 #pragma omp parallel for schedule(static) private(l,m,n)
-			for (l = z; l >= 0; l--) {
-				for (m = x; m >= 0; m--) {
-					for (n = y; n >= 0; n--) {
-						if (z == 0) {
-							if (segmentedImage[z][x_new(m, n, xDim)] == maxV) {
-								segmentedImage[z][x_new(m, n, xDim)] = minV;
+			for (l = kNew; l >= 0; l--) {
+				for (m = iNew; m >= 0; m--) {
+					for (n = jNew; n >= 0; n--) {
+						if (kNew == 0) {
+							if (segmentedImage[kNew][x_new(m, n, xDim)] == maxV) {
+								segmentedImage[kNew][x_new(m, n, xDim)] = minV;
 							}
 						}
 						else {
-							if (x == 0) {
-								if (segmentedImage[l][x_new(x, n, xDim)] == maxV) {
-									segmentedImage[l][x_new(x, n, xDim)] = minV;
+							if (iNew == 0) {
+								if (segmentedImage[l][x_new(iNew, n, xDim)] == maxV) {
+									segmentedImage[l][x_new(iNew, n, xDim)] = minV;
 								}
 							}
 							else {
-								if (y == 0) {
-									if (segmentedImage[l][x_new(m, y, xDim)] == maxV) {
-										segmentedImage[l][x_new(m, y, xDim)] = minV;
+								if (jNew == 0) {
+									if (segmentedImage[l][x_new(m, jNew, xDim)] == maxV) {
+										segmentedImage[l][x_new(m, jNew, xDim)] = minV;
 									}
 								}
 								else {
@@ -530,9 +405,9 @@ bool fixEquivalence(dataType** segmentedImage, const size_t xDim, size_t x, size
 		}
 	}
 	else {
-		for (l = z; l >= 0; l--) {
-			for (m = x; m >= 0; m--) {
-				for (n = y; n >= 0; n--) {
+		for (l = kNew; l >= 0; l--) {
+			for (m = iNew; m >= 0; m--) {
+				for (n = jNew; n >= 0; n--) {
 					if (z == 0) {
 						if (segmentedImage[z][x_new(m, n, xDim)] == maxV) {
 							segmentedImage[z][x_new(m, n, xDim)] = minV;
@@ -564,7 +439,8 @@ bool fixEquivalence(dataType** segmentedImage, const size_t xDim, size_t x, size
 	return true;
 }
 
-bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const size_t xDim, const size_t yDim, const size_t zDim, dataType background, dataType object, bool parallize, size_t nbtreads)
+//Old algorithm
+bool regionLabelling3D(dataType** imageDataPtr, int** segmentedImage, const size_t xDim, const size_t yDim, const size_t zDim, dataType background, dataType object, bool parallize, size_t nbtreads)
 {
 
 	if (imageDataPtr == NULL) {
@@ -574,9 +450,9 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 		return false;
 	}
 
-	size_t k, i, j, xd;
-	int l, m, n, p;
-	dataType regionCounting = 1, minV = 0, maxV = 0;
+	size_t k, i, j, xd, p = 0;
+	size_t regionCounting = 1;
+	dataType minV = 0, maxV = 0;
 
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < xDim; i++) {
@@ -633,23 +509,7 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k][x_new(i, j - 1, xDim)];
 
 									if (segmentedImage[k][x_new(i, j - 1, xDim)] != segmentedImage[k][x_new(i - 1, j, xDim)]) {
-										/*
-										max = segmentedImage[k][x_new(i - 1, j, xDim)];
-										min = segmentedImage[k][x_new(i, j - 1, xDim)];
-
-										if (max < segmentedImage[k][x_new(i, j - 1, xDim)]) {
-											max = segmentedImage[k][x_new(i, j - 1, xDim)];
-											min = segmentedImage[k][x_new(i - 1, j, xDim)];
-										}
-
-										for (m = i; m >= 0; m--) {
-											for (n = j; n >= 0; n--) {
-												if (segmentedImage[k][x_new(m, n, xDim)] == max) {
-													segmentedImage[k][x_new(m, n, xDim)] = min;
-												}
-											}
-										}
-										*/
+										
 										minV = min(segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										maxV = max(segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -690,23 +550,7 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k - 1][xd];
 
 									if (segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i, j - 1, xDim)]) {
-										/*
-										max = segmentedImage[k - 1][xd];
-										min = segmentedImage[k][x_new(i, j - 1, xDim)];
-
-										if (max < segmentedImage[k][x_new(i, j - 1, xDim)]) {
-											max = segmentedImage[k][x_new(i, j - 1, xDim)];
-											min = segmentedImage[k - 1][xd];
-										}
-
-										for (l = k; l >= 0; l--) {
-											for (n = j; n >= 0; n--) {
-												if (segmentedImage[l][x_new(i, n, xDim)] == max) {
-													segmentedImage[l][x_new(i, n, xDim)] = min;
-												}
-											}
-										}
-										*/
+										
 										minV = min(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										maxV = max(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -733,23 +577,6 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k - 1][xd];
 
 									if (segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i - 1, j, xDim)]) {
-										/*
-										max = segmentedImage[k - 1][xd];
-										min = segmentedImage[k][x_new(i - 1, j, xDim)];
-
-										if (max < segmentedImage[k][x_new(i - 1, j, xDim)]) {
-											max = segmentedImage[k][x_new(i - 1, j, xDim)];
-											min = segmentedImage[k - 1][xd];
-										}
-
-										for (l = k; l >= 0; l--) {
-											for (m = i; m >= 0; m--) {
-												if (segmentedImage[l][x_new(m, j, xDim)] == max) {
-													segmentedImage[l][x_new(m, j, xDim)] = min;
-												}
-											}
-										}
-										*/
 										minV = min(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)]);
 										maxV = max(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -771,25 +598,6 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k - 1][xd];
 
 									if (segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i - 1, j, xDim)]) {
-										/*
-										max = segmentedImage[k - 1][xd];
-										min = segmentedImage[k][x_new(i - 1, j, xDim)];
-
-										if (max < segmentedImage[k][x_new(i - 1, j, xDim)]) {
-											max = segmentedImage[k][x_new(i - 1, j, xDim)];
-											min = segmentedImage[k - 1][xd];
-										}
-
-										for (l = k; l >= 0; l--) {
-											for (m = i; m >= 0; m--) {
-												for (n = j; n >= 0; n--) {
-													if (segmentedImage[l][x_new(m, n, xDim)] == max) {
-														segmentedImage[l][x_new(m, n, xDim)] = min;
-													}
-												}
-											}
-										}
-										*/
 										minV = min(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)]);
 										maxV = max(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -800,25 +608,6 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k - 1][xd];
 
 									if (segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i, j - 1, xDim)]) {
-										/*
-										max = segmentedImage[k - 1][xd];
-										min = segmentedImage[k][x_new(i, j - 1, xDim)];
-
-										if (max < segmentedImage[k][x_new(i, j - 1, xDim)]) {
-											max = segmentedImage[k][x_new(i, j - 1, xDim)];
-											min = segmentedImage[k - 1][xd];
-										}
-
-										for (l = k; l >= 0; l--) {
-											for (m = i; m >= 0; m--) {
-												for (n = j; n >= 0; n--) {
-													if (segmentedImage[l][x_new(m, n, xDim)] == max) {
-														segmentedImage[l][x_new(m, n, xDim)] = min;
-													}
-												}
-											}
-										}
-										*/
 										minV = min(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										maxV = max(segmentedImage[k - 1][xd], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -835,25 +624,6 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 									segmentedImage[k][xd] = segmentedImage[k][x_new(i - 1, j, xDim)];
 
 									if (segmentedImage[k][x_new(i - 1, j, xDim)] != segmentedImage[k][x_new(i, j - 1, xDim)]) {
-										/*
-										max = segmentedImage[k][x_new(i - 1, j, xDim)];
-										min = segmentedImage[k][x_new(i, j - 1, xDim)];
-
-										if (max < segmentedImage[k][x_new(i, j - 1, xDim)]) {
-											max = segmentedImage[k][x_new(i, j - 1, xDim)];
-											min = segmentedImage[k][x_new(i - 1, j, xDim)];
-										}
-
-										for (l = k; l >= 0; l--) {
-											for (m = i; m >= 0; m--) {
-												for (n = j; n >= 0; n--) {
-													if (segmentedImage[l][x_new(m, n, xDim)] == max) {
-														segmentedImage[l][x_new(m, n, xDim)] = min;
-													}
-												}
-											}
-										}
-										*/
 										minV = min(segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										maxV = max(segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)]);
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
@@ -865,7 +635,7 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 
 									if (segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i - 1, j, xDim)] || segmentedImage[k - 1][xd] != segmentedImage[k][x_new(i, j - 1, xDim)]) {
 
-										dataType tab[3] = { segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)] };
+										size_t tab[3] = { segmentedImage[k - 1][xd], segmentedImage[k][x_new(i - 1, j, xDim)], segmentedImage[k][x_new(i, j - 1, xDim)] };
 										minV = tab[0], maxV = tab[0];
 										for (p = 0; p < 3; p++) {
 											if (tab[p] > maxV) {
@@ -875,17 +645,6 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 												minV = tab[p];
 											}
 										}
-										/*
-										for (l = k; l >= 0; l--) {
-											for (m = i; m >= 0; m--) {
-												for (n = j; n >= 0; n--) {
-													if (segmentedImage[l][x_new(m, n, xDim)] == max) {
-														segmentedImage[l][x_new(m, n, xDim)] = min;
-													}
-												}
-											}
-										}
-										*/
 										fixEquivalence(segmentedImage, xDim, i, j, k, minV, maxV, parallize, nbtreads);
 									}
 								}
@@ -900,7 +659,8 @@ bool regionLabelling3D(dataType** imageDataPtr, dataType** segmentedImage, const
 	return true;
 }
 
-bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusArray, int xDim, int yDim, int zDim, dataType object) {
+//New algorithm
+bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object) {
 
 	if (imageDataPtr == NULL)
 		return false;
@@ -909,8 +669,9 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 	if (statusArray == NULL)
 		return false;
 
-	vector<int> iStack, jStack, kStack, iTmpStack, jTmpStack, kTmpStack;
-	int i = 0, j = 0, k = 0, iNew = 0, jNew = 0, kNew = 0, n = 0, xd = 0, label = 1;
+	vector<size_t> iStack, jStack, kStack, iTmpStack, jTmpStack, kTmpStack;
+	size_t i = 0, j = 0, k = 0, iNew = 0, jNew = 0, kNew = 0, n = 0;
+	int label = 1;
 
 	//statusArray has false everywhere in the beginning
 	//false---> non-processed and true---> processed
@@ -919,26 +680,24 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 		for (i = 0; i < xDim; i++) {
 			for (j = 0; j < yDim; j++) {
 
-				xd = x_flat(i, j, k, xDim, yDim);
-
-				if (statusArray[xd] == false) {
-					if (imageDataPtr[xd] == object) {
+				if (statusArray[k][x_new(i, j, xDim)] == false) {
+					if (imageDataPtr[k][x_new(i, j, xDim)] == object) {
 						//top neighbor
-						if (k > 0 && statusArray[x_flat(i, j, k - 1, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i, j, k - 1, xDim, yDim)] == object) {
-								//if element is in region add its coordinates in stacks
+						if (k > 0 && statusArray[k - 1][x_new(i, j, xDim)] == false) {
+							if (imageDataPtr[k - 1][x_new(i, j, xDim)] == object) {
+								//if element is in region, then add its coordinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j);
 								kStack.push_back(k - 1);
 							}
 							else {
 								//it's not object, so, update its status
-								statusArray[x_flat(i, j, k - 1, xDim, yDim)] = true;
+								statusArray[k - 1][x_new(i, j, xDim)] = true;
 							}
 						}
 						//down neighbor
-						if (k < zDim - 1 && statusArray[x_flat(i, j, k + 1, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i, j, k + 1, xDim, yDim)] == object) {
+						if (k < zDim - 1 && statusArray[k + 1][x_new(i, j, xDim)] == false) {
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
 								//if element is in region add its coordinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j);
@@ -946,61 +705,61 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 							}
 							else {
 								//it's not object, so, update its status
-								statusArray[x_flat(i, j, k + 1, xDim, yDim)] = true;
+								statusArray[k + 1][x_new(i, j, xDim)] = true;
 							}
 						}
 						//left neighbor
-						if (i > 0 && statusArray[x_flat(i - 1, j, k, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i - 1, j, k, xDim, yDim)] == object) {
+						if (i > 0 && statusArray[k][x_new(i - 1, j, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i - 1, j, xDim)] == object) {
 								//if element is in region add its coordinates in stacks
 								iStack.push_back(i - 1);
 								jStack.push_back(j);
 								kStack.push_back(k);
 							}
 							else {
-								statusArray[x_flat(i - 1, j, k, xDim, yDim)] = true;
+								statusArray[k][x_new(i - 1, j, xDim)] = true;
 							}
 						}
 						//right neighbor
-						if (i < xDim - 1 && statusArray[x_flat(i + 1, j, k, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i + 1, j, k, xDim, yDim)] == object) {
+						if (i < xDim - 1 && statusArray[k][x_new(i + 1, j, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
 								//if element is in region add its coordinates in stacks
 								iStack.push_back(i + 1);
 								jStack.push_back(j);
 								kStack.push_back(k);
 							}
 							else {
-								statusArray[x_flat(i + 1, j, k, xDim, yDim)] = true;
+								statusArray[k][x_new(i + 1, j, xDim)] = true;
 							}
 						}
 						//front neighbor
-						if (j > 0 && statusArray[x_flat(i, j - 1, k, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i, j - 1, k, xDim, yDim)] == object) {
+						if (j > 0 && statusArray[k][x_new(i, j - 1, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i, j - 1, xDim)] == object) {
 								//if element is in region add its coodinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j - 1);
 								kStack.push_back(k);
 							}
 							else {
-								statusArray[x_flat(i, j - 1, k, xDim, yDim)] = true;
+								statusArray[k][x_new(i, j - 1, xDim)] = true;
 							}
 						}
 						//behind neighbor
-						if (j < yDim - 1 && statusArray[x_flat(i, j + 1, k, xDim, yDim)] == false) {
-							if (imageDataPtr[x_flat(i, j + 1, k, xDim, yDim)] == object) {
+						if (j < yDim - 1 && statusArray[k][x_new(i, j + 1, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
 								//if element is in region add its coodinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j + 1);
 								kStack.push_back(k);
 							}
 							else {
-								statusArray[x_flat(i, j + 1, k, xDim, yDim)] = true;
+								statusArray[k][x_new(i, j + 1, xDim)] = true;
 							}
 						}
 						//after checking all neighbors of current element
 						//I give its label, and update its status
-						segmentedImage[xd] = label;
-						statusArray[xd] = true;
+						segmentedImage[k][x_new(i, j, xDim)] = label;
+						statusArray[k][x_new(i, j, xDim)] = true;
 						//Now I check neighbors of its neighbors saved in the stacks
 						//I start by the last added element in stacks
 						//If there is no neighbor iStack.size() = jStack.size() = kStack.size() = 0 , and the while loop will no be ran
@@ -1010,8 +769,8 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 							jNew = jStack.size() - 1;
 							kNew = kStack.size() - 1;
 							//top neighbor
-							if (kStack[kNew] > 0 && statusArray[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] - 1, xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] - 1, xDim, yDim)] == object) {
+							if (kStack[kNew] > 0 && statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew]);
 									jTmpStack.push_back(jStack[jNew]);
@@ -1019,12 +778,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] - 1, xDim, yDim)] = true;
+									statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
 								}
 							}
 							//down neighbor
-							if (kStack[kNew] < zDim - 1 && statusArray[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] + 1, xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] + 1, xDim, yDim)] == object) {
+							if (kStack[kNew] < zDim - 1 && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew]);
 									jTmpStack.push_back(jStack[jNew]);
@@ -1032,12 +791,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew], jStack[jNew], kStack[kNew] + 1, xDim, yDim)] = true;
+									statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
 								}
 							}
 							//right neighbor
-							if (iStack[iNew] > 0 && statusArray[x_flat(iStack[iNew] - 1, jStack[jNew], kStack[kNew], xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew] - 1, jStack[jNew], kStack[kNew], xDim, yDim)] == object) {
+							if (iStack[iNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew] - 1);
 									jTmpStack.push_back(jStack[jNew]);
@@ -1045,12 +804,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew] - 1, jStack[jNew], kStack[kNew], xDim, yDim)] = true;
+									statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
 								}
 							}
 							//left neighbor
-							if (iStack[iNew] < xDim - 1 && statusArray[x_flat(iStack[iNew] + 1, jStack[jNew], kStack[kNew], xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew] + 1, jStack[jNew], kStack[kNew], xDim, yDim)] == object) {
+							if (iStack[iNew] < xDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew] + 1);
 									jTmpStack.push_back(jStack[jNew]);
@@ -1058,12 +817,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew] + 1, jStack[jNew], kStack[kNew], xDim, yDim)] = true;
+									statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
 								}
 							}
 							//front neighbor
-							if (jStack[jNew] > 0 && statusArray[x_flat(iStack[iNew], jStack[jNew] - 1, kStack[kNew], xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew], jStack[jNew] - 1, kStack[kNew], xDim, yDim)] == object) {
+							if (jStack[jNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew]);
 									jTmpStack.push_back(jStack[jNew] - 1);
@@ -1071,12 +830,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew], jStack[jNew] - 1, kStack[kNew], xDim, yDim)] = true;
+									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
 								}
 							}
 							//behind neighbor
-							if (jStack[jNew] < yDim - 1 && statusArray[x_flat(iStack[iNew], jStack[jNew] + 1, kStack[kNew], xDim, yDim)] == false) {
-								if (imageDataPtr[x_flat(iStack[iNew], jStack[jNew] + 1, kStack[kNew], xDim, yDim)] == object) {
+							if (jStack[jNew] < yDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
 									//If the element is in the current region, then save its coordinates in temporary stacks
 									iTmpStack.push_back(iStack[iNew]);
 									jTmpStack.push_back(jStack[jNew] + 1);
@@ -1084,12 +843,12 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 								}
 								else {
 									//Not in region, update status and go to the next neighbor
-									statusArray[x_flat(iStack[iNew], jStack[jNew] + 1, kStack[kNew], xDim, yDim)] = true;
+									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
 								}
 							}
 							//updating of processed element befor removal
-							segmentedImage[x_flat(iStack[iNew], jStack[jNew], kStack[kNew], xDim, yDim)] = label;
-							statusArray[x_flat(iStack[iNew], jStack[jNew], kStack[kNew], xDim, yDim)] = true;
+							segmentedImage[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = label;
+							statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
 							//Remove the processed element of the initial stacks
 							iStack.pop_back();
 							jStack.pop_back();
@@ -1126,7 +885,7 @@ bool labelling3D(dataType* imageDataPtr, dataType* segmentedImage, bool* statusA
 						label++;
 					}
 					else {
-						statusArray[xd] = true;
+						statusArray[k][x_new(i, j, xDim)] = true;
 					}
 				}
 
