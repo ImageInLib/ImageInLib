@@ -1601,7 +1601,8 @@ Affine_Parameter registrationStochastic3D(dataType ** fixedData, dataType ** mov
 	// The finite differences calc. from neighbour pts differences will be stored in this struct.
 	Finite_Differences * fwd_vals = malloc(sizeof(Finite_Differences) * params.rand_points);
 	//==============================================================================
-	size_t k, i, j, l, x, dim2D = imageLength * imageWidth, maxSurfacePts = (size_t)(0.05 * dim2D * imageHeight);
+	int k, i, j, l, x; // change from size_t to int (because of OpenMP)
+	size_t dim2D = imageLength * imageWidth, maxSurfacePts = (size_t)(0.05 * dim2D * imageHeight);
 	int iteration = 0;
 	const dataType h = 1.0;
 	dataType firstCpuTime, secondCpuTime, regStartCpuTime, regStopCpuTime, regTotalCpuTimen = 0.;
