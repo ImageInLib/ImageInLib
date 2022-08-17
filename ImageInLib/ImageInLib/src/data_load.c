@@ -1,3 +1,8 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 6386)
+#pragma warning(disable : 6031)
+#pragma warning(disable : 6387)
+
 /*
 * Author: Markjoe Olunna UBA
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
@@ -159,5 +164,43 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	}
 
 	fclose(file);
+	return true;
+}
+
+
+//==================================
+//Load 2D .pgm (ascii) image
+bool load2dPGM(int** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	int intensity;
+	int i, j;
+
+	char line1[5];
+	char line2[80];
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "r") != 0) {
+		printf("File not found");
+		return false;
+	}
+
+	fgets(line1, 10, file);
+
+	do {
+		fgets(line2, 80, file);
+	} while (line2[0] == '#');
+
+	sscanf(line2, "%d %d", &xDim, &yDim);
+
+	fgets(line2, 10, file);
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0;j < yDim; j++) {
+			fscanf(file, "%d", &intensity);
+			imageDataPtr[i][j] = intensity;
+		}
+	}
+	fclose(file);
+
 	return true;
 }
