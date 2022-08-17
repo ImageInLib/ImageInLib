@@ -368,7 +368,6 @@ bool sortArray(int* valuePtr, int sizeArray) {
 
 
 //for 3D images
-//New algorithm
 bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object) {
 
 	if (imageDataPtr == NULL)
@@ -394,7 +393,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 						//top neighbor
 						if (k > 0 && statusArray[k - 1][x_new(i, j, xDim)] == false) {
 							if (imageDataPtr[k - 1][x_new(i, j, xDim)] == object) {
-								//if element is in region, then add its coordinates in stacks
+								//the element is in current region, then add its coordinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j);
 								kStack.push_back(k - 1);
@@ -407,7 +406,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 						//down neighbor
 						if (k < zDim - 1 && statusArray[k + 1][x_new(i, j, xDim)] == false) {
 							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								//if element is in region add its coordinates in stacks
+								//the element is in current region, then add its coordinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j);
 								kStack.push_back(k + 1);
@@ -420,7 +419,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 						//left neighbor
 						if (i > 0 && statusArray[k][x_new(i - 1, j, xDim)] == false) {
 							if (imageDataPtr[k][x_new(i - 1, j, xDim)] == object) {
-								//if element is in region add its coordinates in stacks
+								//the element is in region, then add its coordinates in stacks
 								iStack.push_back(i - 1);
 								jStack.push_back(j);
 								kStack.push_back(k);
@@ -456,7 +455,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 						//behind neighbor
 						if (j < yDim - 1 && statusArray[k][x_new(i, j + 1, xDim)] == false) {
 							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								//if element is in region add its coodinates in stacks
+								//the element is in region, then add its coodinates in stacks
 								iStack.push_back(i);
 								jStack.push_back(j + 1);
 								kStack.push_back(k);
@@ -465,6 +464,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 								statusArray[k][x_new(i, j + 1, xDim)] = true;
 							}
 						}
+
 						//after checking all neighbors of current element
 						//I give its label, and update its status
 						segmentedImage[k][x_new(i, j, xDim)] = label;
@@ -731,6 +731,132 @@ bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
 							}
 							else {
 								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+//Dilatation ---> Enlarge object and fill holes
+bool dilatation3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background) {
+	if (imageDataPtr == NULL)
+		return false;
+
+	size_t i, j, k, cpt;
+
+	for (k = 0; k < zDim; k++) {
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
+
+				cpt = 0;
+
+				if (k == zDim - 1) {
+					if (i == xDim - 1) {
+						if (j == yDim - 1) {
+							continue;
+						}
+						else {
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+					}
+					else {
+						if (j == yDim - 1) {
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt >= 1) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+					}
+				}
+				else {
+					if (i == xDim - 1) {
+						if (j == yDim - 1) {
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt >= 1) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+					}
+					else {
+						if (j == yDim - 1) {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt >= 1) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt >= 1) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
 							}
 						}
 					}

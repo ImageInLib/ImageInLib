@@ -30,6 +30,9 @@ extern "C" {
 
 	bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
 
+	bool dilatation3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
+
+
 #ifdef __cplusplus
 }
 #endif
