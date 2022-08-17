@@ -1,3 +1,9 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 6386)
+#pragma warning(disable : 6031)
+#pragma warning(disable : 6387)
+
+
 #include <stdio.h>
 #include "data_storage.h"
 #include "endianity_bl.h"
@@ -283,5 +289,70 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	fclose(outputfile);
 	// writing data to vtk file
 	store3dDataArrayUC(array3DPtr, imageLength, imageWidth, imageHeight, pathPtr, true);
+	return true;
+}
+
+//
+//Store 2D (.pgm) image ascii
+bool save2dPGM(int** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	if (imageDataPtr == NULL)
+		return false;
+
+	int i, j;
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "w") != 0) {
+		printf("Unable to open the file");
+		return false;
+	}
+
+	fprintf(file, "P2\n");
+	fprintf(file, "%d %d\n%d\n", xDim, yDim, 255);
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			fprintf(file, "%d ", imageDataPtr[i][j]);
+		}
+	}
+	fclose(file);
+
+	return true;
+}
+
+//Sotore 2D (.vtk) image ascii
+bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	if (imageData == NULL)
+		return false;
+
+	double sx = 1., sy = 1.;
+	int i, j;
+
+	FILE* f;
+	if (fopen_s(&f, pathPtr, "w") != 0) {
+		printf("Unable to open the file");
+		return false;
+	}
+
+	fprintf(f, "# vtk DataFile Version 3.0\n");
+	fprintf(f, "file in ascii format\n");
+	fprintf(f, "ASCII\n");
+	fprintf(f, "DATASET STRUCTURED_POINTS\n");
+	fprintf(f, "DIMENSIONS %d %d 1\n", xDim, yDim);
+	fprintf(f, "ORIGIN 0 0  0\n");
+	fprintf(f, "SPACING %f %f 1\n", sx, sy);
+	fprintf(f, "POINT_DATA %d\n", (xDim) * (yDim));
+	fprintf(f, "SCALARS scalars float\n");
+	fprintf(f, "LOOKUP_TABLE default\n");
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			fprintf(f, "%d ", imageData[i][j]);
+			fprintf(f, "\n");
+		}
+	}
+	fclose(f);
+
 	return true;
 }
