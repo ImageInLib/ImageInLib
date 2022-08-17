@@ -28,6 +28,7 @@ extern "C" {
 	//For 3D Images
 	bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object);
 
+	bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
 
 #ifdef __cplusplus
 }

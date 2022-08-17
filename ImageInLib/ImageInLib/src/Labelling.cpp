@@ -604,23 +604,140 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 	return true;
 }
 
-////Erosion ---> Shrink object and remove boundaries pixels
-//bool erosion3D(int** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim) {
-//	if (imageDataPtr == NULL)
-//		return false;
-//
-//	size_t i, j, k, cpt;
-//
-//	for (k = 0; i < zDim; k++) {
-//		for (i = 0; i < xDim; i++) {
-//			for (j = 0; j < yDim; j++) {
-//				cpt = 0;
-//
-//				if(imageDataPtr[k + 1][x_new()])
-//
-//			}
-//		}
-//	}
-//
-//	return true;
-//}
+//Erosion ---> Shrink object and remove boundaries pixels
+bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background) {
+	if (imageDataPtr == NULL)
+		return false;
+
+	size_t i, j, k, cpt;
+
+	for (k = 0; k < zDim; k++) {
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
+
+				cpt = 0;
+
+				if (k == zDim - 1) {
+					if (i == xDim - 1) {
+						if (j == yDim - 1) {
+							continue;
+						}
+						else {
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == background) {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+					}
+					else {
+						if (j == yDim - 1) {
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == background) {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt == 3) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+							else {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+					}
+				}
+				else {
+					if (i == xDim - 1) {
+						if (j == yDim - 1) {
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == background) {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt == 3) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+							else {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+					}
+					else {
+						if (j == yDim - 1) {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt == 3) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+							else {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+						else {
+							cpt = 0;
+
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (imageDataPtr[k + 1][x_new(i + 1, j + 1, xDim)] == object) {
+								cpt++;
+							}
+							if (cpt == 7) {
+								imageDataPtr[k][x_new(i, j, xDim)] = object;
+							}
+							else {
+								imageDataPtr[k][x_new(i, j, xDim)] = background;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
