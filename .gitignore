@@ -278,3 +278,11 @@ __pycache__/
 
 #pgm files
 *.pgm
+
+*.csv
+
+*.txt
+
+*.schema
+
+*.vtk
