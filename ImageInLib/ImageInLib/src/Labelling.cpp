@@ -14,7 +14,7 @@
 using namespace std;
 
 //for 2D image using 2D arrays
-bool regionLabelling(int** imageDataPtr, int** segmentedImage, int xDim, int yDim, int background, int object)
+bool regionLabelling2D(int** imageDataPtr, int** segmentedImage, const size_t xDim, const size_t yDim, int background, int object)
 {
 	if (imageDataPtr == NULL) {
 		return false;
@@ -104,7 +104,7 @@ bool regionLabelling(int** imageDataPtr, int** segmentedImage, int xDim, int yDi
 	return true;
 }
 
-bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xDim, int yDim, int object) {
+bool labelling2D(int** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, int object) {
 
 	if (imageDataPtr == NULL)
 		return false;
@@ -122,113 +122,111 @@ bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xD
 	for (i = 0; i < xDim; i++) {
 		for (j = 0; j < yDim; j++) {
 
-			xd = x_new(i, j, xDim);
-
-			if (statusArray[xd] == false) {
-				if (imageDataPtr[xd] == object) {
+			if (statusArray[i][j] == false) {
+				if (imageDataPtr[i][j] == object) {
 					//top neighbor
-					if (i > 0 && statusArray[x_new(i - 1, j, xDim)] == false) {
-						if (imageDataPtr[x_new(i - 1, j, xDim)] == object) {
-							//if element is in region add its coordinates in stacks
+					if (i > 0 && statusArray[i - 1][j] == false) {
+						if (imageDataPtr[i - 1][j] == object) {
+							//element is in region add its coordinates in stacks
 							iStack.push_back(i - 1);
 							jStack.push_back(j);
 						}
 						else {
 							//it's not object, so, update its status
-							statusArray[x_new(i - 1, j, xDim)] = true;
+							statusArray[i - 1][j] = true;
 						}
 					}
 					//right neighbor
-					if (j < yDim - 1 && statusArray[x_new(i, j + 1, xDim)] == false) {
-						if (imageDataPtr[x_new(i, j + 1, xDim)] == object) {
-							//if element is in region add its coordinates in stacks
+					if (j < yDim - 1 && statusArray[i][j + 1] == false) {
+						if (imageDataPtr[i][j + 1] == object) {
+							//element is in region add its coordinates in stacks
 							iStack.push_back(i);
 							jStack.push_back(j + 1);
 						}
 						else {
-							statusArray[x_new(i, j + 1, xDim)] = true;
+							statusArray[i][j + 1] = true;
 						}
 					}
 					//bottom neighbor
-					if (i < xDim - 1 && statusArray[x_new(i + 1, j, xDim)] == false) {
-						if (imageDataPtr[x_new(i + 1, j, xDim)] == object) {
+					if (i < xDim - 1 && statusArray[i + 1][j] == false) {
+						if (imageDataPtr[i + 1][j] == object) {
 							//if element is in region add its coodinates in stacks
 							iStack.push_back(i + 1);
 							jStack.push_back(j);
 						}
 						else {
-							statusArray[x_new(i + 1, j, xDim)] = true;
+							statusArray[i + 1][j] = true;
 						}
 					}
 					//left neighbor
-					if (j > 0 && statusArray[x_new(i, j - 1, xDim)] == false) {
-						if (imageDataPtr[x_new(i, j - 1, xDim)] == object) {
-							//if element is in region add its coodinates in stacks
+					if (j > 0 && statusArray[i][j - 1] == false) {
+						if (imageDataPtr[i][j - 1] == object) {
+							//element is in region add its coodinates in stacks
 							iStack.push_back(i);
 							jStack.push_back(j - 1);
 						}
 						else {
-							statusArray[x_new(i, j - 1, xDim)] = true;
+							statusArray[i][j - 1] = true;
 						}
 					}
 					//after checking all neighbors of current element
-					//I give its label, and update its status
-					segmentedImage[xd] = label;
-					statusArray[xd] = true;
-					//Now I check neighbors of its neighbors saved in the stacks
-					//I start by the last added element in stacks
+					//we give its label, and update its status
+					segmentedImage[i][j] = label;
+					statusArray[i][j] = true;
+					//Now we check neighbors of its neighbors saved in the stacks
+					//we start by the last added element in stacks
 					//If there is no neighbor iStack.size() = jStack.size() = 0, and the while loop will no be ran
 					while (iStack.size() > 0 && jStack.size() > 0) { //One is enought because they have same size
 						iNew = iStack.size() - 1;
 						jNew = jStack.size() - 1;
 						//top neighbor
-						if (iStack[iNew] > 0 && statusArray[x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
-							if (imageDataPtr[x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
+						if (iStack[iNew] > 0 && statusArray[ iStack[iNew] - 1 ][ jStack[jNew] ] == false) {
+							if (imageDataPtr[iStack[iNew] - 1][jStack[jNew]] == object) {
 								//If the element is in the current region, then save its coordinates in temporary stacks
 								iTmpStack.push_back(iStack[iNew] - 1);
 								jTmpStack.push_back(jStack[jNew]);
 							}
 							else {
 								//Not in region, update status and go to the next neighbor
-								statusArray[x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
+								statusArray[iStack[iNew] - 1][jStack[jNew]] = true;
 							}
 						}
 						//right neighbor
-						if (jStack[jNew] < yDim - 1 && statusArray[x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
-							if (imageDataPtr[x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
+						if (jStack[jNew] < yDim - 1 && statusArray[ iStack[iNew] ][ jStack[jNew] + 1 ] == false) {
+							if (imageDataPtr[ iStack[iNew] ][ jStack[jNew] + 1 ] == object) {
 								//If the element is in the current region, then save its coordinates in temporary stacks
 								iTmpStack.push_back(iStack[iNew]);
 								jTmpStack.push_back(jStack[jNew] + 1);
 							}
 							else {
-								statusArray[x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
+								statusArray[ iStack[iNew] ][ jStack[jNew] + 1 ] = true;
 							}
 						}
 						//bottom neighbor
-						if (iStack[iNew] < xDim + 1 && statusArray[x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
-							if (imageDataPtr[x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == object) {
+						if (iStack[iNew] < xDim - 1 && statusArray[ iStack[iNew] + 1 ][ jStack[jNew] ] == false) {
+							if (imageDataPtr[ iStack[iNew] + 1 ][ jStack[jNew] ] == object) {
 								//If the element is in the current region, then save its coordinates in temporary stacks
 								iTmpStack.push_back(iStack[iNew] + 1);
 								jTmpStack.push_back(jStack[jNew]);
 							}
 							else {
-								statusArray[x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
+								statusArray[ iStack[iNew] + 1 ][ jStack[jNew] ] = true;
 							}
 						}
 						//left neighbor
-						if (jStack[jNew] > 0 && statusArray[x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
-							if (imageDataPtr[x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
+						if (jStack[jNew] > 0 && statusArray[ iStack[iNew] ][ jStack[jNew] - 1 ] == false) {
+							if (imageDataPtr[ iStack[iNew] ][ jStack[jNew] - 1 ] == object) {
 								//If the element is in the current region, then save its coordinates in temporary stacks
 								iTmpStack.push_back(iStack[iNew]);
 								jTmpStack.push_back(jStack[jNew] - 1);
 							}
 							else {
-								statusArray[x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
+								statusArray[ iStack[iNew] ][ jStack[jNew] - 1 ] = true;
 							}
 						}
 						//updating of processed element befor removal
-						segmentedImage[x_new(iStack[iNew], jStack[jNew], xDim)] = label;
-						statusArray[x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+						segmentedImage[ iStack[iNew] ][ jStack[jNew] ] = label;
+						statusArray[ iStack[iNew] ][ jStack[jNew] ] = true;
 						//Remove the processed element of the initial stacks
 						iStack.pop_back();
 						jStack.pop_back();
@@ -256,7 +254,7 @@ bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xD
 					label++;
 				}
 				else {
-					statusArray[xd] = true;
+					statusArray[i][j] = true;
 				}
 			}
 		}
@@ -264,9 +262,107 @@ bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xD
 	return true;
 }
 
+//Erosion ---> Shrink objects and remove boundaries pixels
+bool erosion2D(int** imageDataPtr, const size_t xDim, const size_t yDim, int background, int object) {
+	
+	if (imageDataPtr == NULL)
+		return false;
+
+	size_t i, j, k;
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			k = 0;
+			if (i == xDim - 1) {
+				if (j == yDim - 1) {
+					continue;
+				}
+				else {
+					if (imageDataPtr[i][j + 1] == background) {
+						imageDataPtr[i][j] = background;
+					}
+				}
+			}
+			else {
+				if (j == yDim - 1) {
+					if (imageDataPtr[i + 1][j] == background) {
+						imageDataPtr[i][j] = background;
+					}
+				}
+				else {
+					if (imageDataPtr[i][j + 1] == object) {
+						k++;
+					}
+
+					if (imageDataPtr[i + 1][j] == object) {
+						k++;
+					}
+
+					if (imageDataPtr[i + 1][j + 1] == object) {
+						k++;
+					}
+
+					if (k == 3) {
+						imageDataPtr[i][j] = object;
+					}
+					else {
+						imageDataPtr[i][j] = background;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
+//Statistics after labelling
+bool labellingStats(int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, const char* pathPtr) {
+	if (segmentedImage == NULL) return false;
+	if (CountingArray == NULL) return false;
+
+	int i, j;
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "w") != 0) {
+		printf("Enable to open");
+		return false;
+	}
+
+	int numObjectCells = 0;
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			if (segmentedImage[i][j] > 0) {
+				numObjectCells++;
+			}
+		}
+	}
+	int numOfRegions = 0;
+	for (i = 0; i < numObjectCells; i++) {
+		if (CountingArray[i] > 0) {
+			numOfRegions++;
+		}
+	}
+
+	fprintf(file, "       2D image \n");
+	fprintf(file, " Number of Object Cells = %d \n", numObjectCells);
+	fprintf(file, " Number of Regions = %d \n", numOfRegions);
+	fprintf(file, "#############################################################\n");
+	fprintf(file, "\n\n");
+	fprintf(file, "Region Label        Count");
+	for (i = 1; i < numObjectCells; i++) {
+		if (CountingArray[i] > 0) {
+			fprintf(file, "\n");
+			fprintf(file, "   %d                 %d", i, CountingArray[i]);
+		}
+	}
+	fclose(file);
+
+	return true;
+}
+
 
 //========================
-bool initialization2dArray(int** imageDataPtr, int xDim, int yDim, int value)
+bool initialization2dArray(int** imageDataPtr, const size_t xDim, const size_t yDim, int value)
 {
 	if (imageDataPtr == NULL) {
 		return false;
@@ -280,8 +376,10 @@ bool initialization2dArray(int** imageDataPtr, int xDim, int yDim, int value)
 	return true;
 }
 
-bool minorRegionRemoval(int** imageDataPtr, int** segmentedImage, int* CountingArray, int xDim, int yDim, int size)
+//pixel values are 0 and 255
+bool minorRegionRemoval(int** imageDataPtr, int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, int size)
 {
+	int i, j;
 	if (imageDataPtr == NULL) {
 		return false;
 	}
@@ -292,8 +390,8 @@ bool minorRegionRemoval(int** imageDataPtr, int** segmentedImage, int* CountingA
 		return false;
 	}
 
-	for (int i = 0; i < xDim; i++) {
-		for (int j = 0; j < yDim; j++) {
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
 			if (segmentedImage[i][j] > 0) {
 				if (CountingArray[segmentedImage[i][j]] < size) {
 					imageDataPtr[i][j] = 255;
@@ -895,3 +993,23 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 	return true;
 }
 
+////Erosion ---> Shrink object and remove boundaries pixels
+//bool erosion3D(int** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim) {
+//	if (imageDataPtr == NULL)
+//		return false;
+//
+//	size_t i, j, k, cpt;
+//
+//	for (k = 0; i < zDim; k++) {
+//		for (i = 0; i < xDim; i++) {
+//			for (j = 0; j < yDim; j++) {
+//				cpt = 0;
+//
+//				if(imageDataPtr[k + 1][x_new()])
+//
+//			}
+//		}
+//	}
+//
+//	return true;
+//}

@@ -7,14 +7,20 @@ extern "C" {
 
 
 	//for 2D image using 2D arrays
-	bool regionLabelling(int** imageDataPtr, int** segmentedImage, int xDim, int yDim, int background, int object);
+	bool regionLabelling2D(int** imageDataPtr, int** segmentedImage, const size_t xDim, const size_t yDim, int background, int object);
 
-	bool labelling(int* imageDataPtr, int* segmentedImage, bool* statusArray, int xDim, int yDim, int object);
+	bool labelling2D(int** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, int object);
+
+	//Statistics after labelling
+	bool labellingStats(int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	//Erosion ---> Shrink objects and remove boundaries pixels
+	bool erosion2D(int** imageDataPtr, const size_t xDim, const size_t yDim, int background, int object);
 
 	//===========================
-	bool minorRegionRemoval(int** imageDataPtr, int** segmentedImage, int* CountingArray, int xDim, int yDim, int size);
+	bool minorRegionRemoval(int** imageDataPtr, int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, int size);
 
-	bool initialization2dArray(int** imageDataPtr, int xDim, int yDim, int value);
+	bool initialization2dArray(int** imageDataPtr, const size_t xDim, const size_t yDim, int value);
 
 	bool rescalingTo2D(int** imageDataPtr, int xDim, int yDim, int minNew, int maxNew);
 
