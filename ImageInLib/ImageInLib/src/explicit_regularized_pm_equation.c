@@ -11,8 +11,8 @@
 bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType  hh = explicitParameters.h * explicitParameters.h;
-	dataType  tau = explicitParameters.timeStepSize;
+	float  hh = explicitParameters.h * explicitParameters.h;
+	float  tau = explicitParameters.timeStepSize;
 
 	// Perform Reflection of the tempPtr
 	// Prepare variables inputImageData.height, inputImageData.length, inputImageData.width
@@ -20,15 +20,15 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
-	const dataType  coeff = tau / hh;
-	dataType  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
+	const float  coeff = tau / hh;
+	float  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 	size_t x;
 	size_t x_ext;
 	size_t k_ext, j_ext, i_ext;
-	dataType  ux, uy, uz;
-	dataType  e_coef, w_coef, n_coef, s_coef, t_coef, b_coef, sum_coef;
+	float  ux, uy, uz;
+	float  e_coef, w_coef, n_coef, s_coef, t_coef, b_coef, sum_coef;
 
 	Image_Data presmoothingParamenters;
 	presmoothingParamenters.height = height_ext;
@@ -36,11 +36,11 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 	presmoothingParamenters.width = width_ext;
 
 	// Create temporary Image Data holder for Previous time step data - with extended boundary because of boundary condition
-	dataType  ** prevSolPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	float** prevSolPtr = (float**)malloc(sizeof(float*) * (height_ext));
 
 	/* Create tempporary Image Data holder for calculation of diffusion coefficients on presmoothed image
 	- with extended boundary because of boundary condition*/
-	dataType  ** presmoothed_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	float** presmoothed_coefPtr = (float**)malloc(sizeof(float*) * (height_ext));
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || presmoothed_coefPtr == NULL)
@@ -48,8 +48,8 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 
 	for (k = 0; k < height_ext; k++)
 	{
-		presmoothed_coefPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		prevSolPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		presmoothed_coefPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
+		prevSolPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
 		//checks if the memory was allocated
 		if (presmoothed_coefPtr[k] == NULL || prevSolPtr[k] == NULL)
 			return false;
@@ -118,48 +118,48 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 
 				// Calculation of coefficients in east direction
 				ux = (uE - u) / explicitParameters.h;
-				uy = (dataType)(((uN + uNE) - (uS + uSE))
+				uy = (float)(((uN + uNE) - (uS + uSE))
 					/ (4.0 * explicitParameters.h));
-				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
+				uz = (float)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * explicitParameters.h));
 				e_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / explicitParameters.h;
-				uy = (dataType)(((uNW + uN) - (uSW + uS))
+				uy = (float)(((uNW + uN) - (uSW + uS))
 					/ (4.0 * explicitParameters.h));
-				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
+				uz = (float)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * explicitParameters.h));
 				w_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in north direction
-				ux = (dataType)(((uNE + uE) - (uNW + uW))
+				ux = (float)(((uNE + uE) - (uNW + uW))
 					/ (4.0 * explicitParameters.h));
 				uy = (uN - u) / explicitParameters.h;
-				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
+				uz = (float)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * explicitParameters.h));
 				n_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in south direction
-				ux = (dataType)(((uE + uSE) - (uW + uSW))
+				ux = (float)(((uE + uSE) - (uW + uSW))
 					/ (4.0 * explicitParameters.h));
 				uy = (uS - u) / explicitParameters.h;
-				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
+				uz = (float)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * explicitParameters.h));
 				s_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in top direction
-				ux = (dataType)(((TuE + uE) - (TuW + uW))
+				ux = (float)(((TuE + uE) - (TuW + uW))
 					/ (4.0 * explicitParameters.h));
-				uy = (dataType)(((TuN + uN) - (TuS + uS))
+				uy = (float)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * explicitParameters.h));
 				uz = (Tu - u) / explicitParameters.h;
 				t_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in bottom direction
-				ux = (dataType)(((BuW + uW) - (BuE + uE))
+				ux = (float)(((BuW + uW) - (BuE + uE))
 					/ (4.0 * explicitParameters.h));
-				uy = (dataType)(((BuN + uN) - (BuS + uS))
+				uy = (float)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * explicitParameters.h));
 				uz = (Bu - u) / explicitParameters.h;
 				b_coef = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), explicitParameters.edge_detector_coefficient);
@@ -168,7 +168,7 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 				sum_coef = e_coef + w_coef + n_coef + s_coef + t_coef + b_coef;
 
 				// Explicit formula
-				inputImageData.imageDataPtr[k][x] = (dataType)(1.0 - coeff * (sum_coef))*prevSolPtr[k_ext][x_ext]
+				inputImageData.imageDataPtr[k][x] = (float)(1.0 - coeff * (sum_coef))*prevSolPtr[k_ext][x_ext]
 					+ coeff * ((e_coef * prevSolPtr[k_ext][x_ext + 1])
 						+ (w_coef * prevSolPtr[k_ext][x_ext - 1])
 						+ (s_coef * prevSolPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)])
