@@ -111,7 +111,7 @@ void copyDataToExtendedArea(const float ** originalDataPtr, float ** extendedDat
 		i_d = 0;
 		for (i = length_ext + 1; i < sliceBound; i += length_ext)
 		{
-			memcpy(&(extendedDataPtr[k_ext][i]), &(originalDataPtr[k][i_d]), originalLength * sizeof(dataType));
+			memcpy(&(extendedDataPtr[k_ext][i]), &(originalDataPtr[k][i_d]), originalLength * sizeof(float));
 			i_d += originalLength;
 		}
 	}
@@ -131,7 +131,7 @@ void copyDataToReducedArea(float ** originalDataPtr, const float ** extendedData
 		i_d = 0;
 		for (i = length_ext + 1; i < sliceBound; i += length_ext)
 		{
-			memcpy(&(originalDataPtr[k][i_d]), &(extendedDataPtr[k_ext][i]), originalLength * sizeof(dataType));
+			memcpy(&(originalDataPtr[k][i_d]), &(extendedDataPtr[k_ext][i]), originalLength * sizeof(float));
 			i_d += originalLength;
 		}
 	}

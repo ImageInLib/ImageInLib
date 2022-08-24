@@ -30,10 +30,10 @@ extern "C" {
 	bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters, size_t numberOfTimeStep);
 
 	bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
-		const size_t maxNumberOfSolverIteration, dataType  coef, dataType  eps2, size_t numberOfTimeStep);
+		const size_t maxNumberOfSolverIteration, float  coef, float  eps2, size_t numberOfTimeStep);
 
 	bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
-		const size_t maxNumberOfSolverIteration, dataType  eps2, size_t numberOfTimeStep);
+		const size_t maxNumberOfSolverIteration, float  eps2, size_t numberOfTimeStep);
 
 #endif // !HEAT_QUATION_H
 

@@ -12,6 +12,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	float hh = explicitParameters.h*explicitParameters.h;
 	float tau = explicitParameters.timeStepSize;
 
+
 	// Perform Reflection of the tempPtr
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
 	// Less the borders because in the loops we add back the border p
