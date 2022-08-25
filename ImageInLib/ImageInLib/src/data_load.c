@@ -10,6 +10,7 @@
 */
 #include "common_functions.h"
 #include "data_load.h"
+#include "endianity_bl.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -159,13 +160,14 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	{
 		for (i = 0; i < imageLength * imageWidth; i++)
 		{
-			revertBytes(&imageDataPtr[k][i], sizeof(short));
+			revertBytes(&imageDataPtr[k][i], sizeof(dataType));
 		}
 	}
 
 	fclose(file);
 	return true;
 }
+
 
 
 //==================================

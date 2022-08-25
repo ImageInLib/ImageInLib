@@ -17,7 +17,7 @@ extern "C" {
 	} FilterMethod;
 
 	void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const size_t maxNumberOfSolverIteration,
-		dataType  coef, dataType  eps2, size_t numberOfTimeStep, const FilterMethod method);
+		float  coef, float  eps2, size_t numberOfTimeStep, const FilterMethod method);
 
 #ifdef __cplusplus
 }

@@ -147,6 +147,12 @@
     <Filter Include="Source Files\Labelling">
       <UniqueIdentifier>{441c6922-f006-4b26-9368-b8b3d41ec056}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\morphology">
+      <UniqueIdentifier>{0b397659-66a9-4901-b55e-a528365c25af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\morphology">
+      <UniqueIdentifier>{4391e895-a529-434c-b679-ffc255f9b1ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\transformations.c">
@@ -305,6 +311,9 @@
     <ClCompile Include="src\Labelling.cpp">
       <Filter>Source Files\Labelling</Filter>
     </ClCompile>
+    <ClCompile Include="src\morphological_change.c">
+      <Filter>Source Files\morphology</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -450,6 +459,9 @@
     </ClInclude>
     <ClInclude Include="include\template_functions.h">
       <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="include\morphological_change.h">
+      <Filter>Header Files\morphology</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -9,8 +9,8 @@
 void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	float hh = explicitParameters.h*explicitParameters.h;
-	float tau = explicitParameters.timeStepSize;
+	dataType hh = explicitParameters.h*explicitParameters.h;
+	dataType tau = explicitParameters.timeStepSize;
 
 
 	// Perform Reflection of the tempPtr
@@ -23,10 +23,10 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 
 	// Create temp Image Data holder for Previous time step data - with extended boundary because of boundary condition
 
-	float** tempPtr = (float**)malloc(sizeof(float*) * (height_ext));
+	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 	for (k = 0; k < ((height + 2)); k++)
 	{
-		tempPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
+		tempPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 	}
 
 	size_t k_ext, j_ext, i_ext;
@@ -39,7 +39,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	size_t x;
 	size_t x_ext;
 
-	const float coeff = tau / hh;
+	const dataType coeff = tau / hh;
 
 	// The Explicit Scheme Evaluation
 	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++)
@@ -55,7 +55,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 					x = x_new(i, j, length);
 
 					// Explicit formula
-					toExplicitImage.imageDataPtr[k][x] = (float)((1.0 - 6.0 * coeff)*tempPtr[k_ext][x_ext]
+					toExplicitImage.imageDataPtr[k][x] = (dataType)((1.0 - 6.0 * coeff)*tempPtr[k_ext][x_ext]
 						+ coeff * (tempPtr[k_ext][x_ext + 1]
 							+ tempPtr[k_ext][x_ext - 1]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
@@ -80,23 +80,23 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters)
 {
 	size_t k, i, j, z, steps = implicitParameters.timeStepsNum, p = implicitParameters.p;
-	float hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;
-	float coeff = implicitParameters.timeStepSize / hhh;
+	dataType hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;
+	dataType coeff = implicitParameters.timeStepSize / hhh;
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
-	float error, sor;
+	dataType error, sor;
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
 	// Less the borders because in the loops we add back the border p
 	size_t height = toImplicitImage.height, length = toImplicitImage.length, width = toImplicitImage.width;
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;// Create temp Image Data holder for Previous time step data
-	float** tempPtr = (float**)malloc(sizeof(float*) * (height_ext));
-	float** currentPtr = (float**)malloc(sizeof(float*) * (height_ext)); // holds current
+	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
+	dataType** currentPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext)); // holds current
 	for (i = 0; i < ((height_ext)); i++)
 	{
-		tempPtr[i] = malloc(sizeof(float)*(length_ext)*(width_ext));
-		currentPtr[i] = malloc(sizeof(float)*(length_ext)*(width_ext));
+		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 	}
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, tempPtr, height, length, width);
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);

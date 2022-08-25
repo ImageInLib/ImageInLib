@@ -22,7 +22,6 @@ extern "C" {
 	bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 		const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines);
 
-
 	//==================================
 	//Load 2D .pgm (ascii) image
 	bool load2dPGM(int** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);

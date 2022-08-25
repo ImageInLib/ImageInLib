@@ -11,12 +11,12 @@
 bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters, size_t numberOfTimeStep)
 {
 	size_t k, i, j;
-	float  hh = implicitParameters.h * implicitParameters.h;
-	float  tau = 100 * implicitParameters.timeStepSize;
+	dataType hh = implicitParameters.h * implicitParameters.h;
+	dataType tau = 100 * implicitParameters.timeStepSize;
 
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
-	float  error, gauss_seidel;
+	dataType error, gauss_seidel;
 
 	// Perform Reflection of the tempPtr
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
@@ -27,12 +27,12 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 	size_t x; //x = x_new(i, j, length);
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
-	const float  coeff = tau / hh;
-	float  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
+	const dataType coeff = tau / hh;
+	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 	size_t k_ext, j_ext, i_ext;
-	float  ux, uy, uz;
+	dataType  ux, uy, uz;
 
 	Image_Data presmoothingData;
 	presmoothingData.height = height_ext;
@@ -40,14 +40,14 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 	presmoothingData.width = width_ext;
 
 	// Create temporary Image Data holder for Previous time step data - with extended boundary because of boundary condition
-	float** prevSolPtr = (float**)malloc(sizeof(float*) * (height_ext));
+	dataType** prevSolPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	// Create temporary Image Data holder for Current time step data - with extended boundary because of boundary condition
-	float** gauss_seidelPtr = (float**)malloc(sizeof(float*) * (height_ext));
+	dataType** gauss_seidelPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	/* Create tempporary Image Data holder for calculation of diffusion coefficients on presmoothed image
 	- with extended boundary because of boundary condition*/
-	float** presmoothed_coefPtr = (float**)malloc(sizeof(float*) * (height_ext));
+	dataType** presmoothed_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || gauss_seidelPtr == NULL || presmoothed_coefPtr == NULL)
@@ -55,9 +55,9 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	for (k = 0; k < height_ext; k++)
 	{
-		presmoothed_coefPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
-		gauss_seidelPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
-		prevSolPtr[k] = malloc(sizeof(float)*(length_ext)*(width_ext));
+		presmoothed_coefPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		gauss_seidelPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		prevSolPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 		//checks if the memory was allocated
 		if (presmoothed_coefPtr[k] == NULL || gauss_seidelPtr[k] == NULL || prevSolPtr[k] == NULL)
 			return false;
@@ -65,12 +65,12 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	/* Create tempporary Image Data holder for diffusion coefficients
 	- with extended boundary because of boundary condition*/
-	float** e_coefPtr = (float**)malloc(sizeof(float*) * (height));
-	float** w_coefPtr = (float**)malloc(sizeof(float*) * (height));
-	float** n_coefPtr = (float**)malloc(sizeof(float*) * (height));
-	float** s_coefPtr = (float**)malloc(sizeof(float*) * (height));
-	float** t_coefPtr = (float**)malloc(sizeof(float*) * (height));
-	float** b_coefPtr = (float**)malloc(sizeof(float*) * (height));
+	dataType** e_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** w_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** n_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** s_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** t_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** b_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
 
 	//checks if the memory was allocated
 	if (e_coefPtr == NULL || w_coefPtr == NULL || n_coefPtr == NULL || s_coefPtr == NULL || t_coefPtr == NULL || b_coefPtr == NULL)
@@ -78,12 +78,12 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	for (k = 0; k < height; k++)
 	{
-		e_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
-		w_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
-		n_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
-		s_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
-		t_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
-		b_coefPtr[k] = malloc(sizeof(float)*(length)*(height));
+		e_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		w_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		n_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		s_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		t_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		b_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
 
 		//checks if the memory was allocated
 		if (e_coefPtr[k] == NULL || w_coefPtr[k] == NULL || n_coefPtr[k] == NULL || s_coefPtr[k] == NULL || t_coefPtr[k] == NULL || b_coefPtr[k] == NULL)
@@ -159,48 +159,48 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 				// Calculation of coefficients in east direction
 				ux = (uE - u) / implicitParameters.h;
-				uy = (float)(((uN + uNE) - (uS + uSE))
+				uy = (dataType)(((uN + uNE) - (uS + uSE))
 					/ (4.0 * implicitParameters.h));
-				uz = (float)(((Tu + TuE) - (Bu + BuE))
+				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * implicitParameters.h));
 				e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / implicitParameters.h;
-				uy = (float)(((uNW + uN) - (uSW + uS))
+				uy = (dataType)(((uNW + uN) - (uSW + uS))
 					/ (4.0 * implicitParameters.h));
-				uz = (float)(((TuW + Tu) - (BuW + Bu))
+				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * implicitParameters.h));
 				w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in north direction
-				ux = (float)(((uNE + uE) - (uNW + uW))
+				ux = (dataType)(((uNE + uE) - (uNW + uW))
 					/ (4.0 * implicitParameters.h));
 				uy = (uN - u) / implicitParameters.h;
-				uz = (float)(((TuN + Tu) - (BuN + Bu))
+				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * implicitParameters.h));
 				n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in south direction
-				ux = (float)(((uE + uSE) - (uW + uSW))
+				ux = (dataType)(((uE + uSE) - (uW + uSW))
 					/ (4.0 * implicitParameters.h));
 				uy = (uS - u) / implicitParameters.h;
-				uz = (float)(((TuS + Tu) - (BuS + Bu))
+				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * implicitParameters.h));
 				s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in top direction
-				ux = (float)(((TuE + uE) - (TuW + uW))
+				ux = (dataType)(((TuE + uE) - (TuW + uW))
 					/ (4.0 * implicitParameters.h));
-				uy = (float)(((TuN + uN) - (TuS + uS))
+				uy = (dataType)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * implicitParameters.h));
 				uz = (Tu - u) / implicitParameters.h;
 				t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in bottom direction
-				ux = (float)(((BuW + uW) - (BuE + uE))
+				ux = (dataType)(((BuW + uW) - (BuE + uE))
 					/ (4.0 * implicitParameters.h));
-				uy = (float)(((BuN + uN) - (BuS + uS))
+				uy = (dataType)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * implicitParameters.h));
 				uz = (Bu - u) / implicitParameters.h;
 				b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
@@ -252,7 +252,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					x = x_new(i, j, length);
 
-					error += (float)pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coeff * (e_coefPtr[k][x]
+					error += (dataType)pow(gauss_seidelPtr[k_ext][x_ext] * (1 + coeff * (e_coefPtr[k][x]
 						+ w_coefPtr[k][x] + n_coefPtr[k][x] + s_coefPtr[k][x]
 						+ t_coefPtr[k][x] + b_coefPtr[k][x]))
 						- coeff * ((e_coefPtr[k][x] * gauss_seidelPtr[k_ext][x_ext + 1])

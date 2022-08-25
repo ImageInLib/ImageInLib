@@ -14,7 +14,6 @@
 using namespace std;
 
 //for 2D image using 2D arrays
-
 bool labelling2D(int** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, int object) {
 
 	if (imageDataPtr == NULL)
@@ -173,100 +172,915 @@ bool labelling2D(int** imageDataPtr, int** segmentedImage, bool** statusArray, c
 	return true;
 }
 
-//Erosion ---> Shrink objects and remove boundaries pixels
-bool erosion2D(int** imageDataPtr, const size_t xDim, const size_t yDim, int background, int object) {
-	
+//for 3D images
+bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object) {
+
 	if (imageDataPtr == NULL)
 		return false;
+	if (segmentedImage == NULL)
+		return false;
+	if (statusArray == NULL)
+		return false;
 
-	size_t i, j, k;
+	vector<size_t> iStack, jStack, kStack, iTmpStack, jTmpStack, kTmpStack;
+	size_t i = 0, j = 0, k = 0, iNew = 0, jNew = 0, kNew = 0, n = 0;
+	int label = 1;
 
-	for (i = 0; i < xDim; i++) {
-		for (j = 0; j < yDim; j++) {
-			k = 0;
-			if (i == xDim - 1) {
-				if (j == yDim - 1) {
-					continue;
-				}
-				else {
-					if (imageDataPtr[i][j + 1] == background) {
-						imageDataPtr[i][j] = background;
-					}
-				}
-			}
-			else {
-				if (j == yDim - 1) {
-					if (imageDataPtr[i + 1][j] == background) {
-						imageDataPtr[i][j] = background;
-					}
-				}
-				else {
-					if (imageDataPtr[i][j + 1] == object) {
-						k++;
-					}
+	//statusArray has false everywhere in the beginning
+	//false---> non-processed and true---> processed
+	//segmentedImage has 0 everywhere
+	for (k = 0; k < zDim; k++) {
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
 
-					if (imageDataPtr[i + 1][j] == object) {
-						k++;
-					}
+				if (statusArray[k][x_new(i, j, xDim)] == false) {
+					if (imageDataPtr[k][x_new(i, j, xDim)] == object) {
 
-					if (imageDataPtr[i + 1][j + 1] == object) {
-						k++;
-					}
+						//top neighbor
+						if (k > 0 && statusArray[k - 1][x_new(i, j, xDim)] == false) {
+							if (imageDataPtr[k - 1][x_new(i, j, xDim)] == object) {
+								//the element is in current region, then add its coordinates in stacks
+								kStack.push_back(k - 1);
+								iStack.push_back(i);
+								jStack.push_back(j);
+							}
+							else {
+								//it's not object, so, update its status
+								statusArray[k - 1][x_new(i, j, xDim)] = true;
+							}
+						}
+						//down neighbor
+						if (k < zDim - 1 && statusArray[k + 1][x_new(i, j, xDim)] == false) {
+							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+								//the element is in current region, then add its coordinates in stacks
+								kStack.push_back(k + 1);
+								iStack.push_back(i);
+								jStack.push_back(j);
+							}
+							else {
+								//it's not object, so, update its status
+								statusArray[k + 1][x_new(i, j, xDim)] = true;
+							}
+						}
+						//left neighbor
+						if (i > 0 && statusArray[k][x_new(i - 1, j, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i - 1, j, xDim)] == object) {
+								//the element is in region, then add its coordinates in stacks
+								kStack.push_back(k);
+								iStack.push_back(i - 1);
+								jStack.push_back(j);
+							}
+							else {
+								statusArray[k][x_new(i - 1, j, xDim)] = true;
+							}
+						}
+						//right neighbor
+						if (i < xDim - 1 && statusArray[k][x_new(i + 1, j, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+								//if element is in region add its coordinates in stacks
+								kStack.push_back(k);
+								iStack.push_back(i + 1);
+								jStack.push_back(j);
+							}
+							else {
+								statusArray[k][x_new(i + 1, j, xDim)] = true;
+							}
+						}
+						//front neighbor
+						if (j > 0 && statusArray[k][x_new(i, j - 1, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i, j - 1, xDim)] == object) {
+								//if element is in region add its coodinates in stacks
+								kStack.push_back(k);
+								iStack.push_back(i);
+								jStack.push_back(j - 1);
+							}
+							else {
+								statusArray[k][x_new(i, j - 1, xDim)] = true;
+							}
+						}
+						//behind neighbor
+						if (j < yDim - 1 && statusArray[k][x_new(i, j + 1, xDim)] == false) {
+							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+								//the element is in region, then add its coodinates in stacks
+								kStack.push_back(k);
+								iStack.push_back(i);
+								jStack.push_back(j + 1);
+							}
+							else {
+								statusArray[k][x_new(i, j + 1, xDim)] = true;
+							}
+						}
 
-					if (k == 3) {
-						imageDataPtr[i][j] = object;
+						////Current Slice
+						////left top corner neighbor
+						//if ( (i > 0 && j > 0) && statusArray[k][x_new(i - 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i - 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i - 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////top neighbor
+						//if (i > 0 && statusArray[k][x_new(i - 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i - 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i - 1, j, xDim)] = true;
+						//	}
+						//}
+						////right top corner neighbor
+						//if ( (i > 0 && j < yDim - 1) && statusArray[k][x_new(i - 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i - 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i - 1, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left  neighbor
+						//if (j > 0 && statusArray[k][x_new(i, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i, j - 1, xDim)] = true;
+						//	}
+						//}
+						////right  neighbor
+						//if (j < yDim - 1 && statusArray[k][x_new(i, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left down corner neighbor
+						//if ( (i < xDim - 1 && j > 0) && statusArray[k][x_new(i + 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i + 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i + 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////down neighbor
+						//if (i < xDim - 1 && statusArray[k][x_new(i + 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i + 1, j, xDim)] = true;
+						//	}
+						//}
+						////right down corner neighbor
+						//if ( (i < xDim - 1 && j < yDim - 1) && statusArray[k][x_new(i + 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k][x_new(i + 1, j + 1, xDim)] = true;
+						//	}
+						//}
+
+						////previous Slice
+						////left top corner neighbor
+						//if ( (k > 0 && i > 0 && j > 0) && statusArray[k - 1][x_new(i - 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i - 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i - 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////top neighbor
+						//if ( (k > 0 && i > 0) && statusArray[k - 1][x_new(i - 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i - 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i - 1, j, xDim)] = true;
+						//	}
+						//}
+						////right top corner neighbor
+						//if ( (k > 0 && i > 0 && j < yDim - 1) && statusArray[k - 1][x_new(i - 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i - 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i - 1, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left  neighbor
+						//if ( (k > 0 && j > 0) && statusArray[k - 1][x_new(i, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i, j - 1, xDim)] = true;
+						//	}
+						//}
+						////right  neighbor
+						//if ( (k > 0 && j < yDim - 1) && statusArray[k - 1][x_new(i, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left down corner neighbor
+						//if ( (k > 0 && i < xDim - 1 && j > 0) && statusArray[k - 1][x_new(i + 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i + 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i + 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////down neighbor
+						//if ( (k > 0 && i < xDim - 1) && statusArray[k - 1][x_new(i + 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i + 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i + 1, j, xDim)] = true;
+						//	}
+						//}
+						////right down corner neighbor
+						//if ( (k > 0 && i < xDim - 1 && j < yDim - 1) && statusArray[k - 1][x_new(i + 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i + 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i + 1, j + 1, xDim)] = true;
+						//	}
+						//}
+						////Central neighbor
+						//if ( k > 0 && statusArray[k - 1][x_new(i, j, xDim)] == false) {
+						//	if (imageDataPtr[k - 1][x_new(i, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k - 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k - 1][x_new(i, j, xDim)] = true;
+						//	}
+						//}
+
+						////Next Slice
+						////left top corner neighbor
+						//if ( (k < zDim - 1 && i > 0 && j > 0) && statusArray[k + 1][x_new(i - 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i - 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i - 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////top neighbor
+						//if ((k < zDim - 1 && i > 0) && statusArray[k + 1][x_new(i - 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i - 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i - 1, j, xDim)] = true;
+						//	}
+						//}
+						////right top corner neighbor
+						//if ( (k < zDim - 1 && i > 0 && j < yDim -1) && statusArray[k + 1][x_new(i - 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i - 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i - 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i - 1, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left  neighbor
+						//if ( (k < zDim - 1 && j > 0) && statusArray[k + 1][x_new(i, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i, j - 1, xDim)] = true;
+						//	}
+						//}
+						////right  neighbor
+						//if ( (k < zDim - 1 && j < yDim - 1) && statusArray[k + 1][x_new(i, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i, j + 1, xDim)] = true;
+						//	}
+						//}
+						////left down corner neighbor
+						//if ( (k < zDim - 1 && i < xDim - 1 && j > 0) && statusArray[k + 1][x_new(i + 1, j - 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i + 1, j - 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j - 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i + 1, j - 1, xDim)] = true;
+						//	}
+						//}
+						////down neighbor
+						//if ( (k < zDim - 1 && i < xDim - 1 ) && statusArray[k + 1][x_new(i + 1, j, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i + 1, j, xDim)] = true;
+						//	}
+						//}
+						////right down corner neighbor
+						//if ( ((k < zDim - 1 && i < xDim - 1 && j < yDim - 1)) && statusArray[k + 1][x_new(i + 1, j + 1, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i + 1, j + 1, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i + 1);
+						//		jStack.push_back(j + 1);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i + 1, j + 1, xDim)] = true;
+						//	}
+						//}
+						////Central neighbor
+						//if (k < zDim - 1 && statusArray[k + 1][x_new(i, j, xDim)] == false) {
+						//	if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
+						//		//the element is in current region, then add its coordinates in stacks
+						//		kStack.push_back(k + 1);
+						//		iStack.push_back(i);
+						//		jStack.push_back(j);
+						//	}
+						//	else {
+						//		//it's not object, so, update its status
+						//		statusArray[k + 1][x_new(i, j, xDim)] = true;
+						//	}
+						//}
+
+
+						//after checking all neighbors of current element
+						//we give its label, and update its status
+						segmentedImage[k][x_new(i, j, xDim)] = label;
+						statusArray[k][x_new(i, j, xDim)] = true;
+
+						//Now we check neighbors of its neighbors saved in the stacks
+						//I start by the last added element in stacks
+						//If there is no neighbor iStack.size() = jStack.size() = kStack.size() = 0 , and the while loop will no be ran
+						while (iStack.size() > 0 && jStack.size() > 0 && kStack.size() > 0) {
+							//One is enought because they have same size
+
+				//We work with the last element in the initial stacks
+							kNew = kStack.size() - 1;
+							iNew = iStack.size() - 1;
+							jNew = jStack.size() - 1;
+
+							//top neighbor
+							if (kStack[kNew] > 0 && statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
+									//If the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew]);
+									jTmpStack.push_back(jStack[jNew]);
+									kTmpStack.push_back(kStack[kNew] - 1);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+								}
+							}
+							//down neighbor
+							if (kStack[kNew] < zDim - 1 && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
+									//the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew]);
+									jTmpStack.push_back(jStack[jNew]);
+									kTmpStack.push_back(kStack[kNew] + 1);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+								}
+							}
+							//right neighbor
+							if (iStack[iNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
+									//the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew] - 1);
+									jTmpStack.push_back(jStack[jNew]);
+									kTmpStack.push_back(kStack[kNew]);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
+								}
+							}
+							//left neighbor
+							if (iStack[iNew] < xDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == object) {
+									//If the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew] + 1);
+									jTmpStack.push_back(jStack[jNew]);
+									kTmpStack.push_back(kStack[kNew]);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
+								}
+							}
+							//front neighbor
+							if (jStack[jNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
+									//If the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew]);
+									jTmpStack.push_back(jStack[jNew] - 1);
+									kTmpStack.push_back(kStack[kNew]);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
+								}
+							}
+							//behind neighbor
+							if (jStack[jNew] < yDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
+								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
+									//the element is in the current region, then save its coordinates in temporary stacks
+									iTmpStack.push_back(iStack[iNew]);
+									jTmpStack.push_back(jStack[jNew] + 1);
+									kTmpStack.push_back(kStack[kNew]);
+								}
+								else {
+									//Not in region, update status and go to the next neighbor
+									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
+								}
+							}
+
+
+							////
+							//if ( (kStack[kNew] > 0 && iStack[iNew] > 0 && jStack[jNew] > 0) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}				
+							//if ( (kStack[kNew] > 0 && iStack[iNew] > 0) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}				
+							//if ( (kStack[kNew] > 0 && iStack[iNew] > 0 && jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] - 1][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}							
+							//if ( (kStack[kNew] > 0 && jStack[jNew] > 0) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}							
+							//if ( (kStack[kNew] > 0) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+							//	}
+							//}				
+							//if ( (kStack[kNew] > 0 && jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}		
+							//if ( (kStack[kNew] > 0 && iStack[iNew] < xDim - 1 && jStack[jNew] > 0) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}				
+							//if ( (kStack[kNew] > 0 && iStack[iNew] < xDim - 1) && statusArray[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] > 0 && iStack[iNew] < xDim - 1 && jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] - 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] - 1 ][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+
+							//if ( (iStack[iNew] > 0 && jStack[jNew] > 0) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (iStack[iNew] > 0) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (iStack[iNew] > 0 && jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (jStack[jNew] > 0) && statusArray[ kStack[kNew] ][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] ][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] ][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (iStack[iNew] < xDim - 1 && jStack[jNew] > 0) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (iStack[iNew] < xDim - 1) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (iStack[iNew] < xDim - 1 && jStack[jNew] < yDim - 1) && statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew]);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[ kStack[kNew] ][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] > 0 && jStack[jNew] > 0) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] > 0) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] > 0 && jStack[jNew] < yDim - 1) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] - 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] - 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && jStack[jNew] > 0) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && jStack[jNew] < yDim - 1) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew]);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] < xDim - 1 && jStack[jNew] > 0) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] - 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] < xDim - 1) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] - 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew]);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
+							//	}
+							//}
+							//if ( (kStack[kNew] < zDim - 1 && iStack[iNew] < xDim - 1 && jStack[jNew] < yDim - 1) && statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == false) {
+							//	if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] == object) {
+							//		//If the element is in the current region, then save its coordinates in temporary stacks
+							//		kTmpStack.push_back(kStack[kNew] + 1);
+							//		iTmpStack.push_back(iStack[iNew] + 1);
+							//		jTmpStack.push_back(jStack[jNew] + 1);
+							//	}
+							//	else {
+							//		//Not in region, update status and go to the next neighbor
+							//		statusArray[kStack[kNew] + 1][x_new(iStack[iNew] + 1, jStack[jNew] + 1, xDim)] = true;
+							//	}
+							//}
+							////
+
+
+							//updating of processed element befor removal
+							segmentedImage[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = label;
+							statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
+
+							//Remove the processed element of the initial stacks
+							kStack.pop_back();
+							iStack.pop_back();
+							jStack.pop_back();
+
+							//Add new found neighbors in initial stacks
+							//we can do it once because they have the same size
+							for (n = 0; n < iTmpStack.size(); n++) {
+								//if any neighbors have been found iTmpStack.size() = 0
+								//and nothing will happen
+								iStack.push_back(iTmpStack[n]);
+							}
+							for (n = 0; n < jTmpStack.size(); n++) {
+								//if any neighbors have been found jTmpStack.size() = 0
+								//and nothing will happen
+								jStack.push_back(jTmpStack[n]);
+							}
+							for (n = 0; n < kTmpStack.size(); n++) {
+								//if any neighbors have been found jTmpStack.size() = 0
+								//and nothing will happen
+								kStack.push_back(kTmpStack[n]);
+							}
+
+							//empty the temporary stacks
+							//we can do it once because they have the same size
+							while (iTmpStack.size() > 0) {
+								iTmpStack.pop_back();
+							}
+							while (jTmpStack.size() > 0) {
+								jTmpStack.pop_back();
+							}
+							while (kTmpStack.size() > 0) {
+								kTmpStack.pop_back();
+							}
+
+							//End of big while loop
+						}
+						label++;
 					}
 					else {
-						imageDataPtr[i][j] = background;
+						statusArray[k][x_new(i, j, xDim)] = true;
 					}
 				}
+
 			}
 		}
 	}
-	return true;
-}
-
-//Statistics after labelling
-bool labellingStats(int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, const char* pathPtr) {
-	if (segmentedImage == NULL) return false;
-	if (CountingArray == NULL) return false;
-
-	int i, j;
-
-	FILE* file;
-	if (fopen_s(&file, pathPtr, "w") != 0) {
-		printf("Enable to open");
-		return false;
-	}
-
-	int numObjectCells = 0;
-	for (i = 0; i < xDim; i++) {
-		for (j = 0; j < yDim; j++) {
-			if (segmentedImage[i][j] > 0) {
-				numObjectCells++;
-			}
-		}
-	}
-	int numOfRegions = 0;
-	for (i = 0; i < numObjectCells; i++) {
-		if (CountingArray[i] > 0) {
-			numOfRegions++;
-		}
-	}
-
-	fprintf(file, "       2D image \n");
-	fprintf(file, " Number of Object Cells = %d \n", numObjectCells);
-	fprintf(file, " Number of Regions = %d \n", numOfRegions);
-	fprintf(file, "#############################################################\n");
-	fprintf(file, "\n\n");
-	fprintf(file, "Region Label        Count");
-	for (i = 1; i < numObjectCells; i++) {
-		if (CountingArray[i] > 0) {
-			fprintf(file, "\n");
-			fprintf(file, "   %d                 %d", i, CountingArray[i]);
-		}
-	}
-	fclose(file);
 
 	return true;
 }
@@ -364,506 +1178,51 @@ bool sortArray(int* valuePtr, int sizeArray) {
 
 	return true;
 }
+
+//Statistics after labelling
+bool labellingStats(int** segmentedImage, int* CountingArray, const size_t xDim, const size_t yDim, const char* pathPtr) {
+	if (segmentedImage == NULL) return false;
+	if (CountingArray == NULL) return false;
+
+	int i, j;
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "w") != 0) {
+		printf("Enable to open");
+		return false;
+	}
+
+	int numObjectCells = 0;
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			if (segmentedImage[i][j] > 0) {
+				numObjectCells++;
+			}
+		}
+	}
+	int numOfRegions = 0;
+	for (i = 0; i < numObjectCells; i++) {
+		if (CountingArray[i] > 0) {
+			numOfRegions++;
+		}
+	}
+
+	fprintf(file, "       2D image \n");
+	fprintf(file, " Number of Object Cells = %d \n", numObjectCells);
+	fprintf(file, " Number of Regions = %d \n", numOfRegions);
+	fprintf(file, "#############################################################\n");
+	fprintf(file, "\n\n");
+	fprintf(file, "Region Label        Count");
+	for (i = 1; i < numObjectCells; i++) {
+		if (CountingArray[i] > 0) {
+			fprintf(file, "\n");
+			fprintf(file, "   %d                 %d", i, CountingArray[i]);
+		}
+	}
+	fclose(file);
+
+	return true;
+}
 //=========================
 
 
-//for 3D images
-bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object) {
-
-	if (imageDataPtr == NULL)
-		return false;
-	if (segmentedImage == NULL)
-		return false;
-	if (statusArray == NULL)
-		return false;
-
-	vector<size_t> iStack, jStack, kStack, iTmpStack, jTmpStack, kTmpStack;
-	size_t i = 0, j = 0, k = 0, iNew = 0, jNew = 0, kNew = 0, n = 0;
-	int label = 1;
-
-	//statusArray has false everywhere in the beginning
-	//false---> non-processed and true---> processed
-	//segmentedImage has 0 everywhere
-	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < xDim; i++) {
-			for (j = 0; j < yDim; j++) {
-
-				if (statusArray[k][x_new(i, j, xDim)] == false) {
-					if (imageDataPtr[k][x_new(i, j, xDim)] == object) {
-						//top neighbor
-						if (k > 0 && statusArray[k - 1][x_new(i, j, xDim)] == false) {
-							if (imageDataPtr[k - 1][x_new(i, j, xDim)] == object) {
-								//the element is in current region, then add its coordinates in stacks
-								iStack.push_back(i);
-								jStack.push_back(j);
-								kStack.push_back(k - 1);
-							}
-							else {
-								//it's not object, so, update its status
-								statusArray[k - 1][x_new(i, j, xDim)] = true;
-							}
-						}
-						//down neighbor
-						if (k < zDim - 1 && statusArray[k + 1][x_new(i, j, xDim)] == false) {
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								//the element is in current region, then add its coordinates in stacks
-								iStack.push_back(i);
-								jStack.push_back(j);
-								kStack.push_back(k + 1);
-							}
-							else {
-								//it's not object, so, update its status
-								statusArray[k + 1][x_new(i, j, xDim)] = true;
-							}
-						}
-						//left neighbor
-						if (i > 0 && statusArray[k][x_new(i - 1, j, xDim)] == false) {
-							if (imageDataPtr[k][x_new(i - 1, j, xDim)] == object) {
-								//the element is in region, then add its coordinates in stacks
-								iStack.push_back(i - 1);
-								jStack.push_back(j);
-								kStack.push_back(k);
-							}
-							else {
-								statusArray[k][x_new(i - 1, j, xDim)] = true;
-							}
-						}
-						//right neighbor
-						if (i < xDim - 1 && statusArray[k][x_new(i + 1, j, xDim)] == false) {
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								//if element is in region add its coordinates in stacks
-								iStack.push_back(i + 1);
-								jStack.push_back(j);
-								kStack.push_back(k);
-							}
-							else {
-								statusArray[k][x_new(i + 1, j, xDim)] = true;
-							}
-						}
-						//front neighbor
-						if (j > 0 && statusArray[k][x_new(i, j - 1, xDim)] == false) {
-							if (imageDataPtr[k][x_new(i, j - 1, xDim)] == object) {
-								//if element is in region add its coodinates in stacks
-								iStack.push_back(i);
-								jStack.push_back(j - 1);
-								kStack.push_back(k);
-							}
-							else {
-								statusArray[k][x_new(i, j - 1, xDim)] = true;
-							}
-						}
-						//behind neighbor
-						if (j < yDim - 1 && statusArray[k][x_new(i, j + 1, xDim)] == false) {
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								//the element is in region, then add its coodinates in stacks
-								iStack.push_back(i);
-								jStack.push_back(j + 1);
-								kStack.push_back(k);
-							}
-							else {
-								statusArray[k][x_new(i, j + 1, xDim)] = true;
-							}
-						}
-
-						//after checking all neighbors of current element
-						//I give its label, and update its status
-						segmentedImage[k][x_new(i, j, xDim)] = label;
-						statusArray[k][x_new(i, j, xDim)] = true;
-						//Now I check neighbors of its neighbors saved in the stacks
-						//I start by the last added element in stacks
-						//If there is no neighbor iStack.size() = jStack.size() = kStack.size() = 0 , and the while loop will no be ran
-						while (iStack.size() > 0 && jStack.size() > 0 && kStack.size() > 0) {
-							//One is enought because they have same size
-							iNew = iStack.size() - 1;
-							jNew = jStack.size() - 1;
-							kNew = kStack.size() - 1;
-							//top neighbor
-							if (kStack[kNew] > 0 && statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
-								if (imageDataPtr[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew]);
-									jTmpStack.push_back(jStack[jNew]);
-									kTmpStack.push_back(kStack[kNew] - 1);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew] - 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
-								}
-							}
-							//down neighbor
-							if (kStack[kNew] < zDim - 1 && statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == false) {
-								if (imageDataPtr[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew]);
-									jTmpStack.push_back(jStack[jNew]);
-									kTmpStack.push_back(kStack[kNew] + 1);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew] + 1][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
-								}
-							}
-							//right neighbor
-							if (iStack[iNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == false) {
-								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew] - 1);
-									jTmpStack.push_back(jStack[jNew]);
-									kTmpStack.push_back(kStack[kNew]);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew]][x_new(iStack[iNew] - 1, jStack[jNew], xDim)] = true;
-								}
-							}
-							//left neighbor
-							if (iStack[iNew] < xDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == false) {
-								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew] + 1);
-									jTmpStack.push_back(jStack[jNew]);
-									kTmpStack.push_back(kStack[kNew]);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew]][x_new(iStack[iNew] + 1, jStack[jNew], xDim)] = true;
-								}
-							}
-							//front neighbor
-							if (jStack[jNew] > 0 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == false) {
-								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew]);
-									jTmpStack.push_back(jStack[jNew] - 1);
-									kTmpStack.push_back(kStack[kNew]);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] - 1, xDim)] = true;
-								}
-							}
-							//behind neighbor
-							if (jStack[jNew] < yDim - 1 && statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == false) {
-								if (imageDataPtr[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] == object) {
-									//If the element is in the current region, then save its coordinates in temporary stacks
-									iTmpStack.push_back(iStack[iNew]);
-									jTmpStack.push_back(jStack[jNew] + 1);
-									kTmpStack.push_back(kStack[kNew]);
-								}
-								else {
-									//Not in region, update status and go to the next neighbor
-									statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew] + 1, xDim)] = true;
-								}
-							}
-							//updating of processed element befor removal
-							segmentedImage[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = label;
-							statusArray[kStack[kNew]][x_new(iStack[iNew], jStack[jNew], xDim)] = true;
-							//Remove the processed element of the initial stacks
-							iStack.pop_back();
-							jStack.pop_back();
-							kStack.pop_back();
-							//Add new found neighbors in initial stacks
-							//we can do it once because they have the same size
-							for (n = 0; n < iTmpStack.size(); n++) {
-								//if any neighbors have been found iTmpStack.size() = 0
-								//and nothing will happen
-								iStack.push_back(iTmpStack[n]);
-							}
-							for (n = 0; n < jTmpStack.size(); n++) {
-								//if any neighbors have been found jTmpStack.size() = 0
-								//and nothing will happen
-								jStack.push_back(jTmpStack[n]);
-							}
-							for (n = 0; n < kTmpStack.size(); n++) {
-								//if any neighbors have been found jTmpStack.size() = 0
-								//and nothing will happen
-								kStack.push_back(kTmpStack[n]);
-							}
-							//empty the temporary stacks
-							//we can do it once because they have the same size
-							while (iTmpStack.size() > 0) {
-								iTmpStack.pop_back();
-							}
-							while (jTmpStack.size() > 0) {
-								jTmpStack.pop_back();
-							}
-							while (kTmpStack.size() > 0) {
-								kTmpStack.pop_back();
-							}
-						}
-						label++;
-					}
-					else {
-						statusArray[k][x_new(i, j, xDim)] = true;
-					}
-				}
-
-			}
-		}
-	}
-	return true;
-}
-
-//Erosion ---> Shrink object and remove boundaries pixels
-bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background) {
-	if (imageDataPtr == NULL)
-		return false;
-
-	size_t i, j, k, cpt;
-
-	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < xDim; i++) {
-			for (j = 0; j < yDim; j++) {
-
-				cpt = 0;
-
-				if (k == zDim - 1) {
-					if (i == xDim - 1) {
-						if (j == yDim - 1) {
-							continue;
-						}
-						else {
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == background) {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-					}
-					else {
-						if (j == yDim - 1) {
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == background) {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt == 3) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-							else {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-					}
-				}
-				else {
-					if (i == xDim - 1) {
-						if (j == yDim - 1) {
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == background) {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt == 3) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-							else {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-					}
-					else {
-						if (j == yDim - 1) {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt == 3) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-							else {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt == 7) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-							else {
-								imageDataPtr[k][x_new(i, j, xDim)] = background;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return true;
-}
-
-//Dilatation ---> Enlarge object and fill holes
-bool dilatation3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background) {
-	if (imageDataPtr == NULL)
-		return false;
-
-	size_t i, j, k, cpt;
-
-	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < xDim; i++) {
-			for (j = 0; j < yDim; j++) {
-
-				cpt = 0;
-
-				if (k == zDim - 1) {
-					if (i == xDim - 1) {
-						if (j == yDim - 1) {
-							continue;
-						}
-						else {
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-					}
-					else {
-						if (j == yDim - 1) {
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt >= 1) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-					}
-				}
-				else {
-					if (i == xDim - 1) {
-						if (j == yDim - 1) {
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt >= 1) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-					}
-					else {
-						if (j == yDim - 1) {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt >= 1) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-						else {
-							cpt = 0;
-
-							if (imageDataPtr[k][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (imageDataPtr[k + 1][x_new(i + 1, j + 1, xDim)] == object) {
-								cpt++;
-							}
-							if (cpt >= 1) {
-								imageDataPtr[k][x_new(i, j, xDim)] = object;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return true;
-}
