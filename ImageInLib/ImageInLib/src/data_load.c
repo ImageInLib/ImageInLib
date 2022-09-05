@@ -140,7 +140,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 					else if (dType == ASCII_DATA)
 					{
 						//fscanf_s(file, "%d", &value);  //--> initial function
-						fscanf_s(file, "%hd", &value);
+						fscanf_s(file, "%f", &value);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
 				}
@@ -154,7 +154,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	{
 		for (i = 0; i < imageLength * imageWidth; i++)
 		{
-			revertBytes(&imageDataPtr[k][i], sizeof(short));
+			revertBytes(&imageDataPtr[k][i], sizeof(dataType));
 		}
 	}
 
