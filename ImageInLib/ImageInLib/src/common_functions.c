@@ -3,7 +3,7 @@
 //==============================================================================
 // Local Function Prototype
 //==============================================================================
-void reflection3DB(float ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p)
+void reflection3DB(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p)
 {
 	size_t k, i, j;
 	size_t height = imageHeight, length = imageLength, width = imageWidth; // Actual Z, X, Y dimensions
@@ -41,7 +41,7 @@ void reflection3DB(float ** toReflectImage, size_t imageHeight, size_t imageLeng
 }
 //==============================================================================
 //imageHeight and imageLength is considered as data extension together with boundary
-void reflection3D(float ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth)
+void reflection3D(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth)
 {
 	size_t k, i, j;
 	size_t length = imageLength, width = imageWidth; // Actual X, Y dimensions
@@ -87,9 +87,9 @@ void reflection3D(float ** toReflectImage, size_t imageHeight, size_t imageLengt
 /*
 * Evaluates the diffusivity value
 */
-dataType gradientFunction(float value, float coef)
+dataType gradientFunction(dataType value, dataType coef)
 {
-	return (float)(1.0 / (1 + coef * value));
+	return (dataType)(1.0 / (1 + coef * value));
 }
 //==============================================================================
 size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLength)
@@ -97,7 +97,7 @@ size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLe
 	return rowIndex + columnIndex * rowLength; // x + y*DimX
 }
 //==============================================================================
-void copyDataToExtendedArea(const float ** originalDataPtr, float ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
+void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t length_ext = originalLength + 2;
@@ -117,7 +117,7 @@ void copyDataToExtendedArea(const float ** originalDataPtr, float ** extendedDat
 	}
 }
 //==============================================================================
-void copyDataToReducedArea(float ** originalDataPtr, const float ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
+void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t length_ext = originalLength + 2;
@@ -137,7 +137,7 @@ void copyDataToReducedArea(float ** originalDataPtr, const float ** extendedData
 	}
 }
 //==============================================================================
-void copyDataToAnotherArray(float ** source, float ** destination, size_t height, size_t length, size_t width)
+void copyDataToAnotherArray(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width)
 {
 	size_t k, i, j, xd;
 	for (k = 0; k < height; k++)

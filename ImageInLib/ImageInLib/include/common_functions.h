@@ -20,10 +20,7 @@ extern "C" {
 // Typedefs
 // Data Type
 
-//adding data type short
-#ifndef USE_SHORT 
-	typedef short dataType;
-#elif USE_DOUBLE_PRECISION
+#ifndef USE_DOUBLE_PRECISION
 	typedef float dataType;
 #else
 	typedef double dataType;
@@ -47,7 +44,7 @@ extern "C" {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 
-		float ** imageDataPtr; // Image Data Containers
+		dataType ** imageDataPtr; // Image Data Containers
 	} Image_Data;
 
 	// Generate Random Points
@@ -89,19 +86,19 @@ extern "C" {
 	* Reflection does not include the current point but only its adjacent neighbor
 	* Preserves Neumann Boundary condition - Target is for those methods
 	*/
-	void reflection3DB(float ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p);
+	void reflection3DB(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p);
 	//==============================================================================
 	/*
 	* Reflection Function Jozef
 	* Reflection includes the current point together with its adjacent neighbor
 	* Targets Distance Function types
 	*/
-	void reflection3D(float ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	void reflection3D(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
 	/*
 	* Gradient Calculation function
 	*/
-	dataType gradientFunction(float value, float coef);
+	dataType gradientFunction(dataType value, dataType coef);
 	//==============================================================================
 	/*
 	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
@@ -111,12 +108,12 @@ extern "C" {
 	to an array extendedDataPtr representing enlarged data (by 1 vx in each direction)
 	of dimensions originalHeight + 2, originalLength + 2 and originalWidth + 2
 	*/
-	void copyDataToExtendedArea(const float ** originalDataPtr, float ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
-	void copyDataToReducedArea(float ** originalDataPtr, const float ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	// Copy from one pointer to another pointer
-	void copyDataToAnotherArray(float ** source, float ** destination, size_t height, size_t length, size_t width);
+	void copyDataToAnotherArray(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width);
 	//==============================================================================
 	typedef struct {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
