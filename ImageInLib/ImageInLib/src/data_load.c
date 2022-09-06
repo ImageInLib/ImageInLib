@@ -139,14 +139,12 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 
 					if (dType == BINARY_DATA)
 					{
-						//value = getc(file); //--> initial function
 						fread(&value, sizeof(dataType), 1, file);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
 					else if (dType == ASCII_DATA)
 					{
-						//fscanf_s(file, "%d", &value);  //--> initial function
-						fscanf_s(file, "%hd", &value);
+						fscanf_s(file, "%f", &value);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
 				}
@@ -167,8 +165,6 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	fclose(file);
 	return true;
 }
-
-
 
 //==================================
 //Load 2D .pgm (ascii) image
