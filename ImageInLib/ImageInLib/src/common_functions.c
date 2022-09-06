@@ -159,3 +159,48 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)
 }
 //==============================================================================
+void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new, dataType max_dta, dataType min_dta)
+{
+	size_t k, i, j, xd;
+	// Find the Max Intensity
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+				if (dta[k][xd] > max_dta)
+				{
+					max_dta = dta[k][xd];
+				}
+				if (dta[k][xd] < min_dta)
+				{
+					min_dta = dta[k][xd];
+				}
+			}
+		}
+	}
+	// Rescale from min_new to max_new
+	dataType diff_old = max_dta - min_dta;
+	dataType diff_new = max_new - min_new;
+	double scale_factor = (double)(diff_new) / (diff_old);
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+				dta[k][xd] = (dataType)scale_factor * (dta[k][xd] - max_dta) + max_new;
+				// Alternatively
+				//dta[k][xd] = (dataType)scale_factor * (dta[k][xd] - min_dta) + min_new;
+
+			}
+		}
+	}
+
+}
+//==============================================================================
