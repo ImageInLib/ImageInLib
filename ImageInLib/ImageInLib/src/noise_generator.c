@@ -251,9 +251,10 @@ bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const siz
 
 // Nouvel ajout
 bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, float K, const dataType pepper)
+	const size_t zDim, dataType density, const dataType pepper)
 {
 	size_t i, j, k, l = 0, m, n, xd, s;
+	dataType K = density;
 
 	//checks for correctness of the density (ie: percent noise, on [0,1] of salt & pepper noise
 	if ((K < 0) && (K > 1))
