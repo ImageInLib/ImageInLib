@@ -24,7 +24,7 @@ extern "C" {
 	bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, float C, bool flag);
 
 	bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-		const size_t zDim, float K);
+		const size_t zDim, float K, const dataType pepper);
 	bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, float K, bool flag);
 
 	/*

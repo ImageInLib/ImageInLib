@@ -308,7 +308,6 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 }
 
 
-
 bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, float K, bool flag)
 {
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
