@@ -80,7 +80,7 @@ int main() {
 	//Storage_Flags flags = { false, false };
 	//manageFile(image, Length, Width, Height, pathPtr, operation, dType, flags);
 	load3dArrayRAW<short>(image, Length, Width, Height, "data/3D/patient1b.raw");
-	//store3dRawData<short>(image, Length, Width, Height, "output/loadedImage.raw");
+	store3dRawData<short>(image, Length, Width, Height, "output/loadedImage.raw");
 
 	////Create artificial image
 	//for (k = 0; k < Height; k++) {
@@ -117,38 +117,38 @@ int main() {
 	//	}
 	//}
 
-	//Preparing Image container for float format
-	Image_Data ImageData;
-	ImageData.height = Height;
-	ImageData.length = Length;
-	ImageData.width = Width;
-	ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
-	for (k = 0;k < Height;k++) {
-		ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-	}
-	if (ImageData.imageDataPtr == NULL) return false;
+	////Preparing Image container for float format
+	//Image_Data ImageData;
+	//ImageData.height = Height;
+	//ImageData.length = Length;
+	//ImageData.width = Width;
+	//ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
+	//for (k = 0;k < Height;k++) {
+	//	ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (ImageData.imageDataPtr == NULL) return false;
 
-	//copy input image in container
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (float)image[k][x_new(i, j, Length)];
-			}
-		}
-	}
+	////copy input image in container
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			ImageData.imageDataPtr[k][x_new(i, j, Length)] = (float)image[k][x_new(i, j, Length)];
+	//		}
+	//	}
+	//}
 
-	//Find min and max values
-	short minData = 10000, maxData = -10000;
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (image[k][x_new(i, j, Length)] < minData)
-					minData = image[k][x_new(i, j, Length)];
-				if (image[k][x_new(i, j, Length)] > maxData)
-					maxData = image[k][x_new(i, j, Length)];
-			}
-		}
-	}
+	////Find min and max values
+	//short minData = 10000, maxData = -10000;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (image[k][x_new(i, j, Length)] < minData)
+	//				minData = image[k][x_new(i, j, Length)];
+	//			if (image[k][x_new(i, j, Length)] > maxData)
+	//				maxData = image[k][x_new(i, j, Length)];
+	//		}
+	//	}
+	//}
 
 	////Compute and save histogram
 	//short totalClass = maxData - minData + 1;
@@ -204,7 +204,7 @@ int main() {
 	//sigma2 = sigma2 / q2;
 	//sigmab = q1 * sigma1 + q2 * sigma1;
 
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 
 	//const NoiseType Ntype = SALT_AND_PEPPER;
 	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, 0.05, Ntype, 1);
