@@ -41,10 +41,10 @@ void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const s
 	}
 }
 
-void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, double minNew, double maxNew) {
+void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew) {
 	size_t k, i, j, xd;
-	dataType maxData = -32768; //SHRT_MAX;
-	dataType minData = 32767; //SHRT_MAX;
+	dataType maxData = -10000; 
+	dataType minData = 10000;
 
 	// Find the Max Intensity
 	for (k = 0; k < imageHeight; k++) {
@@ -63,9 +63,9 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 		}
 	}
 	// Rescale from min_new to max_new
-	double diffOld = maxData - minData;
-	double diffNew = maxNew - minNew;
-	double scale_factor = (diffNew) / (diffOld);
+	dataType diffOld = maxData - minData;
+	dataType diffNew = maxNew - minNew;
+	dataType scale_factor = (diffNew) / (diffOld);
 	for (k = 0; k < imageHeight; k++) {
 		for (i = 0; i < imageLength; i++) {
 			for (j = 0; j < imageWidth; j++) {

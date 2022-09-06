@@ -335,7 +335,6 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 	return true;
 }
 
-
 /*
 * Multiplicative noise adds noise to imageDataPtr
 * 2D
