@@ -59,6 +59,12 @@ extern "C" {
 		size_t num; // shape number
 	} Shapes;
 	//==============================================================================
+	typedef struct {
+		float salt_pepper_density, multiplicative_variance;
+		int additive_value;
+		dataType fgMin, bgMax;
+	} NoiseParameters;
+	//==============================================================================
 	// Enumeration
 	enum FiniteDifference
 	{
