@@ -19,6 +19,7 @@ void fillPtr(int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(float * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(short * ptr, Vtk_File_Info * vtkInfo);
 /* Manual Creation of vtkImageData*/
 int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkMetaInfo);
 //==============================================================================
@@ -88,6 +89,14 @@ int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo)
 		vtkMetaInfo->vDataType = dta_UInt;
 		// Assign the Data Pointer
 		unsigned int * ptr_ui = (unsigned int *)imageData->GetScalarPointer();
+		fillPtr(ptr_ui, vtkMetaInfo);
+		break;
+	}
+	case VTK_SHORT: 
+	{
+		vtkMetaInfo->vDataType = dta_Shrt;
+		// Assign the Data Pointer
+		short* ptr_ui = (short *)imageData->GetScalarPointer();
 		fillPtr(ptr_ui, vtkMetaInfo);
 		break;
 	}
@@ -179,6 +188,15 @@ int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkInfo)
 		imageData->AllocateScalars(VTK_UNSIGNED_INT, 1);
 		// Assign the Data Pointer
 		unsigned int * ptr = (unsigned int *)imageData->GetScalarPointer();
+		// Fill in the data
+		fillPtr(ptr, vtkInfo);
+		break;
+	}
+	case dta_Shrt:
+	{
+		imageData->AllocateScalars(VTK_SHORT, 1);
+		// Assign the Data Pointer
+		short* ptr = (short*)imageData->GetScalarPointer();
 		// Fill in the data
 		fillPtr(ptr, vtkInfo);
 		break;
@@ -349,6 +367,40 @@ void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo)
 				if (vtkInfo->operation == copyFrom)
 				{
 					ptr[xyd] = static_cast<unsigned char>(vtkInfo->dataPointer[k][xd]);
+				}
+				else if (vtkInfo->operation == copyTo)
+				{
+					vtkInfo->dataPointer[k][xd] = static_cast<dataType>(ptr[xyd]);
+				}
+			}
+		}
+	}
+}
+//==============================================================================
+void fillPtr(short* ptr, Vtk_File_Info* vtkInfo)
+{
+	size_t k, i, j, xd, xyd;
+	int height = vtkInfo->dimensions[2], length = vtkInfo->dimensions[1], width = vtkInfo->dimensions[0];
+	if (vtkInfo->operation == copyTo)
+	{
+		// Initialize the pointer to which it is to be copied to
+		vtkInfo->dataPointer = (dataType**)malloc(sizeof(dataType*) * height);
+		for (i = 0; i < height; i++)
+		{
+			vtkInfo->dataPointer[i] = (dataType*)malloc(sizeof(dataType) * (length * width));
+		}
+	}
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				xd = x_new(i, j, length);
+				xyd = x_flat(i, j, k, length, width);
+				if (vtkInfo->operation == copyFrom)
+				{
+					ptr[xyd] = static_cast<short>(vtkInfo->dataPointer[k][xd]);
 				}
 				else if (vtkInfo->operation == copyTo)
 				{
