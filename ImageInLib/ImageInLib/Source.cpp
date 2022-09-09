@@ -138,14 +138,14 @@ int main() {
 	}
 
 	//Find min and max values
-	short minData = 10000, maxData = -10000;
+	dataType minData = 10000, maxData = -10000;
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				if (image[k][x_new(i, j, Length)] < minData)
-					minData = image[k][x_new(i, j, Length)];
-				if (image[k][x_new(i, j, Length)] > maxData)
-					maxData = image[k][x_new(i, j, Length)];
+				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < minData)
+					minData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > maxData)
+					maxData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
 			}
 		}
 	}
@@ -205,27 +205,72 @@ int main() {
 	//sigmab = q1 * sigma1 + q2 * sigma1;
 
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//NoiseParameters Nparameters = { 0.05, 0.1, 10, 0, 1 };
+	//const NoiseType Ntype = SALT_AND_PEPPER;
+	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage.raw");
 
-	NoiseParameters Nparameters = { 0.05, 0.1, 10, minData, maxData };
-	const NoiseType Ntype = SALT_AND_PEPPER;
-	addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage.raw");
-
-	////Filtering
-	//const size_t maxNumberOfSolverIteration = 100;
-	//float  coef = 0.01;
-	//float  eps2 = 1e-2;
-	//size_t numberOfTimeStep = 10;
-	//Filter_Parameters MC_filterParameters;
+	//Filtering by geodesic mean curvature filter
+	//const size_t maxNumberOfSolverIteration = 1000;
+	//dataType  coef = 0.01, eps2 = 1e-4;
+	//size_t numberOfTimeStep = 100;
+	//Filter_Parameters GMC_filterParameters;
 	//MC_filterParameters = {5, 1, 0.1, 0.018, 1.5, 5e-4, 1e-2, 1, 10, 100, 10};
 	//const FilterMethod methodFiltering = MEAN_CURVATURE_FILTER;
-	////Time step = 10
+	//const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
+	//dataType timeStepSize = 0.002, h = 1, sigma = 0.01, K = 0.018, omega_c = 1.5, tolerance = 10;
+	//size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 100;
+	//GMC_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//filterImage(ImageData, GMC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_GMC_AfterNoise.raw");
+
+	////Filtering by mean curvature filter
+	//const size_t maxNumberOfSolverIteration = 1000;
+	//dataType  coef = 0.01, eps2 = 1e-4;
+	//size_t numberOfTimeStep = 10;
+	//Filter_Parameters MC_filterParameters;
+	//const FilterMethod methodFiltering = MEAN_CURVATURE_FILTER;
+	//dataType timeStepSize = 5, h = 1, sigma = 0.1, K = 0.018, omega_c = 1.5, tolerance = 5e-4;
+	//size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 100;
+	//MC_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//filterImage(ImageData, MC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filteredImage10timeStep.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_MC.raw");
+
+	////Filtering Linear Heat Implicit
+	//const size_t maxNumberOfSolverIteration = 0;
+	//dataType  coef = 0, eps2 = 0;
+	//size_t numberOfTimeStep = 0;
+	//const FilterMethod methodFiltering = LINEAR_HEATEQUATION_IMPLICIT;
+	//dataType timeStepSize = 1.2, h = 1, sigma = 0, K = 0, omega_c = 1.5, tolerance = 5e-4;
+	//size_t p = 1, timeStepsNum = 12, maxNumberOftimeSteps = 0;
+	//Filter_Parameters LHI_filterParameters{};
+	//LHI_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//filterImage(ImageData, LHI_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_LHI_12.raw");
+
+	////Filtering Peronna Malick (Non linear implicit heat equation)
+	const size_t maxNumberOfSolverIteration = 0;
+	dataType  coef = 0, eps2 = 0;
+	size_t numberOfTimeStep = 0;
+	const FilterMethod methodFiltering = NONLINEAR_HEATEQUATION_IMPLICIT;
+	dataType timeStepSize = 1.2, h = 1, sigma = 0, K = 0.018, omega_c = 1.5, tolerance = 5e-4;
+	size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 0;
+	Filter_Parameters NLHI_filterParameters{};
+	NLHI_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
+	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	filterImage(ImageData, NLHI_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
+	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_NLHI_10.raw");
 
 	//Thresholding
 	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1823, 1944, minData, maxData);
+	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1312, 1349, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/thres.raw");
 
 	////find the Centroid
@@ -237,16 +282,16 @@ int main() {
 	//}
 	//printf("\n");
 
-	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/Erosion.raw");
 
-	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, object, background);
-	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, object, background);
+	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/DilatationAfterErosion.raw");
 
 	//double start = clock();
-	//labelling3D(ImageData.imageDataPtr, labelArray, status, Length, Width, Height, minData);
+	//labelling3D(ImageData.imageDataPtr, labelArray, status, Length, Width, Height, maxData);
 	//double finish = clock();
 	//printf("Execution time for the new code : %.3lf \n", (finish - start) / CLOCKS_PER_SEC);
 
@@ -335,7 +380,6 @@ int main() {
 	//		for (j = 0; j < Width; j++) {
 	//			if (countingArray[labelArray[k][x_new(i, j, Length)]] < minimalSize) {
 	//				labelArray[k][x_new(i, j, Length)] = 0;
-	//				//imageData[k][x_new(i, j, Length)] = background;
 	//			}
 	//		}
 	//	}
@@ -390,11 +434,11 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		free(image[k]);
 		free(labelArray[k]); free(imageData[k]); free(status[k]);
-		//free(ImageData.imageDataPtr[k]);
+		free(ImageData.imageDataPtr[k]);
 	}
 	free(imageData);
 	free(labelArray); free(image); free(status); //free(countingArray);
-	//free(ImageData.imageDataPtr); //
+	free(ImageData.imageDataPtr);
 	//free(cenTroid);
 	//free(P); free(histogram);
 

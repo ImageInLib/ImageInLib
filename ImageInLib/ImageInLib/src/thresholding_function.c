@@ -106,7 +106,7 @@ bool thresholding3dFunctionN(dataType** image3DPtr, const size_t xDim, const siz
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < xDim; i++) {
 			for (j = 0; j < yDim; j++) {
-				if (image3DPtr[k][x_new(i, j, xDim)] < thres_min || image3DPtr[k][x_new(i, j, xDim)] > thres_max) {
+				if (image3DPtr[k][x_new(i, j, xDim)] >= thres_min && image3DPtr[k][x_new(i, j, xDim)] <= thres_max) {
 					image3DPtr[k][x_new(i, j, xDim)] = overGround;
 				}
 				else {
