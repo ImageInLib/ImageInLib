@@ -30,9 +30,9 @@
 #define object 0
 #define background SHRT_MAX
 
-#define originalMean 71
-#define offSet 1024
-#define margin 100
+#define originalMean 1329
+#define offSet 0
+#define margin 30
 #define thresmin (originalMean + offSet - margin)
 #define thresmax (originalMean + offSet + margin)
 #define minimalSize 2000
@@ -132,7 +132,7 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (float)image[k][x_new(i, j, Length)];
+				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
 			}
 		}
 	}
@@ -150,73 +150,87 @@ int main() {
 		}
 	}
 
-	////Compute and save histogram
-	//short totalClass = maxData - minData + 1;
-	//dataType* histogram = (dataType*)malloc(totalClass * sizeof(dataType));
-	//for (i = 0; i < totalClass; i++) histogram[i] = 0;
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			histogram[image[k][x_new(i, j, Length)]]++;
-	//		}
-	//	}
-	//}
-	//FILE* histo;
-	//if (fopen_s(&histo, "output/histogram.csv", "w") != 0) {
-	//	printf("Enable to open");
-	//	return false;
-	//}
-	//for (i = 0; i < totalClass; i++) {
-	//	fprintf(histo, "%f \n", histogram[i]);
-	//}
-	//fclose(histo);
-	//float numberOfCells = 0;
-	//for (i = 0; i < totalClass; i++) {
-	//	numberOfCells = numberOfCells + histogram[i];
-	//}
-	//float q1 = 0, mu1 = 0, sigma1 = 0, q2 = 0, mu2 = 0, sigma2 = 0, sigmab = 0;
-	//short T = 2000;
-	//float* P = (float*)malloc(totalClass * sizeof(float));
-	//for (i = 0; i < totalClass; i++) P[i] = 0;
-	//for (i = 0; i <= T; i++) {
-	//	P[i] = histogram[i] / numberOfCells;
-	//	q1 = q1 + P[i];
-	//}
-	//for (i = T+1 ; i < totalClass ; i++) {
-	//	P[i] = histogram[i] / numberOfCells;
-	//	q2 = q2 + P[i];
-	//}
-	//for (i = 0; i <= T; i++) {
-	//	mu1 = mu1 + i*P[i];
-	//}
-	//mu1 = mu1 / q1;
-	//for (i = T + 1; i < totalClass; i++) {
-	//	mu2 = mu2 + i * P[i];
-	//}
-	//mu2 = mu2 / q2;
-	//for (i = 0; i <= T; i++) {
-	//	sigma1 = sigma1 + (i - mu1)*(i - mu1)*P[i];
-	//}
-	//sigma1 = sigma1 / q1;
-	//for (i = T + 1; i < totalClass; i++) {
-	//	sigma2 = sigma2 + (i - mu2) * (i - mu2) * P[i];
-	//}
-	//sigma2 = sigma2 / q2;
-	//sigmab = q1 * sigma1 + q2 * sigma1;
-
+	//Test of effect of rescalling
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/rescalled.raw");
+
+	//Compute and save histogram
+	short totalClass = (short)(maxData - minData + 1);
+	dataType* histogram = (dataType*)malloc(totalClass * sizeof(dataType));
+	for (i = 0; i < totalClass; i++) histogram[i] = 0;
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				histogram[image[k][x_new(i, j, Length)]]++;
+			}
+		}
+	}
+	/*FILE* histo;
+	if (fopen_s(&histo, "output/histogram.csv", "w") != 0) {
+		printf("Enable to open");
+		return false;
+	}
+	for (i = 0; i < totalClass; i++) {
+		fprintf(histo, "%f \n", histogram[i]);
+	}
+	fclose(histo);*/
+
+	dataType numberOfCells = 0;
+	for (i = 0; i < totalClass; i++) {
+		numberOfCells = numberOfCells + histogram[i];
+	}
+
+	//Copmute probability
+	dataType* Proba = (dataType*)malloc(totalClass * sizeof(dataType));
+	dataType sumProba = 0;
+	for (i = 0; i < totalClass; i++) Proba[i] = 0;
+	for (i = 0; i < totalClass; i++) {
+		Proba[i] = histogram[i] / numberOfCells;
+		sumProba = sumProba + Proba[i];
+	}
+	
+	dataType tol = 0.1, sigma = 0; short T = (short)minData;
+	dataType weightClass_b, meanClass_b, weightClass_f, meanClass_f;
+	do {
+		weightClass_b = 0, meanClass_b = 0, weightClass_f = 0, meanClass_f = 0;
+		//compute class weight
+		for (i = 0; i <= T; i++) {
+			weightClass_b = weightClass_b + Proba[i];
+		}
+		for (i = T + 1; i < totalClass; i++) {
+			weightClass_f = weightClass_f + Proba[i];
+		}
+		//compute class mean
+		for (i = 0; i <= T; i++) {
+			meanClass_b = meanClass_b + i * Proba[i];
+		}
+		meanClass_b = meanClass_b / weightClass_b;
+		for (i = T + 1; i < totalClass; i++) {
+			meanClass_f = meanClass_f + i * Proba[i];
+		}
+		////compute class variance
+		//for (i = 0; i <= T; i++) {
+		//	varClass_b = Class_b + i * Proba[i];
+		//}
+		meanClass_f = meanClass_f / weightClass_b;
+		//compute inter-class variance
+		sigma = weightClass_b * meanClass_b + weightClass_f * meanClass_f;
+
+		T = T + 1;
+	} while (T < (short)maxData && abs(sigma - T) > tol);	
+
+	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//NoiseParameters Nparameters = { 0.05, 0.1, 10, 0, 1 };
 	//const NoiseType Ntype = SALT_AND_PEPPER;
 	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage.raw");
 
-	//Filtering by geodesic mean curvature filter
+	////Filtering by geodesic mean curvature filter
 	//const size_t maxNumberOfSolverIteration = 1000;
 	//dataType  coef = 0.01, eps2 = 1e-4;
-	//size_t numberOfTimeStep = 100;
+	//size_t numberOfTimeStep = 10;
 	//Filter_Parameters GMC_filterParameters;
-	//MC_filterParameters = {5, 1, 0.1, 0.018, 1.5, 5e-4, 1e-2, 1, 10, 100, 10};
-	//const FilterMethod methodFiltering = MEAN_CURVATURE_FILTER;
 	//const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
 	//dataType timeStepSize = 0.002, h = 1, sigma = 0.01, K = 0.018, omega_c = 1.5, tolerance = 10;
 	//size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 100;
@@ -224,7 +238,7 @@ int main() {
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//filterImage(ImageData, GMC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_GMC_AfterNoise.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_GMC.raw");
 
 	////Filtering by mean curvature filter
 	//const size_t maxNumberOfSolverIteration = 1000;
@@ -238,7 +252,7 @@ int main() {
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//filterImage(ImageData, MC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_MC.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_MC_10.raw");
 
 	////Filtering Linear Heat Implicit
 	//const size_t maxNumberOfSolverIteration = 0;
@@ -255,23 +269,22 @@ int main() {
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_LHI_12.raw");
 
 	////Filtering Peronna Malick (Non linear implicit heat equation)
-	const size_t maxNumberOfSolverIteration = 0;
-	dataType  coef = 0, eps2 = 0;
-	size_t numberOfTimeStep = 0;
-	const FilterMethod methodFiltering = NONLINEAR_HEATEQUATION_IMPLICIT;
-	dataType timeStepSize = 1.2, h = 1, sigma = 0, K = 0.018, omega_c = 1.5, tolerance = 5e-4;
-	size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 0;
-	Filter_Parameters NLHI_filterParameters{};
-	NLHI_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	filterImage(ImageData, NLHI_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_NLHI_10.raw");
+	//const size_t maxNumberOfSolverIteration = 0;
+	//dataType  coef = 0, eps2 = 0;
+	//size_t numberOfTimeStep = 0;
+	//const FilterMethod methodFiltering = NONLINEAR_HEATEQUATION_IMPLICIT;
+	//dataType timeStepSize = 1.2, h = 1, sigma = 0, K = 0.018, omega_c = 1.5, tolerance = 5e-4;
+	//size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 0;
+	//Filter_Parameters NLHI_filterParameters{};
+	//NLHI_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//filterImage(ImageData, NLHI_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_NLHI_10.raw");
 
-	//Thresholding
-	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1823, 1944, minData, maxData);
-	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1312, 1349, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/thres.raw");
+	////Thresholding
+	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, thresmin, thresmax, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/thres30.raw");
 
 	////find the Centroid
 	//dataType* cenTroid = (dataType*)malloc(3 * sizeof(dataType));
@@ -282,13 +295,13 @@ int main() {
 	//}
 	//printf("\n");
 
-	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	////erosion3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/Erosion.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/Erosion30.raw");
 
 	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/DilatationAfterErosion.raw");
+	////dilatation3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/DilatationAfterErosion30.raw");
 
 	//double start = clock();
 	//labelling3D(ImageData.imageDataPtr, labelArray, status, Length, Width, Height, maxData);
