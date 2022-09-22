@@ -220,10 +220,9 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 	const size_t zDim, dataType density, const dataType pepper)
 {
 	size_t i, j, k, l = 0, m, n, xd, s;
-	dataType K = density;
 
 	//checks for correctness of the density (ie: percent noise, on [0,1] of salt & pepper noise
-	if ((K < 0) && (K > 1))
+	if ((density < 0) && (density > 1))
 		return false;
 
 	//checks if the memory was allocated
@@ -231,7 +230,7 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 		return false;
 
 	//Number of voxels affected by noise
-	const size_t dim3DK = (size_t)((xDim * yDim * zDim * K) + 0.5);
+	const size_t dim3DK = (size_t)((xDim * yDim * zDim * density) + 0.5);
 	const size_t dim2D = xDim * yDim;
 
 	// Generate Random points
@@ -274,18 +273,17 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 
 bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper)
 {
-	dataType K = density;
 	size_t i, j, l = 0, n, xd, s;
 
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
-	if ((K < 0) && (K > 1))
+	if ((density < 0) && (density > 1))
 		return false;
 
 	//checks if the memory was allocated
 	if (array2DPtr == NULL)
 		return false;
 
-	const size_t dim2DK = (size_t)((xDim * yDim * K) + 0.5);
+	const size_t dim2DK = (size_t)((xDim * yDim * density) + 0.5);
 	const size_t dim2D = xDim * yDim;
 
 	// Generate Random points
