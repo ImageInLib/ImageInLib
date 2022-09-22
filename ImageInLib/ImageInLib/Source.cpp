@@ -24,6 +24,7 @@
 #include "../src/endianity_bl.h"
 #include "../include/morphological_change.h"
 #include "../src/shape_registration.h"
+#include "../src/noise_generator.h"
 
 
 
@@ -43,7 +44,7 @@ int main() {
 	size_t i, j, k, xd;
 	const size_t Length = 512;
 	const size_t Width = 512;
-	const size_t Height = 508;
+	const size_t Height = 1;
 	const size_t dim2D = Length * Width;
 
 	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
@@ -150,22 +151,46 @@ int main() {
 		}
 	}
 
+	dataType* arraytest = (dataType*) malloc(dim2D * sizeof(dataType));
+
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				arraytest[x_new(i, j, Length)] = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+			}
+		}
+	}
+
+	NoiseParameters Nparameters = { 0.05, 0, 0, minData, maxData };
+	const NoiseType Ntype = SALT_AND_PEPPER;
+	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
+	saltAndPepper2dNoise_D(arraytest, Length, Width, 0.05, maxData);
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				ImageData.imageDataPtr[k][x_new(i, j, Length)] = arraytest[x_new(i, j, Length)];
+			}
+		}
+	}
+
+	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
+
 	//Test of effect of rescalling
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/rescalled.raw");
 
-	//Compute and save histogram
-	short totalClass = (short)(maxData - minData + 1);
-	dataType* histogram = (dataType*)malloc(totalClass * sizeof(dataType));
-	for (i = 0; i < totalClass; i++) histogram[i] = 0;
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				histogram[image[k][x_new(i, j, Length)]]++;
-			}
-		}
-	}
+	////Compute and save histogram
+	//short totalClass = (short)(maxData - minData + 1);
+	//dataType* histogram = (dataType*)malloc(totalClass * sizeof(dataType));
+	//for (i = 0; i < totalClass; i++) histogram[i] = 0;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			histogram[image[k][x_new(i, j, Length)]]++;
+	//		}
+	//	}
+	//}
 	/*FILE* histo;
 	if (fopen_s(&histo, "output/histogram.csv", "w") != 0) {
 		printf("Enable to open");
@@ -176,51 +201,51 @@ int main() {
 	}
 	fclose(histo);*/
 
-	dataType numberOfCells = 0;
-	for (i = 0; i < totalClass; i++) {
-		numberOfCells = numberOfCells + histogram[i];
-	}
+	//dataType numberOfCells = 0;
+	//for (i = 0; i < totalClass; i++) {
+	//	numberOfCells = numberOfCells + histogram[i];
+	//}
 
-	//Copmute probability
-	dataType* Proba = (dataType*)malloc(totalClass * sizeof(dataType));
-	dataType sumProba = 0;
-	for (i = 0; i < totalClass; i++) Proba[i] = 0;
-	for (i = 0; i < totalClass; i++) {
-		Proba[i] = histogram[i] / numberOfCells;
-		sumProba = sumProba + Proba[i];
-	}
-	
-	dataType tol = 0.1, sigma = 0; short T = (short)minData;
-	dataType weightClass_b, meanClass_b, weightClass_f, meanClass_f;
-	do {
-		weightClass_b = 0, meanClass_b = 0, weightClass_f = 0, meanClass_f = 0;
-		//compute class weight
-		for (i = 0; i <= T; i++) {
-			weightClass_b = weightClass_b + Proba[i];
-		}
-		for (i = T + 1; i < totalClass; i++) {
-			weightClass_f = weightClass_f + Proba[i];
-		}
-		//compute class mean
-		for (i = 0; i <= T; i++) {
-			meanClass_b = meanClass_b + i * Proba[i];
-		}
-		meanClass_b = meanClass_b / weightClass_b;
-		for (i = T + 1; i < totalClass; i++) {
-			meanClass_f = meanClass_f + i * Proba[i];
-		}
-		////compute class variance
-		//for (i = 0; i <= T; i++) {
-		//	varClass_b = Class_b + i * Proba[i];
-		//}
-		meanClass_f = meanClass_f / weightClass_b;
-		//compute inter-class variance
-		sigma = weightClass_b * meanClass_b + weightClass_f * meanClass_f;
+	////Copmute probability
+	//dataType* Proba = (dataType*)malloc(totalClass * sizeof(dataType));
+	//dataType sumProba = 0;
+	//for (i = 0; i < totalClass; i++) Proba[i] = 0;
+	//for (i = 0; i < totalClass; i++) {
+	//	Proba[i] = histogram[i] / numberOfCells;
+	//	sumProba = sumProba + Proba[i];
+	//}
+	//
+	//dataType tol = 0.1, sigma = 0; short T = (short)minData;
+	//dataType weightClass_b, meanClass_b, weightClass_f, meanClass_f;
+	//do {
+	//	weightClass_b = 0, meanClass_b = 0, weightClass_f = 0, meanClass_f = 0;
+	//	//compute class weight
+	//	for (i = 0; i <= T; i++) {
+	//		weightClass_b = weightClass_b + Proba[i];
+	//	}
+	//	for (i = T + 1; i < totalClass; i++) {
+	//		weightClass_f = weightClass_f + Proba[i];
+	//	}
+	//	//compute class mean
+	//	for (i = 0; i <= T; i++) {
+	//		meanClass_b = meanClass_b + i * Proba[i];
+	//	}
+	//	meanClass_b = meanClass_b / weightClass_b;
+	//	for (i = T + 1; i < totalClass; i++) {
+	//		meanClass_f = meanClass_f + i * Proba[i];
+	//	}
+	//	////compute class variance
+	//	//for (i = 0; i <= T; i++) {
+	//	//	varClass_b = Class_b + i * Proba[i];
+	//	//}
+	//	meanClass_f = meanClass_f / weightClass_b;
+	//	//compute inter-class variance
+	//	sigma = weightClass_b * meanClass_b + weightClass_f * meanClass_f;
 
-		T = T + 1;
-	} while (T < (short)maxData && abs(sigma - T) > tol);	
+	//	T = T + 1;
+	//} while (T < (short)maxData && abs(sigma - T) > tol);	
 
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//NoiseParameters Nparameters = { 0.05, 0.1, 10, 0, 1 };
 	//const NoiseType Ntype = SALT_AND_PEPPER;
 	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
@@ -454,6 +479,7 @@ int main() {
 	free(ImageData.imageDataPtr);
 	//free(cenTroid);
 	//free(P); free(histogram);
+	free(arraytest);
 
 	return EXIT_SUCCESS;
 }
