@@ -15,13 +15,13 @@
 * Calculates the upper value b in a continuous uniform function
 * v is the variance
 */
-dataType upperBValue(dataType v);
+double upperBValue(double v);
 /*
 * Uniform number generator between a - b
 * lower value is a
 * upper value is b
 */
-dataType randomUniformNumber(dataType lowerValue, dataType upperValue);
+double randomUniformNumber(double lowerValue, double upperValue);
 
 // Function for introduction of additive noise to data(3D)
 bool additive3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim,
@@ -94,35 +94,33 @@ bool additive2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const siz
 	return true;
 }
 
-bool additive3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, dataType C)
+bool additive3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, int C, dataType fgMin, dataType bgMax)
 {
 	size_t i, k;
 	const size_t dim2D = xDim * yDim;
-	size_t j;
+	dataType j;
 
 	//checks if the memory was allocated
 	if (array3DPtr == NULL)
 		return false;
 
 	srand((unsigned)time(NULL)); //seed for randon number generator
+	const dataType range_half = (dataType)(ceil((0.5 * (C - 1))));
 
-								 // Addition of salt and pepper noise to 3D image
 	for (k = 0; k < zDim; k++)
 	{
 		for (i = 0; i < dim2D; i++)
 		{
-			j = (size_t)(array3DPtr[k][i] - (C / 2) + rand() % 51 + 0.5);
-			if (j < 0)
+			j = (dataType)(rand() % C); // 0 - C-1
+			j = j - range_half;
+			array3DPtr[k][i] = array3DPtr[k][i] + j;
+			if (array3DPtr[k][i] < fgMin)
 			{
-				array3DPtr[k][i] = 0.;
+				array3DPtr[k][i] = fgMin;
 			}//end if
-			else if (j > 255)
+			else if (array3DPtr[k][i] > bgMax)
 			{
-				array3DPtr[k][i] = 255.;
-			}//end else
-			else {
-				array3DPtr[k][i] = (dataType)j;
+				array3DPtr[k][i] = bgMax;
 			}
 
 		}
@@ -219,7 +217,7 @@ bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, cons
 }
 
 bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, dataType K)
+	const size_t zDim, float K)
 {
 	size_t i, k, s;
 	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
@@ -278,16 +276,22 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 * Multiplicative noise adds noise to imageDataPtr
 * 2D
 */
-void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t imageWidth, dataType variance)
+void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t imageLength, size_t imageWidth, float variance, dataType fgMin, dataType bgMax)
 {
 	size_t i, j;
-	dataType lower = 0.0, upper = upperBValue(variance); // a, b values
+	// a, b values
+	double upper = 0.5 * upperBValue(variance);
+	double lower = -1.0 * upper;
+
+	size_t dim2D = imageLength * imageWidth;
 
 	for (i = 0; i < imageHeight; i++)
 	{
-		for (j = 0; j < imageWidth; j++)
+		for (j = 0; j < dim2D; j++)
 		{
-			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)((randomUniformNumber(lower, upper) / (upper / 2.))*imageDataPtr[i][j]);
+			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)(randomUniformNumber(lower, upper)*imageDataPtr[i][j]);
+			imageDataPtr[i][j] = (imageDataPtr[i][j] < fgMin) ? fgMin : imageDataPtr[i][j];
+			imageDataPtr[i][j] = (imageDataPtr[i][j] > bgMax) ? bgMax : imageDataPtr[i][j];
 		}
 	}
 }
@@ -295,31 +299,38 @@ void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t
 * Structural noise generate adds noise to imageDataPtr
 * 2D
 */
-void addStructuralNoise(dataType ** imageDataPtr, int imageHeight, int imageWidth)
+void addStructuralNoise(dataType ** imageDataPtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType fgMin, dataType bgMax)
 {
-	size_t i, j;
-
+	size_t i, j, k, xd;
+	size_t dim2D = imageLength * imageWidth;
 	// Create a mesh grid for the height and width
-	dataType **periodicNoise = malloc(imageHeight * sizeof(dataType));
+	dataType ** periodicNoise = (dataType **)malloc(imageHeight * sizeof(dataType*));
 
-	for (i = 0; i < imageHeight; i++)
+	for (k = 0; k < imageHeight; k++)
 	{
-		periodicNoise[i] = malloc(imageWidth * sizeof(dataType));
-		for (j = 0; j < imageWidth; j++)
+		periodicNoise[k] = (dataType *)malloc(dim2D * sizeof(dataType));
+		for (i = 0; i < imageLength; i++)
 		{
-			// This formula is modifiable, any sinusoid equation combination can be used!
-			periodicNoise[i][j] = (dataType)(100*cos(2*M_PI*((12. * j) / 512. + (16. * i) / 512.)) + 100.);
-			imageDataPtr[i][j] = (imageDataPtr[i][j] + (dataType)((periodicNoise[i][j] / 2.)) / 2);
+			for (j = 0; j < imageWidth; j++)
+			{
+				xd = x_new(i, j, imageLength);
+				// This formula is modifiable, any sinusoid equation combination can be used!
+				periodicNoise[k][xd] = (dataType)(100 * cos(2 * M_PI * ((12. * j) / 512. + (16. * i) / 512.)) + 100.);
+				imageDataPtr[k][xd] = (imageDataPtr[k][xd] + (dataType)((periodicNoise[k][xd] / 2.)) / 2);
+
+				imageDataPtr[k][xd] = (imageDataPtr[k][xd] < fgMin) ? fgMin : imageDataPtr[k][xd];
+				imageDataPtr[k][xd] = (imageDataPtr[k][xd] > bgMax) ? bgMax : imageDataPtr[k][xd];
+			}
 		}
 	}
 }
 
-dataType upperBValue(dataType v)
+double upperBValue(double v)
 {
-	return (dataType)sqrt(12 * v);
+	return (double)sqrt(v);
 }
 
-dataType randomUniformNumber(dataType lowerValue, dataType upperValue)
+double randomUniformNumber(double lowerValue, double upperValue)
 {
 	if (lowerValue == upperValue)
 	{
@@ -327,6 +338,7 @@ dataType randomUniformNumber(dataType lowerValue, dataType upperValue)
 	}
 	else
 	{
-		return lowerValue + (rand() / (RAND_MAX / (upperValue - lowerValue)));
+		double range = 2.0 * (rand() / (RAND_MAX / (upperValue - lowerValue)));
+		return lowerValue + (range * upperValue);
 	}
 }
