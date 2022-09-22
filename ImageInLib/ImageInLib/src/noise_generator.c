@@ -216,57 +216,110 @@ bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, cons
 	return true;
 }
 
-bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, float K)
+bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim,
+	const size_t zDim, dataType density, const dataType pepper)
 {
-	size_t i, k, s;
-	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
-	const size_t dim2D = xDim * yDim;
+	size_t i, j, k, l = 0, m, n, xd, s;
+	dataType K = density;
+
+	//checks for correctness of the density (ie: percent noise, on [0,1] of salt & pepper noise
+	if ((K < 0) && (K > 1))
+		return false;
 
 	//checks if the memory was allocated
 	if (array3DPtr == NULL)
 		return false;
 
-	srand((unsigned)time(NULL)); //seed for randon number generator
+	//Number of voxels affected by noise
+	const size_t dim3DK = (size_t)((xDim * yDim * zDim * K) + 0.5);
+	const size_t dim2D = xDim * yDim;
 
-	//checks for correctness of the density (ie: percent of noise, on [0,1] of salt & pepper noise
-	if ((K < 0) && (K > 1))
-		return false;
+	// Generate Random points
+	srand(time(NULL)); //seed for randon number generator
+	RandomPoints* generated_points = malloc(sizeof(RandomPoints) * dim3DK);
+	bool loop = true;
+	RandomPoints* tmpRdPts;
+	do
+	{
+		//Coordinates of the affected voxel
+		i = (rand() % (xDim));
+		j = (rand() % (yDim));
+		k = (rand() % (zDim));
+
+		//intensity of the affected voxel
+		n = (rand() % 2) * pepper;
+
+		xd = x_new(i, j, xDim);
+		tmpRdPts = &generated_points[l];
+		tmpRdPts->xd = xd;
+		tmpRdPts->k = k;
+		tmpRdPts->p = n;
+		//========================
+		l = l + 1;
+		if (l == dim3DK)
+		{
+			loop = false;
+		}
+	} while ((loop) && (l <= dim3DK));
 
 	// Addition of salt and pepper noise to 3D image
-	for (k = 0; k < zDim; k++)
-	{
-		for (s = 0; s < dim2DK; s++) {
-			i = rand() % (dim2D + 1);
-			array3DPtr[k][i] = (dataType)(rand() % 2) * 255;
-		}
+	for (s = 0; s < dim3DK; s++) {
+		size_t dx = generated_points[s].xd;
+		size_t dk = generated_points[s].k;
+		dataType res = (dataType)generated_points[s].p;
+		array3DPtr[dk][dx] = res;
 	}
-
 	return true;
 }
 
-bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag)
+bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper)
 {
+	dataType K = density;
+	size_t i, j, l = 0, n, xd, s;
+
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
 	if ((K < 0) && (K > 1))
 		return false;
-
-	if (flag == true)
-		srand((unsigned)time(NULL)); //seed for randon number generator
-
-	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
-	const size_t dim2D = xDim * yDim;
-	size_t i, k;
-	srand((unsigned)time(NULL)); //seed for randon number generator
 
 	//checks if the memory was allocated
 	if (array2DPtr == NULL)
 		return false;
 
+	const size_t dim2DK = (size_t)((xDim * yDim * K) + 0.5);
+	const size_t dim2D = xDim * yDim;
+
+	// Generate Random points
+	srand(time(NULL)); //seed for randon number generator
+	Random2dPoints* generated_points = malloc(sizeof(Random2dPoints) * dim2DK);
+	bool loop = true;
+	Random2dPoints* tmpRdPts;
+
+	do {
+		//Coordinates of the affected voxel
+		i = (rand() % (xDim));
+		j = (rand() % (yDim));
+
+		//intensity of the affected voxel
+		n = (rand() % 2) * pepper;
+
+		xd = x_new(i, j, xDim);
+		tmpRdPts = &generated_points[l];
+		tmpRdPts->xd = xd;
+		tmpRdPts->p = n;
+		//========================
+		l = l + 1;
+		if (l == dim2DK)
+		{
+			loop = false;
+		}
+
+	} while ((loop) && (l < dim2DK));
+
 	// Addition of salt and pepper noise to 2D image
-	for (k = 0; k < dim2DK; k++) {
-		i = rand() % (dim2D + 1);
-		array2DPtr[i] = (dataType)(rand() % 2) * 255;
+	for (s = 0; s < dim2DK; s++) {
+		size_t dx = generated_points[s].xd;
+		dataType res = (dataType)generated_points[s].p;
+		array2DPtr[dx] = res;
 	}
 	return true;
 }
