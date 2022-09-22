@@ -5,6 +5,13 @@ extern "C" {
 #pragma once
 #include "common_functions.h"
 
+	typedef struct {
+		dataType salt_pepper_density, multiplicative_variance;
+		int additive_value;
+		dataType fgMin, bgMax;
+	} NoiseParameters;
+	//==============================================================================
+
 	typedef enum
 	{
 		SALT_AND_PEPPER = 1,

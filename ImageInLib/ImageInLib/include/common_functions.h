@@ -51,6 +51,10 @@ extern "C" {
 	typedef struct {
 		size_t k, xd, p;
 	}RandomPoints;
+
+	typedef struct {
+		size_t xd, p;
+	}Random2dPoints;
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
