@@ -236,9 +236,9 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 
 	// Generate Random points
 	srand(time(NULL)); //seed for randon number generator
-	RandomPoints* generated_points = malloc(sizeof(RandomPoints) * dim3DK);
+	Random3dPoints* generated_points = malloc(sizeof(Random3dPoints) * dim3DK);
 	bool loop = true;
-	RandomPoints* tmpRdPts;
+	Random3dPoints* tmpRdPts;
 	do
 	{
 		//Coordinates of the affected voxel
