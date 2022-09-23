@@ -80,8 +80,8 @@ int main() {
 	//LoadDataType dType = BINARY_DATA;
 	//Storage_Flags flags = { false, false };
 	//manageFile(image, Length, Width, Height, pathPtr, operation, dType, flags);
-	load3dArrayRAW<short>(image, Length, Width, Height, "data/3D/patient1b.raw");
-	//store3dRawData<short>(image, Length, Width, Height, "output/loadedImage.raw");
+	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/Slices304.raw");
+	store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
 	////Create artificial image
 	//for (k = 0; k < Height; k++) {
@@ -151,29 +151,39 @@ int main() {
 		}
 	}
 
-	dataType* arraytest = (dataType*) malloc(dim2D * sizeof(dataType));
+	/*size_t x = Length / 2, y = Width / 2;
+	ImageData.imageDataPtr[0][x_new(x - 1, y - 1, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x - 1, y, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x - 1, y + 1, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x, y - 1, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x, y, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x, y + 1, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x + 1, y - 1, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x + 1, y, Length)] = 0;
+	ImageData.imageDataPtr[0][x_new(x + 1, y + 1, Length)] = 0;
+	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/loadedImage.raw");*/
 
+	/*dataType* arraytest = (dataType*) malloc(dim2D * sizeof(dataType));
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
 				arraytest[x_new(i, j, Length)] = ImageData.imageDataPtr[k][x_new(i, j, Length)];
 			}
 		}
-	}
+	}*/
 
-	NoiseParameters Nparameters = { 0.05, 0, 0, minData, maxData };
-	const NoiseType Ntype = SALT_AND_PEPPER;
-	//addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
-	saltAndPepper2dNoise_D(arraytest, Length, Width, 0.05, maxData);
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = arraytest[x_new(i, j, Length)];
-			}
-		}
-	}
-
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
+	//NoiseParameters Nparameters = { 0.05, 0, 0, minData, maxData };
+	//const NoiseType Ntype = SALT_AND_PEPPER;
+	////addNoiseToImage(ImageData.imageDataPtr, Length, Width, Height, Nparameters, Ntype);
+	//saltAndPepper2dNoise_D(arraytest, Length, Width, 0.05, maxData);
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			ImageData.imageDataPtr[k][x_new(i, j, Length)] = arraytest[x_new(i, j, Length)];
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
 
 	//Test of effect of rescalling
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
@@ -479,7 +489,7 @@ int main() {
 	free(ImageData.imageDataPtr);
 	//free(cenTroid);
 	//free(P); free(histogram);
-	free(arraytest);
+	//free(arraytest);
 
 	return EXIT_SUCCESS;
 }
