@@ -26,17 +26,12 @@
 #include "../src/shape_registration.h"
 #include "../src/noise_generator.h"
 
-
-
-#define object 0
-#define background SHRT_MAX
-
-#define originalMean 1329
+#define originalMean 1095
 #define offSet 0
-#define margin 30
+#define margin 100
 #define thresmin (originalMean + offSet - margin)
 #define thresmax (originalMean + offSet + margin)
-#define minimalSize 2000
+#define minimalSize 0
 
 
 int main() {
@@ -44,23 +39,16 @@ int main() {
 	size_t i, j, k, xd;
 	const size_t Length = 512;
 	const size_t Width = 512;
-	const size_t Height = 1;
+	const size_t Height = 508;
 	const size_t dim2D = Length * Width;
 
 	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	short** image = (short**)malloc(Height * sizeof(short*));
-	int** labelArray = (int**)malloc(Height * sizeof(int*));
-	bool** status = (bool**)malloc(Height * sizeof(bool*));
 	for (k = 0; k < Height; k++) {
 		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		image[k] = (short*)malloc(dim2D * sizeof(short));
-		labelArray[k] = (int*)malloc(dim2D * sizeof(int));
-		status[k] = (bool*)malloc(dim2D * sizeof(bool));
 	}
-	if (imageData == NULL) return false;
-	if (image == NULL) return false;
-	if (labelArray == NULL) return false;
-	if (status == NULL) return false;
+	if (imageData == NULL || image == NULL) return false;
 
 	//initialization
 	for (k = 0; k < Height; k++) {
@@ -68,8 +56,6 @@ int main() {
 			for (j = 0; j < Width; j++) {
 				imageData[k][x_new(i, j, Length)] = 0;
 				image[k][x_new(i, j, Length)] = 0;
-				labelArray[k][x_new(i, j, Length)] = 0;
-				status[k][x_new(i, j, Length)] = false;
 			}
 		}
 	}
@@ -80,33 +66,33 @@ int main() {
 	//LoadDataType dType = BINARY_DATA;
 	//Storage_Flags flags = { false, false };
 	//manageFile(image, Length, Width, Height, pathPtr, operation, dType, flags);
-	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/Slices304.raw");
-	store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
+	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/patient1b.raw");
+	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
 	////Create artificial image
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
 	//		for (j = 0; j < Width; j++) {
-	//			if (sqrt((128 - i) * (128 - i) + (384 - j) * (384 - j) + (254 - k) * (254 - k)) < 50) {
+	//			if (sqrt((256 - i) * (256 - i) + (256 - j) * (256 - j) + (254 - k) * (254 - k)) < 250) {
 	//				imageData[k][x_new(i, j, Length)] = 1;
 	//			}
 	//		}
 	//	}
 	//}
-	//char pathSave[100];
-	//store3dRawData<dataType>(imageData, Length, Width, Height, "output/ballInRightCorner.raw");
+	//store3dRawData<dataType>(imageData, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/bigBall.raw");
 
 	////loop for erosion
-	//for (k = 1; k < 28; k++) {
-	//	erosion3D(imageData, Length, Width, Height, object, background);
-	//	sprintf_s(pathSave, "output/Erosion/erosion%d.raw", k);
-	//	store3dRawData<float>(imageData, Length, Width, Height, pathSave);
+	//char pathSave[200]; int n;
+	//for (n = 1; n < 40; n++) {
+	//	erosion3D(imageData, Length, Width, Height, 1, 0);
+	//	sprintf_s(pathSave, "C:/Users/Konan Allaly/Documents/Tests/output/Erosion/erosion0%d.raw", n);
+	//	store3dRawData<dataType>(imageData, Length, Width, Height, pathSave);
 	//}
 	////Loop for dilatation
-	//for (k = 1; k <= 28; k++) {
-	//	dilatation3D(imageData, Length, Width, Height, object, background);
-	//	sprintf_s(pathSave, "output/Dilatation/dilatation%d.raw", k);
-	//	store3dRawData<float>(imageData, Length, Width, Height, pathSave);
+	//for (n = 1; n <= 40; n++) {
+	//	dilatation3D(imageData, Length, Width, Height, 1, 0);
+	//	sprintf_s(pathSave, "C:/Users/Konan Allaly/Documents/Tests/output/Dilatation/dilatation0%d.raw", n);
+	//	store3dRawData<dataType>(imageData, Length, Width, Height, pathSave);
 	//}
 
 	////Copy of input image in container
@@ -185,7 +171,7 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
 
-	//Test of effect of rescalling
+	////Test of effect of rescalling
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/rescalled.raw");
@@ -216,7 +202,7 @@ int main() {
 	//	numberOfCells = numberOfCells + histogram[i];
 	//}
 
-	////Copmute probability
+	////Compute probability
 	//dataType* Proba = (dataType*)malloc(totalClass * sizeof(dataType));
 	//dataType sumProba = 0;
 	//for (i = 0; i < totalClass; i++) Proba[i] = 0;
@@ -264,16 +250,16 @@ int main() {
 	////Filtering by geodesic mean curvature filter
 	//const size_t maxNumberOfSolverIteration = 1000;
 	//dataType  coef = 0.01, eps2 = 1e-4;
-	//size_t numberOfTimeStep = 10;
+	//size_t numberOfTimeStep = 1;
 	//Filter_Parameters GMC_filterParameters;
 	//const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
 	//dataType timeStepSize = 0.002, h = 1, sigma = 0.01, K = 0.018, omega_c = 1.5, tolerance = 10;
-	//size_t p = 1, timeStepsNum = 10, maxNumberOftimeSteps = 100;
+	//size_t p = 1, timeStepsNum = 1, maxNumberOftimeSteps = 100;
 	//GMC_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//filterImage(ImageData, GMC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_GMC.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_GMC.raw");
 
 	////Filtering by mean curvature filter
 	//const size_t maxNumberOfSolverIteration = 1000;
@@ -316,10 +302,27 @@ int main() {
 	//filterImage(ImageData, NLHI_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/filtered_NLHI_10.raw");
-
-	////Thresholding
+	
+	//Thresholding
 	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, thresmin, thresmax, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/thres30.raw");
+	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1279, 1379, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/thres.raw");
+
+	////Loop for Erosion
+	//char pathSaveErosion[200]; int n;
+	//for (n = 1; n < 11; n++) {
+	//	erosion3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//	//sprintf_s(pathSaveErosion, "C:/Users/Konan Allaly/Documents/Tests/output/F_erosion0%d.raw", n);
+	//	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, pathSaveErosion);
+	//}
+
+	////Loop for Dilatation
+	//char pathSaveDilatation[200];
+	//for (n = 1; n < 6; n++) {
+	//	dilatation3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//	sprintf_s(pathSaveErosion, "C:/Users/Konan Allaly/Documents/Tests/output/F_dilatation0%d.raw", n);
+	//	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, pathSaveErosion);
+	//}
 
 	////find the Centroid
 	//dataType* cenTroid = (dataType*)malloc(3 * sizeof(dataType));
@@ -330,14 +333,28 @@ int main() {
 	//}
 	//printf("\n");
 
-	////erosion3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/Erosion30.raw");
-
 	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	////dilatation3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//dilatation3D(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/DilatationAfterErosion30.raw");
 
+	////Labelling
+	//int** labelArray = (int**)malloc(Height * sizeof(int*));
+	//bool** status = (bool**)malloc(Height * sizeof(bool*));
+	//for (k = 0; k < Height; k++) {
+	//	labelArray[k] = (int*)malloc(dim2D * sizeof(int));
+	//	status[k] = (bool*)malloc(dim2D * sizeof(bool));
+	//}
+	//if (labelArray == NULL || status == NULL) return false;
+
+	////initialization
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			labelArray[k][x_new(i, j, Length)] = 0;
+	//			status[k][x_new(i, j, Length)] = false;
+	//		}
+	//	}
+	//}
 	//double start = clock();
 	//labelling3D(ImageData.imageDataPtr, labelArray, status, Length, Width, Height, maxData);
 	//double finish = clock();
@@ -348,7 +365,7 @@ int main() {
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
 	//		for (j = 0; j < Width; j++) {
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == minData) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == maxData) {
 	//				numberOfRegionsCells++;
 	//			}
 	//		}
@@ -402,7 +419,7 @@ int main() {
 
 	////Statistics
 	//FILE* file;
-	//if (fopen_s(&file, "output/Statistics.txt", "w") != 0) {
+	//if (fopen_s(&file, "C:/Users/Konan Allaly/Documents/Tests/output/Statistics.txt", "w") != 0) {
 	//	printf("Enable to open");
 	//	return false;
 	//}
@@ -433,8 +450,8 @@ int main() {
 	//	}
 	//}
 
-	//Saving with template function
-	//store3dRawData<int>(labelArray, Length, Width, Height, "output/segmented.raw");
+	////Saving with template function
+	//store3dRawData<int>(labelArray, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/segmented.raw");
 
 	////Keep one region 
 	//for (k = 0; k < Height; k++) {
@@ -480,13 +497,13 @@ int main() {
 
 	//free memory
 	for (k = 0; k < Height; k++) {
-		free(image[k]);
-		free(labelArray[k]); free(imageData[k]); free(status[k]);
+		free(image[k]); free(imageData[k]);
 		free(ImageData.imageDataPtr[k]);
+		//free(labelArray[k]); free(status[k]);
 	}
-	free(imageData);
-	free(labelArray); free(image); free(status); //free(countingArray);
+	free(imageData); free(image);
 	free(ImageData.imageDataPtr);
+	//free(labelArray); free(status); free(countingArray);
 	//free(cenTroid);
 	//free(P); free(histogram);
 	//free(arraytest);
