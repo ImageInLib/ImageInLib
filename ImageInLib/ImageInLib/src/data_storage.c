@@ -79,6 +79,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
+	size_t i, j, k;
 	const size_t dimXY = xDim * yDim;
 	FILE *cfPtr;
 
@@ -101,21 +102,25 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 
 	if (flags.revertDataBytes)
 	{
-		for (size_t k = 0; k < zDim; k++)
+		for (k = 0; k < zDim; k++)
 		{
-			for (size_t j = 0; j < dimXY; j++)
+			for (j = 0; j < dimXY; j++)
 			{
-				double tmp = array3DPtr[k][j];
-				revertBytes(&tmp, sizeof(double));
-				fwrite(&tmp, sizeof(double), 1, cfPtr);
+				dataType tmp = array3DPtr[k][j];
+				revertBytes(&tmp, sizeof(dataType));
+				fwrite(&tmp, sizeof(dataType), dimXY, cfPtr);
 			}
 		}
 	}
 	else
 	{
-		for (size_t k = 0; k < zDim; k++)
+		for (k = 0; k < zDim; k++)
 		{
-			fwrite(array3DPtr[k], sizeof(double), dimXY, cfPtr);
+			for (i = 0; i < xDim; i++) {
+				for (j = 0; j < yDim; j++) {
+					fwrite(&array3DPtr[k][x_new(i, j, xDim)], sizeof(dataType), 1, cfPtr);
+				}
+			}
 		}
 	}
 

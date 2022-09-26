@@ -7,6 +7,7 @@
 #include "data_load.h"
 #include <stdio.h>
 #include <string.h>
+#include "endianity_bl.h"
 
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines)
@@ -100,7 +101,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 		return false;
 
 	size_t i, j, k, xd;
-	int value;
+	dataType value;
 	FILE *file;
 	char rmode[4];
 
@@ -133,16 +134,23 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 
 					if (dType == BINARY_DATA)
 					{
-						value = getc(file);
+						fread(&value, sizeof(dataType), 1, file);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
 					else if (dType == ASCII_DATA)
 					{
-						fscanf_s(file, "%d", &value);
+						fscanf_s(file, "%f", &value);
 						imageDataPtr[k][xd] = (dataType)value;
 					}
 				}
 			}
+		}
+	}
+
+	//switch the two first bytes
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength * imageWidth; i++) {
+			reverBytes(&imageDataPtr[k][i], sizeof(dataType));
 		}
 	}
 	fclose(file);
