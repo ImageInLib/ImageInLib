@@ -95,36 +95,6 @@ bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
 	}
 	copyDataToExtendedArea(imageDataPtr, extendedImage, zDim, xDim, yDim);
 	reflection3D(extendedImage, zDim_ext, xDim_ext, yDim_ext);
-	
-	////Copy data to extended area
-	//for (k = 0; k < zDim; k++) {
-	//	for (i = 0; i < xDim; i++) {
-	//		for (j = 0; j < yDim; j++) {
-	//			reflectedImage[k + 1][x_new(i + 1, j + 1, xDim)] = imageDataPtr[k][x_new(i, j, xDim)];
-	//		}
-	//	}
-	//}
-	//// Y reflection
-	//for (k = 0; k < zDim + 2; k++){
-	//	for (i = 0; i < xDim + 2; i++){
-	//		reflectedImage[k][x_new(i, 0, xDim + 2)] = reflectedImage[k][x_new(i, 1, xDim + 2)];
-	//		reflectedImage[k][x_new(i, yDim + 1, xDim + 2)] = reflectedImage[k][x_new(i, yDim, xDim + 2)];
-	//	}
-	//}
-	//// X Direction
-	//for (k = 0; k < zDim + 2; k++){
-	//	for (j = 0; j < yDim + 2; j++){
-	//		reflectedImage[k][x_new(0, j, xDim + 2)] = reflectedImage[k][x_new(1, j, xDim + 2)];
-	//		reflectedImage[k][x_new(xDim + 1, j, xDim + 2)] = reflectedImage[k][x_new(xDim, j, xDim + 2)];
-	//	}
-	//}
-	//// Z Reflection
-	//for (i = 0; i < xDim + 2; i++){
-	//	for (j = 0; j < yDim + 2; j++) {
-	//		reflectedImage[0][x_new(i, j, xDim + 2)] = reflectedImage[1][x_new(i, j, xDim + 2)];
-	//		reflectedImage[zDim + 1][x_new(i, j, xDim + 2)] = reflectedImage[zDim][x_new(i, j, xDim + 2)];
-	//	}
-	//}
 
 	//neigbors check
 	for (k = 1; k < zDim_ext - 1; k++) {
@@ -281,36 +251,6 @@ bool dilatation3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim,
 	}
 	copyDataToExtendedArea(imageDataPtr, extendedImage, zDim, xDim, yDim);
 	reflection3D(extendedImage, zDim_ext, xDim_ext, yDim_ext);
-
-	////Copy data to extended area
-	//for (k = 0; k < zDim; k++) {
-	//	for (i = 0; i < xDim; i++) {
-	//		for (j = 0; j < yDim; j++) {
-	//			reflectedImage[k + 1][x_new(i + 1, j + 1, xDim)] = imageDataPtr[k][x_new(i, j, xDim)];
-	//		}
-	//	}
-	//}
-	//// Y reflection
-	//for (k = 0; k < zDim + 2; k++) {
-	//	for (i = 0; i < xDim + 2; i++) {
-	//		reflectedImage[k][x_new(i, 0, xDim + 2)] = reflectedImage[k][x_new(i, 1, xDim + 2)];
-	//		reflectedImage[k][x_new(i, yDim + 1, xDim + 2)] = reflectedImage[k][x_new(i, yDim, xDim + 2)];
-	//	}
-	//}
-	//// X Direction
-	//for (k = 0; k < zDim + 2; k++) {
-	//	for (j = 0; j < yDim + 2; j++) {
-	//		reflectedImage[k][x_new(0, j, xDim + 2)] = reflectedImage[k][x_new(1, j, xDim + 2)];
-	//		reflectedImage[k][x_new(xDim + 1, j, xDim + 2)] = reflectedImage[k][x_new(xDim, j, xDim + 2)];
-	//	}
-	//}
-	//// Z Reflection
-	//for (i = 0; i < xDim + 2; i++) {
-	//	for (j = 0; j < yDim + 2; j++) {
-	//		reflectedImage[0][x_new(i, j, xDim + 2)] = reflectedImage[1][x_new(i, j, xDim + 2)];
-	//		reflectedImage[zDim + 1][x_new(i, j, xDim + 2)] = reflectedImage[zDim][x_new(i, j, xDim + 2)];
-	//	}
-	//}
 
 	//neigbors check
 	for (k = 1; k < zDim_ext - 1; k++) {
