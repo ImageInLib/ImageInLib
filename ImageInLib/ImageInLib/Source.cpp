@@ -12,6 +12,7 @@
 
 #include "common_vtk.h"
 #include "file.h"
+#include "common_functions.h"
 #include "../src/data_initialization.h"
 #include "noiseGeneration.h"
 #include "filtering.h"
@@ -61,11 +62,11 @@ int main() {
 	}
 
 	//Loading
-	//unsigned char pathPtr[] = "data/3D/patient1b.raw";
-	//OperationType operation = LOAD_DATA_RAW;
-	//LoadDataType dType = BINARY_DATA;
-	//Storage_Flags flags = { false, false };
-	//manageFile(image, Length, Width, Height, pathPtr, operation, dType, flags);
+	unsigned char pathPtr[] = "data/3D/patient1b.raw";
+	OperationType operation = LOAD_DATA_RAW;
+	LoadDataType dType = BINARY_DATA;
+	Storage_Flags flags = { false, false };
+	manageFile(imageData, Length, Width, Height, pathPtr, operation, dType, flags);
 	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/patient1b.raw");
 	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
@@ -171,10 +172,10 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
 
-	////Test of effect of rescalling
-	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/rescalled.raw");
+	//Test of effect of rescalling
+	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/rescalled.raw");
 
 	////Compute and save histogram
 	//short totalClass = (short)(maxData - minData + 1);

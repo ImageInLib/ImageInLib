@@ -21,8 +21,7 @@ extern "C" {
 	/*Converts to doulbe*/
 	void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height);
 
-	// Rescale values in new range
-	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew);
+	
 
 #ifdef __cplusplus
 }
