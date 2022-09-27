@@ -6,11 +6,12 @@ extern "C" {
 #include "common_functions.h"
 #include <stdbool.h>
 
-	//Erosion ---> Shrink objects and remove boundaries pixels
-	bool erosion2D(int** imageDataPtr, const size_t xDim, const size_t yDim, int background, int object);
-
+	//Erosion removes floating pixels and thin lines so that only substantive objects remain
 	bool erosion3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
 
+	bool erosion3dSixNeigbours(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
+
+	//Dilation makes objects more visible and fills in small holes in objects.
 	bool dilatation3D(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
 
 

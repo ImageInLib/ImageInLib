@@ -42,6 +42,7 @@ int main() {
 	const size_t Width = 512;
 	const size_t Height = 508;
 	const size_t dim2D = Length * Width;
+	const size_t length_ext = Length + 2, width_ext = Width + 2, height_ext = Height + 2;
 
 	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	short** image = (short**)malloc(Height * sizeof(short*));
@@ -62,11 +63,11 @@ int main() {
 	}
 
 	//Loading
-	unsigned char pathPtr[] = "data/3D/patient1b.raw";
-	OperationType operation = LOAD_DATA_RAW;
-	LoadDataType dType = BINARY_DATA;
-	Storage_Flags flags = { false, false };
-	manageFile(imageData, Length, Width, Height, pathPtr, operation, dType, flags);
+	//unsigned char pathPtr[] = "data/3D/patient1b.raw";
+	//OperationType operation = LOAD_DATA_RAW;
+	//LoadDataType dType = BINARY_DATA;
+	//Storage_Flags flags = { false, false };
+	//manageFile(imageData, Length, Width, Height, pathPtr, operation, dType, flags);
 	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/patient1b.raw");
 	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
@@ -84,59 +85,64 @@ int main() {
 
 	////loop for erosion
 	//char pathSave[200]; int n;
-	//for (n = 1; n < 40; n++) {
-	//	erosion3D(imageData, Length, Width, Height, 1, 0);
+	//for (n = 1; n < 20; n++) {
+	//	erosion3dSixNeigbours(imageData, Length, Width, Height, 1, 0);
 	//	sprintf_s(pathSave, "C:/Users/Konan Allaly/Documents/Tests/output/Erosion/erosion0%d.raw", n);
 	//	store3dRawData<dataType>(imageData, Length, Width, Height, pathSave);
 	//}
 	////Loop for dilatation
-	//for (n = 1; n <= 40; n++) {
+	//for (n = 1; n <= 20; n++) {
 	//	dilatation3D(imageData, Length, Width, Height, 1, 0);
 	//	sprintf_s(pathSave, "C:/Users/Konan Allaly/Documents/Tests/output/Dilatation/dilatation0%d.raw", n);
 	//	store3dRawData<dataType>(imageData, Length, Width, Height, pathSave);
 	//}
 
-	////Copy of input image in container
+	//Copy of input image in container
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+			}
+		}
+	}
+
+	dataType** extenData = (dataType**)malloc( height_ext * sizeof(dataType*));
+	for(k = 0; k < height_ext; k++) extenData[k] = (dataType*)malloc((height_ext * width_ext) * sizeof(dataType));
+	copyDataToExtendedArea(imageData, extenData, Height, Length, Width);
+	store3dRawData<dataType>(extenData, length_ext, width_ext, height_ext, "C:/Users/Konan Allaly/Documents/Tests/output/extended.raw");
+
+	////Preparing Image container for float format
+	//Image_Data ImageData;
+	//ImageData.height = Height;
+	//ImageData.length = Length;
+	//ImageData.width = Width;
+	//ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
+	//for (k = 0;k < Height;k++) {
+	//	ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (ImageData.imageDataPtr == NULL) return false;
+
+	////copy input image in container
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
 	//		for (j = 0; j < Width; j++) {
-	//			imageData[k][x_new(i, j, Length)] = image[k][x_new(i, j, Length)];
+	//			ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
 	//		}
 	//	}
 	//}
 
-	//Preparing Image container for float format
-	Image_Data ImageData;
-	ImageData.height = Height;
-	ImageData.length = Length;
-	ImageData.width = Width;
-	ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
-	for (k = 0;k < Height;k++) {
-		ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-	}
-	if (ImageData.imageDataPtr == NULL) return false;
-
-	//copy input image in container
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
-			}
-		}
-	}
-
-	//Find min and max values
-	dataType minData = 10000, maxData = -10000;
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < minData)
-					minData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > maxData)
-					maxData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
-			}
-		}
-	}
+	////Find min and max values
+	//dataType minData = 10000, maxData = -10000;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < minData)
+	//				minData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > maxData)
+	//				maxData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+	//		}
+	//	}
+	//}
 
 	/*size_t x = Length / 2, y = Width / 2;
 	ImageData.imageDataPtr[0][x_new(x - 1, y - 1, Length)] = 0;
@@ -172,10 +178,10 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "output/noisyImage2D.raw");
 
-	//Test of effect of rescalling
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/rescalled.raw");
+	////Test of effect of rescalling
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/rescalled.raw");
 
 	////Compute and save histogram
 	//short totalClass = (short)(maxData - minData + 1);
@@ -309,6 +315,8 @@ int main() {
 	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, 1279, 1379, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/thres.raw");
 
+	//erosion3dSixNeigbours(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/erod.raw");
 	////Loop for Erosion
 	//char pathSaveErosion[200]; int n;
 	//for (n = 1; n < 11; n++) {
@@ -499,15 +507,18 @@ int main() {
 	//free memory
 	for (k = 0; k < Height; k++) {
 		free(image[k]); free(imageData[k]);
-		free(ImageData.imageDataPtr[k]);
+		//free(ImageData.imageDataPtr[k]);
 		//free(labelArray[k]); free(status[k]);
 	}
 	free(imageData); free(image);
-	free(ImageData.imageDataPtr);
+	//free(ImageData.imageDataPtr);
 	//free(labelArray); free(status); free(countingArray);
 	//free(cenTroid);
 	//free(P); free(histogram);
 	//free(arraytest);
+
+	for (k = 0; k < height_ext; k++) free(extenData[k]);
+	free(extenData);
 
 	return EXIT_SUCCESS;
 }
