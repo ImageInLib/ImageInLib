@@ -6,13 +6,14 @@ extern "C" {
 #pragma once
 	typedef struct
 	{
-		dataType timeStepSize;
-		dataType h;
-		dataType sigma;
-		dataType edge_detector_coefficient;
-		dataType omega_c;
-		dataType tolerance;
-		dataType eps2;
+		size_t timeStepSize;
+		double h;
+		double sigma;
+		double edge_detector_coefficient;
+		double omega_c;
+		double tolerance;
+		double eps2;
+		dataType coef;
 		size_t p;
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
