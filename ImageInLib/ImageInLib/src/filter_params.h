@@ -16,7 +16,6 @@ extern "C" {
 		size_t p;
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
-		size_t maxNumberOftimeSteps;
 	} Filter_Parameters;
 	// Parameters used in filtering
 
