@@ -37,38 +37,37 @@
 
 int main() {
 
+	
 	size_t i, j, k, xd;
 	const size_t Length = 512;
 	const size_t Width = 512;
-	const size_t Height = 508;
+	const size_t Height = 1;
 	const size_t dim2D = Length * Width;
 
-	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	short** image = (short**)malloc(Height * sizeof(short*));
 	for (k = 0; k < Height; k++) {
-		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		image[k] = (short*)malloc(dim2D * sizeof(short));
 	}
-	if (imageData == NULL || image == NULL) return false;
+	if (image == NULL) return false;
 
 	//initialization
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				imageData[k][x_new(i, j, Length)] = 0;
 				image[k][x_new(i, j, Length)] = 0;
 			}
 		}
 	}
 
-	////Loading
+	//Loading
 	//unsigned char pathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/input/patient1b.raw";
 	//OperationType operation = LOAD_DATA_RAW;
 	//LoadDataType dType = BINARY_DATA;
 	//Storage_Flags flags = { false, false };
 	//manageFile(imageData, Length, Width, Height, pathPtr, operation, dType, flags);
-	//load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/Slices304.raw");
-	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/patient1b.raw");
+	//load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/lena_gray.raw");
+	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/Birds.raw");
+	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/Slices304.raw");
 	//store3dRawData<dataType>(imageData, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
 	////Create artificial image
@@ -97,15 +96,6 @@ int main() {
 	//	store3dRawData<dataType>(imageData, Length, Width, Height, pathSave);
 	//}
 
-	////Copy of input image in container
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			imageData[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
-	//		}
-	//	}
-	//}
-
 	//Preparing Image container for float format
 	Image_Data ImageData;
 	ImageData.height = Height;
@@ -117,24 +107,39 @@ int main() {
 	}
 	if (ImageData.imageDataPtr == NULL) return false;
 
+	//dataType** Data = (dataType**)malloc(Length * sizeof(dataType*));
+	//for (i = 0; i < Length; i++) {
+	//	Data[i] = (dataType*)malloc(Width * sizeof(dataType));
+	//}
+	//for (i = 0; i < Length; i++) {
+	//	for (j = 0; j < Width; j++) {
+	//		Data[i][j] = 0;
+	//	}
+	//}
+	////load2dPGM(Data, Length, Width, "C:/Users/Konan Allaly/Documents/Tests/input/kvety.pgm");
+	////save2dPGM(Data, Length, Width, "C:/Users/Konan Allaly/Documents/Tests/output/loadedKV.pgm");
+
 	//copy input image in container
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
 				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+				//ImageData.imageDataPtr[k][x_new(i, j, Length)] = Data[i][j];
+				//image[k][x_new(i, j, Length)] = (short)Data[i][j];
 			}
 		}
 	}
+	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/bigBall.raw");
 
 	//Find min and max values
 	dataType minData = 10000, maxData = -10000;
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < minData)
-					minData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > maxData)
-					maxData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+				if (image[k][x_new(i, j, Length)] < minData)
+					minData = image[k][x_new(i, j, Length)];
+				if (image[k][x_new(i, j, Length)] > maxData)
+					maxData = image[k][x_new(i, j, Length)];
 			}
 		}
 	}
@@ -184,7 +189,7 @@ int main() {
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/rescalled.raw");
 
-	//Compute and save histogram
+	//Compute histogram
 	size_t totalClass = (size_t)(maxData - minData + 1);
 	size_t* histogram = (size_t*)malloc(totalClass * sizeof(size_t));
 	for (i = 0; i < totalClass; i++) histogram[i] = 0;
@@ -220,14 +225,16 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/bimodalVersion.raw");
 	
+	//Compute probability
 	size_t numberOfCells = 0;
 	for (i = 0; i < totalClass; i++) {
 		numberOfCells = numberOfCells + histogram[i];
 	}
-	//Compute probability
+
 	dataType* Proba = (dataType*)malloc(totalClass * sizeof(dataType));
-	dataType sumProba = 0;
 	for (i = 0; i < totalClass; i++) Proba[i] = 0;
+
+	dataType sumProba = 0;
 	for (i = 0; i < totalClass; i++) {
 		Proba[i] = (dataType)histogram[i]/numberOfCells;
 		sumProba = sumProba + Proba[i];
@@ -291,16 +298,16 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < optimalThresholdValue) {
+				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > optimalThresholdValue) {
 					ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
 				}
-				/*if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 900 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 950) {
-					ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
-				}*/
+				else {
+					ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+				}
 			}
 		}
 	}
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/P1thresWithOtsu.raw");
+	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/OTSUKV.raw");
 
 
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
@@ -575,20 +582,20 @@ int main() {
 	//dilatation3D(imageData, Length, Width, Height, 5185, background);
 	//store3dRawData<dataType>(imageData, Length, Width, Height, "output/region5185WithDilatation.raw");
 
-	//free memory
-	for (k = 0; k < Height; k++) {
-		free(image[k]); free(imageData[k]);
-		free(ImageData.imageDataPtr[k]);
-		//free(labelArray[k]); free(status[k]);
-	}
-	free(imageData); free(image); 
-	free(ImageData.imageDataPtr);
+	////free memory
+	//for (k = 0; k < Height; k++) {
+	//	free(image[k]); 
+	//	free(Data[i]);
+	//	free(ImageData.imageDataPtr[k]);
+	//	//free(labelArray[k]); free(status[k]);
+	//}
+	free(image); free(ImageData.imageDataPtr); 
+	//free(Data);
+
+	free(Proba); free(histogram); free(interClassVariance);
 	//free(specialHistogram);
 	//free(labelArray); free(status); free(countingArray);
 	//free(cenTroid);
-	//free(P); free(histogram);
-	//free(arraytest);
-	//free(Proba); free(histogram);
-
+	
 	return EXIT_SUCCESS;
 }

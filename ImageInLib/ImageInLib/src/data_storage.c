@@ -294,12 +294,12 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 
 //
 //Store 2D (.pgm) image ascii
-bool save2dPGM(int** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+bool save2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
 {
 	if (imageDataPtr == NULL)
 		return false;
 
-	int i, j;
+	size_t i, j;
 
 	FILE* file;
 	if (fopen_s(&file, pathPtr, "w") != 0) {
@@ -312,7 +312,7 @@ bool save2dPGM(int** imageDataPtr, const size_t xDim, const size_t yDim, const c
 
 	for (i = 0; i < xDim; i++) {
 		for (j = 0; j < yDim; j++) {
-			fprintf(file, "%d ", imageDataPtr[i][j]);
+			fprintf(file, "%d ", (int)imageDataPtr[i][j]);
 		}
 	}
 	fclose(file);
