@@ -13,7 +13,7 @@ extern "C" {
 		double omega_c;
 		double tolerance;
 		double eps2;
-		dataType coef;
+		double coef;
 		size_t p;
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
