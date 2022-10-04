@@ -23,7 +23,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 
 	size_t k, i, j;
 	dataType hh = filterParameters.h * filterParameters.h;
-	dataType tau = 600 * filterParameters.timeStepSize;
+	dataType tau = filterParameters.timeStepSize;
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
 	dataType error, gauss_seidel;

@@ -6,7 +6,7 @@ extern "C" {
 #pragma once
 	typedef struct
 	{
-		size_t timeStepSize;
+		double timeStepSize;
 		double h;
 		double sigma;
 		double edge_detector_coefficient;

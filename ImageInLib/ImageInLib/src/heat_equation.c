@@ -92,19 +92,21 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	size_t width_ext = width + 2;// Create temp Image Data holder for Previous time step data
 	dataType ** tempPtr = (dataType **)malloc(sizeof(dataType *) * (height_ext));
 	dataType ** currentPtr = (dataType **)malloc(sizeof(dataType *) * (height_ext)); // holds current
+	size_t k_ext, j_ext, i_ext, x_ext, x;
+
 	for (i = 0; i < ((height_ext)); i++)
 	{
 		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 	}
+	// Preparation
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, tempPtr, height, length, width);
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);
 	// Perform Reflection of the tempPtr
 	reflection3D(tempPtr, height_ext, length_ext, width_ext);
 	reflection3D(currentPtr, height_ext, length_ext, width_ext);
-	//reflection3DB(tempPtr, height, length, width,p);
+	
 	// The Gauss-Seidel Implicit Scheme
-	size_t k_ext, j_ext, i_ext, x_ext, x;
 	for (size_t t = 0; t < implicitParameters.timeStepsNum; t++) {
 		z = 0; // Steps counter
 		do
@@ -154,22 +156,13 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 
 		printf("The number of iterations is %zd for timeStep %zd\n", z, t);
 		printf("Error is %e for timeStep %zd\n", error, t);
-	}
 
-	// Copy back to original after filter
-	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-	{
-		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-		{
-			for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-			{
-				// 2D to 1D representation for i, j
-				x_ext = x_new(i_ext, j_ext, length_ext);
-				x = x_new(i, j, length);
-				toImplicitImage.imageDataPtr[k][x] = currentPtr[k_ext][x_ext];
-			}
-		}
+		// Copy current to tempPtr before next time step
+		copyDataToAnotherArray(currentPtr, tempPtr, height_ext, length_ext, width_ext);
 	}
+	// Copy back to original after filter
+	copyDataToReducedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);
+
 	// Freeing Memory after use
 	for (i = 0; i < (height_ext); i++)
 	{
