@@ -103,108 +103,105 @@ int main() {
 
 	//findClipBoxSingle(ImageData.imageDataPtr, Height, Length, Width);
 
-	//Special histograms
-	dataType* HistoSliceBySlice = (dataType*)malloc(Height * sizeof(dataType));
-	for (k = 0; k < Height; k++) HistoSliceBySlice[k] = 0;
-	dataType nbElement;
-	for (k = 0; k < Height; k++) {
-		nbElement = 0;
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
-					nbElement++;
-				}
-			}
-		}
-		HistoSliceBySlice[k] = nbElement;
-	}
+	////Special histograms
+	//dataType* HistoSliceBySlice = (dataType*)malloc(Height * sizeof(dataType));
+	//for (k = 0; k < Height; k++) HistoSliceBySlice[k] = 0;
+	//dataType nbElement;
+	//for (k = 0; k < Height; k++) {
+	//	nbElement = 0;
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
+	//				nbElement++;
+	//			}
+	//		}
+	//	}
+	//	HistoSliceBySlice[k] = nbElement;
+	//}
 
-	dataType* HistoRowByRow = (dataType*)malloc(Length * sizeof(dataType));
-	for (i = 0; i < Length; i++) HistoRowByRow[i] = 0;
-	for (i = 0; i < Length; i++) {
-		nbElement = 0;
-		for (k = 0; k < Height; k++) {
-			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
-					nbElement++;
-				}
-			}
-		}
-		HistoRowByRow[i] = nbElement;
-	}
+	//dataType* HistoRowByRow = (dataType*)malloc(Length * sizeof(dataType));
+	//for (i = 0; i < Length; i++) HistoRowByRow[i] = 0;
+	//for (i = 0; i < Length; i++) {
+	//	nbElement = 0;
+	//	for (k = 0; k < Height; k++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
+	//				nbElement++;
+	//			}
+	//		}
+	//	}
+	//	HistoRowByRow[i] = nbElement;
+	//}
 
-	dataType* HistoColumnByColumn = (dataType*)malloc(Length * sizeof(dataType));
-	for (i = 0; i < Length; i++) HistoColumnByColumn[i] = 0;
-	for (j = 0; j < Width; j++) {
-		nbElement = 0;
-		for (k = 0; k < Height; k++) {
-			for (i = 0; i < Length; i++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
-					nbElement++;
-				}
-			}
-		}
-		HistoColumnByColumn[j] = nbElement;
-	}
+	//dataType* HistoColumnByColumn = (dataType*)malloc(Length * sizeof(dataType));
+	//for (i = 0; i < Length; i++) HistoColumnByColumn[i] = 0;
+	//for (j = 0; j < Width; j++) {
+	//	nbElement = 0;
+	//	for (k = 0; k < Height; k++) {
+	//		for (i = 0; i < Length; i++) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= thresmin && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= thresmax) {
+	//				nbElement++;
+	//			}
+	//		}
+	//	}
+	//	HistoColumnByColumn[j] = nbElement;
+	//}
 
-	dataType maxHeight = 0, maxLenght = 0, maxWidth = 0;
-	size_t  k_peak = 0, i_peak = 0, j_peak = 0;
+	//dataType maxHeight = 0, maxLenght = 0, maxWidth = 0;
+	//size_t  k_peak = 0, i_peak = 0, j_peak = 0;
 
-	for (k = 0; k < Height; k++) {
-		if (HistoSliceBySlice[k] > maxHeight) {
-			maxHeight = HistoSliceBySlice[k];
-			k_peak = k;
-		}
-	}
-	for (i = 0; i < Length; i++) {
-		if (HistoRowByRow[i] > maxLenght) {
-			maxLenght = HistoRowByRow[i];
-			i_peak = i;
-		}
-	}
-	for (j = 0; j < Width; j++) {
-		if (HistoColumnByColumn[j] > maxWidth) {
-			maxWidth = HistoColumnByColumn[j];
-			j_peak = j;
-		}
-	}
+	//for (k = 0; k < Height; k++) {
+	//	if (HistoSliceBySlice[k] > maxHeight) {
+	//		maxHeight = HistoSliceBySlice[k];
+	//		k_peak = k;
+	//	}
+	//}
+	//for (i = 0; i < Length; i++) {
+	//	if (HistoRowByRow[i] > maxLenght) {
+	//		maxLenght = HistoRowByRow[i];
+	//		i_peak = i;
+	//	}
+	//}
+	//for (j = 0; j < Width; j++) {
+	//	if (HistoColumnByColumn[j] > maxWidth) {
+	//		maxWidth = HistoColumnByColumn[j];
+	//		j_peak = j;
+	//	}
+	//}
+	//const size_t height_new = 301, length_new = 301, width_new = 301;
 
-	const size_t height_new = 301, length_new = 301, width_new = 301;
+	//dataType** croppedImage = (dataType**)malloc(height_new * sizeof(dataType*));
+	//dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
+	//for (k = 0; k < height_new; k++) {
+	//	croppedImage[k] = (dataType*)malloc(length_new * width_new * sizeof(dataType));
+	//	distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (croppedImage == NULL || distanceMap == NULL) return false;
+	//initialize3dArrayD(croppedImage, length_new, width_new, height_new, 0);
+	//initialize3dArrayD(distanceMap, length_new, width_new, height_new, 0);
 
-	dataType** croppedImage = (dataType**)malloc(height_new * sizeof(dataType*));
-	dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
-	for (k = 0; k < height_new; k++) {
-		croppedImage[k] = (dataType*)malloc(length_new * width_new * sizeof(dataType));
-		distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-	}
-	if (croppedImage == NULL || distanceMap == NULL) return false;
+	//size_t i_n = i_peak - 150, j_n = j_peak - 150, k_n = k_peak - 150;
+	//for (k = 0; k < height_new; k++) {
+	//	for (i = 0; i < length_new; i++) {
+	//		for (j = 0; j < width_new; j++) {
+	//			croppedImage[k][x_new(i, j, length_new)] = ImageData.imageDataPtr[k + k_n][x_new(i + i_n, j + j_n, Length)];
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(croppedImage, length_new, width_new, height_new, "C:/Users/Konan Allaly/Documents/Tests/output/cropped.raw");
 
-	initialize3dArrayD(croppedImage, length_new, width_new, height_new, 0);
-	initialize3dArrayD(distanceMap, length_new, width_new, height_new, 0);
-
-	size_t i_n = i_peak - 150, j_n = j_peak - 150, k_n = k_peak - 150;
-
-	for (k = 0; k < height_new; k++) {
-		for (i = 0; i < length_new; i++) {
-			for (j = 0; j < width_new; j++) {
-				croppedImage[k][x_new(i, j, length_new)] = ImageData.imageDataPtr[k + k_n][x_new(i + i_n, j + j_n, Length)];
-			}
-		}
-	}
-	store3dRawData<dataType>(croppedImage, length_new, width_new, height_new, "C:/Users/Konan Allaly/Documents/Tests/output/cropped.raw");
-
-	//Find min and max values
-	dataType minData = 10000, maxData = -10000;
-	for (k = 0; k < height_new; k++) {
-		for (i = 0; i < length_new; i++) {
-			for (j = 0; j < width_new; j++) {
-				if (croppedImage[k][x_new(i, j, length_new)] < minData)
-					minData = croppedImage[k][x_new(i, j, length_new)];
-				if (croppedImage[k][x_new(i, j, length_new)] > maxData)
-					maxData = croppedImage[k][x_new(i, j, length_new)];
-			}
-		}
-	}
+	////Find min and max values
+	//dataType minData = 10000, maxData = -10000;
+	//for (k = 0; k < height_new; k++) {
+	//	for (i = 0; i < length_new; i++) {
+	//		for (j = 0; j < width_new; j++) {
+	//			if (croppedImage[k][x_new(i, j, length_new)] < minData)
+	//				minData = croppedImage[k][x_new(i, j, length_new)];
+	//			if (croppedImage[k][x_new(i, j, length_new)] > maxData)
+	//				maxData = croppedImage[k][x_new(i, j, length_new)];
+	//		}
+	//	}
+	//}
 
 	////Save Special Histogram
 	//FILE* SpecialHisto;
@@ -498,10 +495,10 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/Erosion20Times.raw");
 
-	thresholding3dFunctionN(croppedImage, length_new, width_new, height_new, thresmin, thresmax, minData, maxData);
-	bruteForceFunction_3D(distanceMap, croppedImage, length_new, width_new, height_new, 10000000, minData);
+	//thresholding3dFunctionN(croppedImage, length_new, width_new, height_new, thresmin, thresmax, minData, maxData);
+	//bruteForceFunction_3D(distanceMap, croppedImage, length_new, width_new, height_new, 10000000, minData);
 	//rouyTourinFunction_3D(distanceMap, ImageData.imageDataPtr, 0.5, Length, Width, Height, 0.4, 1.0);
-	store3dRawData<dataType>(distanceMap, length_new, width_new, height_new, "C:/Users/Konan Allaly/Documents/Tests/output/distanceCropped.raw");
+	//store3dRawData<dataType>(distanceMap, length_new, width_new, height_new, "C:/Users/Konan Allaly/Documents/Tests/output/distanceCropped.raw");
 
 	//char pathSave[300]; dataType dist_max = 30;
 	//do {
@@ -726,12 +723,12 @@ int main() {
 		//free(labelArray[k]); free(status[k]);
 	}
 	free(image); free(ImageData.imageDataPtr); free(inputImage);
-	free(HistoSliceBySlice); free(HistoRowByRow); free(HistoColumnByColumn);
+	//free(HistoSliceBySlice); free(HistoRowByRow); free(HistoColumnByColumn);
 
-	for (k = 0; k < height_new; k++) {
-		free(distanceMap[k]); free(croppedImage);
-	}
-	free(croppedImage); free(distanceMap);
+	//for (k = 0; k < height_new; k++) {
+	//	free(distanceMap[k]); free(croppedImage);
+	//}
+	//free(croppedImage); free(distanceMap);
 
 	//free(Proba); free(histogram); free(interClassVariance);
 	//free(labelArray); free(status); free(countingArray);
