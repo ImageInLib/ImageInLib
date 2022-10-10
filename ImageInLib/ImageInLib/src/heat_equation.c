@@ -78,7 +78,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 
 void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters)
 {
-	size_t k, i, j, z, steps = implicitParameters.timeStepsNum, p = implicitParameters.p;
+	size_t k, i, j, z, steps = implicitParameters.maxNumberOfSolverIteration, p = implicitParameters.p;
 	dataType hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;
 	dataType coeff = implicitParameters.timeStepSize / hhh;
 	// Error value used to check iteration
@@ -92,84 +92,79 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	size_t width_ext = width + 2;// Create temp Image Data holder for Previous time step data
 	dataType ** tempPtr = (dataType **)malloc(sizeof(dataType *) * (height_ext));
 	dataType ** currentPtr = (dataType **)malloc(sizeof(dataType *) * (height_ext)); // holds current
+	size_t k_ext, j_ext, i_ext, x_ext, x;
+
 	for (i = 0; i < ((height_ext)); i++)
 	{
 		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 	}
+	// Preparation
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, tempPtr, height, length, width);
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);
 	// Perform Reflection of the tempPtr
 	reflection3D(tempPtr, height_ext, length_ext, width_ext);
 	reflection3D(currentPtr, height_ext, length_ext, width_ext);
-	//reflection3DB(tempPtr, height, length, width,p);
+	
 	// The Gauss-Seidel Implicit Scheme
-	size_t k_ext, j_ext, i_ext, x_ext, x;
-	z = 0; // Steps counter
-	do
-	{
-		z = z + 1;
-		// Gauss-Seidel Method
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++)
+	for (size_t t = 0; t < implicitParameters.timeStepsNum; t++) {
+		z = 0; // Steps counter
+		do
 		{
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++)
+			z = z + 1;
+			// Gauss-Seidel Method
+			for (k = 0, k_ext = 1; k < height; k++, k_ext++)
 			{
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++)
+				for (i = 0, i_ext = 1; i < length; i++, i_ext++)
 				{
-					// 2D to 1D representation for i, j
-					x_ext = x_new(i_ext, j_ext, length_ext);
-					// Begin Gauss-Seidel Formula Evaluation
-					sor = (dataType)((tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
-						+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)]
-						+ currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
-						+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
-						+ currentPtr[k_ext + 1][x_ext] + currentPtr[k_ext - 1][x_ext])) / (1 + 6.0 * coeff));
-					// Gauss-Seidel
-					currentPtr[k_ext][x_ext] = currentPtr[k_ext][x_ext] + implicitParameters.omega_c*(sor - currentPtr[k_ext][x_ext]);
+					for (j = 0, j_ext = 1; j < width; j++, j_ext++)
+					{
+						// 2D to 1D representation for i, j
+						x_ext = x_new(i_ext, j_ext, length_ext);
+						// Begin Gauss-Seidel Formula Evaluation
+						sor = (dataType)((tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
+							+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)]
+							+ currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
+							+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
+							+ currentPtr[k_ext + 1][x_ext] + currentPtr[k_ext - 1][x_ext])) / (1 + 6.0 * coeff));
+						// Gauss-Seidel
+						currentPtr[k_ext][x_ext] = currentPtr[k_ext][x_ext] + implicitParameters.omega_c * (sor - currentPtr[k_ext][x_ext]);
+					}
 				}
 			}
-		}
-		// Error Evaluation
-		error = 0.0; // Initialize
-		//reflection3DB(tempPtr, height, length, width, p);
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-		{
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++)
+			// Error Evaluation
+			error = 0.0; // Initialize
+			//reflection3DB(tempPtr, height, length, width, p);
+			for (k = 0, k_ext = 1; k < height; k++, k_ext++)
 			{
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++)
+				for (i = 0, i_ext = 1; i < length; i++, i_ext++)
 				{
-					// 2D to 1D representation for i, j
-					x_ext = x_new(i_ext, j_ext, length_ext);
-					// Begin Error Calculation
-					error += (dataType)pow(currentPtr[k_ext][x_ext] * (1 + 6.0*coeff)
-						- coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
-							+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)] + currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
-							+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)] + currentPtr[k_ext + 1][x_ext]
-							+ currentPtr[k_ext - 1][x_ext]) - tempPtr[k_ext][x_ext], 2);
+					for (j = 0, j_ext = 1; j < width; j++, j_ext++)
+					{
+						// 2D to 1D representation for i, j
+						x_ext = x_new(i_ext, j_ext, length_ext);
+						// Begin Error Calculation
+						error += (dataType)pow(currentPtr[k_ext][x_ext] * (1 + 6.0 * coeff)
+							- coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
+								+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)] + currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
+								+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)] + currentPtr[k_ext + 1][x_ext]
+								+ currentPtr[k_ext - 1][x_ext]) - tempPtr[k_ext][x_ext], 2);
+					}
 				}
 			}
-		}
-	} while (error > implicitParameters.tolerance && z < steps);
+		} while (error > implicitParameters.tolerance && z < steps);
 
-	printf("The number of iterations is %zd\n", z);
-	printf("Error is %e\n", error);
+		printf("The number of iterations is %zd for timeStep %zd\n", z, t);
+		printf("Error is %e for timeStep %zd\n", error, t);
 
-	// Copy back to original after filter
-	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-	{
-		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-		{
-			for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-			{
-				// 2D to 1D representation for i, j
-				x_ext = x_new(i_ext, j_ext, length_ext);
-				x = x_new(i, j, length);
-				toImplicitImage.imageDataPtr[k][x] = currentPtr[k_ext][x_ext];
-			}
-		}
+		// Copy current to tempPtr before next time step
+		copyDataToAnotherArray(currentPtr, tempPtr, height_ext, length_ext, width_ext);
 	}
+	// Copy back to original after filter
+	copyDataToReducedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);
+
 	// Freeing Memory after use
-	for (i = 0; i < ((height + 2)); i++)
+	for (i = 0; i < (height_ext); i++)
 	{
 		free(tempPtr[i]);
 		free(currentPtr[i]);
