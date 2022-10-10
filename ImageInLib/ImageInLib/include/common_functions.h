@@ -45,6 +45,15 @@ extern "C" {
 
 		dataType ** imageDataPtr; // Image Data Containers
 	} Image_Data;
+
+	// Generate Random Points
+	typedef struct {
+		size_t k, xd, p;
+	}Random3dPoints;
+
+	typedef struct {
+		size_t xd, p;
+	}Random2dPoints;
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
