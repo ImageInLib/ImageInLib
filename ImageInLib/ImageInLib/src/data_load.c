@@ -147,12 +147,15 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 		}
 	}
 
-	//switch the two first bytes
-	for (k = 0; k < imageHeight; k++) {
-		for (i = 0; i < imageLength * imageWidth; i++) {
-			reverBytes(&imageDataPtr[k][i], sizeof(dataType));
+	//switch the two first bytes if the computer is little endian
+	if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
+		for (k = 0; k < imageHeight; k++) {
+			for (i = 0; i < imageLength * imageWidth; i++) {
+				reverBytes(&imageDataPtr[k][i], sizeof(dataType));
+			}
 		}
 	}
+	
 	fclose(file);
 	return true;
 }
