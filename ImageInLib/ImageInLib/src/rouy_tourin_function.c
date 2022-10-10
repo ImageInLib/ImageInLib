@@ -32,7 +32,7 @@ bool rouyTourinFunction_3D(dataType ** distance3DPtr, dataType ** image3DPtr, da
 	const size_t noIteration = (size_t)(sqrt((double)(xDim * xDim + yDim * yDim + zDim * zDim)) / tau);
 
 	const size_t dim2D_ext = rowDim_ext * columnDim_ext;
-	dataType tauu = tau / h, mass = 1.0;
+	dataType tauu = tau / h, mass = 10.0;
 	dataType current_dist;
 
 	dataType ** zPtrtemp = (dataType **)malloc(sizeof(dataType*) * sliceDim_ext);

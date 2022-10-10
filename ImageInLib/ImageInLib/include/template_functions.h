@@ -78,13 +78,29 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t imageLength, const siz
 		}
 	}
 	//----
+	//Endianness check
+
+	//if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
+	//	printf("little endian before swaping \n");
+	//}
+	//else {
+	//	printf("big endian before swaping \n");
+	//}
 
 	//revert byte
-	for (k = 0; k < imageHeight; k++){
-		for (i = 0; i < imageLength * imageWidth; i++){
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength * imageWidth; i++) {
 			revertBytes(&imageDataPtr[k][i], sizeof(T));
 		}
 	}
+
+	////Endianness check
+	//if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
+	//	printf("little endian after swaping \n");
+	//}
+	//else {
+	//	printf("big endian after swaping \n");
+	//}
 
 	fclose(file);
 	return true;
