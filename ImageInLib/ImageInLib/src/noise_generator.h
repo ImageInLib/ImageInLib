@@ -23,9 +23,9 @@ extern "C" {
 		const size_t zDim, int C, dataType fgMin, dataType bgMax);
 	bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, const int C, bool flag);
 
-	bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-		const size_t zDim, float K);
-	bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag);
+	bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim,
+		const size_t zDim, dataType density, const dataType pepper);
+	bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper);
 
 	/*
 	* Multiplicative noise adds noise to imageDataPtr
