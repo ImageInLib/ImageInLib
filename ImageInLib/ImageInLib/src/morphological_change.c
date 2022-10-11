@@ -176,60 +176,60 @@ bool erosion3dHeighteenNeigbours(dataType** imageDataPtr, const size_t xDim, con
 
 				cpt = 0;
 
-				if (extendedImage[k - 1][x_new(i - 1, j + 1, xDim_ext)] == object) {
+				if (extendedImage[k - 1][x_new(i - 1, j + 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k - 1][x_new(i, j, xDim_ext)] == object) {
+				if (extendedImage[k - 1][x_new(i, j, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k - 1][x_new(i, j + 1, xDim_ext)] == object) {
+				if (extendedImage[k - 1][x_new(i, j + 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k - 1][x_new(i + 1, j - 1, xDim_ext)] == object) {
+				if (extendedImage[k - 1][x_new(i + 1, j - 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k - 1][x_new(i + 1, j, xDim_ext)] == object) {
-					cpt++;
-				}
-
-				if (extendedImage[k][x_new(i - 1, j - 1, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i - 1, j, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i - 1, j + 1, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i, j - 1, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i, j + 1, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i + 1, j - 1, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i + 1, j, xDim_ext)] == object) {
-					cpt++;
-				}
-				if (extendedImage[k][x_new(i + 1, j + 1, xDim_ext)] == object) {
+				if (extendedImage[k - 1][x_new(i + 1, j, xDim_ext)] != background) {
 					cpt++;
 				}
 
-				if (extendedImage[k + 1][x_new(i - 1, j + 1, xDim_ext)] == object) {
+				if (extendedImage[k][x_new(i - 1, j - 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k + 1][x_new(i, j, xDim_ext)] == object) {
+				if (extendedImage[k][x_new(i - 1, j, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k + 1][x_new(i, j + 1, xDim_ext)] == object) {
+				if (extendedImage[k][x_new(i - 1, j + 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k + 1][x_new(i + 1, j - 1, xDim_ext)] == object) {
+				if (extendedImage[k][x_new(i, j - 1, xDim_ext)] != background) {
 					cpt++;
 				}
-				if (extendedImage[k + 1][x_new(i + 1, j, xDim_ext)] == object) {
+				if (extendedImage[k][x_new(i, j + 1, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k][x_new(i + 1, j - 1, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k][x_new(i + 1, j, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k][x_new(i + 1, j + 1, xDim_ext)] != background) {
+					cpt++;
+				}
+
+				if (extendedImage[k + 1][x_new(i - 1, j + 1, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k + 1][x_new(i, j, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k + 1][x_new(i, j + 1, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k + 1][x_new(i + 1, j - 1, xDim_ext)] != background) {
+					cpt++;
+				}
+				if (extendedImage[k + 1][x_new(i + 1, j, xDim_ext)] != background) {
 					cpt++;
 				}
 
