@@ -12,7 +12,8 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 {
 	size_t k, i, j;
 	dataType hh = implicitParameters.h * implicitParameters.h;
-	dataType tau = 100 * implicitParameters.timeStepSize;
+	dataType tau = implicitParameters.timeStepSize;
+	dataType tau = implicitParameters.timeStepSize;
 
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula

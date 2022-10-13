@@ -15,8 +15,7 @@
 
 // Local Function Prototype
 
-bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
-	const size_t maxNumberOfSolverIteration, dataType  coef, dataType  eps2, size_t numberOfTimeStep)
+bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL)
@@ -255,7 +254,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * filterParameters.h));
-				presmoot_e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
@@ -263,7 +262,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				// Calculation of coefficients in north direction
 				ux = (dataType)(((uNE + uE) - (uNW + uW))
@@ -271,7 +270,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				uy = (uN - u) / filterParameters.h;
 				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				// Calculation of coefficients in south direction
 				ux = (dataType)(((uE + uSE) - (uW + uSW))
@@ -279,7 +278,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				uy = (uS - u) / filterParameters.h;
 				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				// Calculation of coefficients in top direction
 				ux = (dataType)(((TuE + uE) - (TuW + uW))
@@ -287,7 +286,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				uy = (dataType)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Tu - u) / filterParameters.h;
-				presmoot_t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				// Calculation of coefficients in bottom direction
 				ux = (dataType)(((BuW + uW) - (BuE + uE))
@@ -295,7 +294,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				uy = (dataType)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Bu - u) / filterParameters.h;
-				presmoot_b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), coef);
+				presmoot_b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.coef);
 
 				//calculation of coefficients in the original image data
 				// Calculation of coefficients in east direction
@@ -304,7 +303,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 					/ (4.0 * filterParameters.h));
 				orig_uz = (dataType)(((orig_Tu + orig_TuE) - (orig_Bu + orig_BuE))
 					/ (4.0 * filterParameters.h));
-				orig_e_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_e_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in west direction
 				orig_ux = (orig_uW - orig_u) / filterParameters.h;
@@ -312,7 +311,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 					/ (4.0 * filterParameters.h));
 				orig_uz = (dataType)(((orig_TuW + orig_Tu) - (orig_BuW + orig_Bu))
 					/ (4.0 * filterParameters.h));
-				orig_w_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_w_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in north direction
 				orig_ux = (dataType)(((orig_uNE + orig_uE) - (orig_uNW + orig_uW))
@@ -320,7 +319,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				orig_uy = (orig_uN - orig_u) / filterParameters.h;
 				orig_uz = (dataType)(((orig_TuN + orig_Tu) - (orig_BuN + orig_Bu))
 					/ (4.0 * filterParameters.h));
-				orig_n_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_n_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in south direction
 				orig_ux = (dataType)(((orig_uE + orig_uSE) - (orig_uW + orig_uSW))
@@ -328,7 +327,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				orig_uy = (orig_uS - orig_u) / filterParameters.h;
 				orig_uz = (dataType)(((orig_TuS + orig_Tu) - (orig_BuS + orig_Bu))
 					/ (4.0 * filterParameters.h));
-				orig_s_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_s_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in top direction
 				orig_ux = (dataType)(((orig_TuE + orig_uE) - (orig_TuW + orig_uW))
@@ -336,7 +335,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				orig_uy = (dataType)(((orig_TuN + orig_uN) - (orig_TuS + orig_uS))
 					/ (4.0 * filterParameters.h));
 				orig_uz = (orig_Tu - orig_u) / filterParameters.h;
-				orig_t_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_t_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in bottom direction
 				orig_ux = (dataType)(((orig_BuW + orig_uW) - (orig_BuE + orig_uE))
@@ -344,13 +343,13 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				orig_uy = (dataType)(((orig_BuN + orig_uN) - (orig_BuS + orig_uS))
 					/ (4.0 * filterParameters.h));
 				orig_uz = (orig_Bu - orig_u) / filterParameters.h;
-				orig_b_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + eps2);
+				orig_b_coefPtr[k][x] = (dataType)sqrt((orig_ux * orig_ux) + (orig_uy * orig_uy) + (orig_uz * orig_uz) + filterParameters.eps2);
 
 				// evaluation of norm of gradient of image at each voxel
 				average_face_coef = (dataType)(((orig_e_coefPtr[k][x] + orig_w_coefPtr[k][x] + orig_n_coefPtr[k][x] + orig_s_coefPtr[k][x]
 					+ orig_t_coefPtr[k][x] + orig_b_coefPtr[k][x]) / 6.0));
 
-				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + eps2);
+				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + filterParameters.eps2);
 
 				/* evaluation of norm of gradient of image at each voxel, norm of gradient of presmoothed
 				image at each voxel face and reciprocal of norm of gradient of image at each voxel face*/
@@ -420,10 +419,10 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 				}
 			}
 		}
-	} while (error > filterParameters.tolerance && z < maxNumberOfSolverIteration);
+	} while (error > filterParameters.tolerance && z < filterParameters.maxNumberOfSolverIteration);
 	printf("The number of iterations is %zd\n", z);
 	printf("Error is %e\n", error);
-	printf("Step is %zd\n", numberOfTimeStep);
+	printf("Step is %zd\n", filterParameters.timeStepsNum);
 
 	//Copy the current time step to original data holder after timeStepsNum
 	copyDataToReducedArea(inputImageData.imageDataPtr, gauss_seidelPtr, height, length, width);

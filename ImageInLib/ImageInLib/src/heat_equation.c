@@ -79,7 +79,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 
 void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters)
 {
-	size_t k, i, j, z, steps = implicitParameters.timeStepsNum, p = implicitParameters.p;
+	size_t k, i, j, z, steps = implicitParameters.maxNumberOfSolverIteration, p = implicitParameters.p;
 	dataType hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;
 	dataType coeff = implicitParameters.timeStepSize / hhh;
 	// Error value used to check iteration
@@ -142,7 +142,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					// Begin Error Calculation
-					error += (float)pow(currentPtr[k_ext][x_ext] * (1 + 6.0*coeff)
+					error += (dataType)pow(currentPtr[k_ext][x_ext] * (1 + 6.0*coeff)
 						- coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
 							+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)] + currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 							+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)] + currentPtr[k_ext + 1][x_ext]
