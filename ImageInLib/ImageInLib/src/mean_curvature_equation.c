@@ -23,7 +23,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 		return false;
 
 	size_t k, i, j;
-	dataType hh = filterParameters.h * filterParameters.h;
+	dataType hhh = filterParameters.h * filterParameters.h * filterParameters.h;
 	dataType tau = filterParameters.timeStepSize;
 	//dataType  t = tau * numberOfTimeStep;
 	//dataType  t_prev = tau * (numberOfTimeStep - 1);
@@ -43,7 +43,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
 
-	const dataType coef_tauh = tau / hh;
+	const dataType coef_tauh = tau / hhh;
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	dataType voxel_coef, average_face_coef;

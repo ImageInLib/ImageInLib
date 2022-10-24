@@ -29,7 +29,6 @@
 bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
-	//const size_t length = 50, width = 57, height = 20;// length = 50, width = 57, height = 20;//length = 101, width = 101, height = 101
 	size_t i; // length == xDim, width == yDim, height == zDim
 	size_t dim2D = inputImageData.length * inputImageData.width;
 	size_t height = inputImageData.height;

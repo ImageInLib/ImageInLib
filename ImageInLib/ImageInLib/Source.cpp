@@ -2,19 +2,18 @@
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4477)
 #pragma warning(disable : 4267)
+#pragma warning(disable : 4700)
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> 
 #include <math.h>
-#include <omp.h>
 #include <time.h>
 
 #include "common_vtk.h"
 #include "file.h"
 #include "common_functions.h"
 #include "../src/data_initialization.h"
-#include "noiseGeneration.h"
 #include "filtering.h"
 #include "../src/data_load.h"
 #include "../src/data_storage.h"
@@ -25,18 +24,19 @@
 #include "../include/morphological_change.h"
 #include "../src/shape_registration.h"
 #include "../src/noise_generator.h"
+#include "../src/segmentation3D_subsurf.h"
 
-#define originalMean 1095
-#define offSet 0
-#define margin 100
-#define thresmin (originalMean + offSet - margin)
-#define thresmax (originalMean + offSet + margin)
+#define originalMean 71.1245
+#define offSet 1024
+#define standarDeviation 22.001
+#define thresmin 995//(originalMean + offSet - 2*standarDeviation)
+#define thresmax 1213//(originalMean + offSet + 2*standarDeviation)
 #define minimalSize 2000
 
 
 int main() {
 
-	size_t i, j, k, xd;
+	size_t i, j, k;
 	const size_t Length = 512;
 	const size_t Width = 512;
 	const size_t Height = 508;
@@ -45,8 +45,9 @@ int main() {
 	short** image = (short**)malloc(Height * sizeof(short*));
 	for (k = 0; k < Height; k++) {
 		image[k] = (short*)malloc(dim2D * sizeof(short));
+		//imageDataVTK[k] = (int*)malloc(dim2D * sizeof(int));
 	}
-	if (image == NULL) return false;
+	if (image == NULL ) return false;
 
 	//initialization
 	for (k = 0; k < Height; k++) {
@@ -62,22 +63,16 @@ int main() {
 	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
 	//Preparing Image container for float format
-	Image_Data ImageData;
-	ImageData.height = Height;
-	ImageData.length = Length;
-	ImageData.width = Width;
+	Image_Data ImageData; ImageData.height = Height; ImageData.length = Length; ImageData.width = Width;
 	ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
-	dataType** inputImage = (dataType**)malloc(Height * sizeof(dataType*));
 	dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
 	for (k = 0;k < Height;k++) {
 		ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		inputImage[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 	}
-	if (ImageData.imageDataPtr == NULL || inputImage == NULL || distanceMap == NULL) return false;
+	if (ImageData.imageDataPtr == NULL || distanceMap == NULL) return false;
 	
 	initialize3dArrayD(ImageData.imageDataPtr, Length, Width, Height, 0);
-	initialize3dArrayD(inputImage, Length, Width, Height, 0);
 	initialize3dArrayD(distanceMap, Length, Width, Height, 0);
 
 	//copy input image in container
@@ -85,7 +80,6 @@ int main() {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
 				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
-				inputImage[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
 			}
 		}
 	}
@@ -103,20 +97,38 @@ int main() {
 		}
 	}
 
-	//Filtering by geodesic mean curvature filter
-	const size_t maxNumberOfSolverIteration = 1000;
-	dataType  coef = 0.01, eps2 = 1e-4;
-	size_t numberOfTimeStep = 100;
-	Filter_Parameters GMC_filterParameters;
-	const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
-	dataType timeStepSize = 1e-4, h = 10, sigma = 0.1, K = 1000, omega_c = 1.4, tolerance = 1e-10;
-	size_t p = 1, timeStepsNum = 100, maxNumberOftimeSteps = 100;
-	GMC_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, p, timeStepsNum, maxNumberOfSolverIteration, maxNumberOftimeSteps };
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	filterImage(ImageData, GMC_filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep, methodFiltering);
-	rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_GMC.raw");
+	//dataType* Histogram = (dataType*)malloc((int)(maxData - minData + 1) * sizeof(dataType));
+	//if (Histogram == NULL) return false;
+	//for (i = 0; i < maxData - minData + 1; i++) Histogram[i] = 0;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			Histogram[image[k][x_new(i, j, Length)]]++;
+	//		}
+	//	}
+	//}
+	//dataType meanLiver = 0, maxFrequence = 0;
+	//for (i = 600; i < maxData - minData + 1; i++) {
+	//	if (Histogram[i] > maxFrequence) {
+	//		maxFrequence = Histogram[i];
+	//		meanLiver = i;
+	//	}
+	//}
+	//printf("The mean of the liver is = %f", meanLiver);
 
+	////Filtering by geodesic mean curvature filter
+	//dataType timeStepSize = 5e-4, h = 10, sigma = 0.1, K = 1000, omega_c = 1.3, tolerance = 1e-10, coef = 0.01, eps2 = 1e-4;
+	//size_t p = 1, timeStepsNum = 100, maxNumberOfSolverIteration = 1000;
+	//Filter_Parameters GMC_filterParameters;
+	//const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
+	//
+	//GMC_filterParameters = { timeStepSize, h, sigma, K, omega_c, tolerance, eps2, coef, p, timeStepsNum, maxNumberOfSolverIteration};
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	//for (i = 0; i < 10; i++) {
+	//	filterImage(ImageData, GMC_filterParameters, methodFiltering);
+	//}
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_GMC.raw");
 
 	////Remove fat tissues, bones , water, kidney, white matter
 	//for (k = 0; k < Height; k++) {
@@ -127,21 +139,21 @@ int main() {
 	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
 	//			}
 	//			//bones
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 2000) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 1150 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 1250) {
 	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
 	//			}
-	//			//water
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1000) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//			//kidney
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1030) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//			//white matter
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 970 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 980) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
+	//			////water
+	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1000) {
+	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			//}
+	//			////kidney
+	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1030) {
+	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			//}
+	//			////white matter
+	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 970 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 980) {
+	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			//}
 	//		}
 	//	}
 	//}
@@ -163,11 +175,27 @@ int main() {
 	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ErosionAfterRemoving.raw");
 
-	//thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, thresmin, thresmax, minData, maxData);
+	thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, thresmin, thresmax, minData, maxData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ThreshP1b.raw");
 	//for (i = 0; i < 6; i++) {
 	//	erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ErosionAfterThreshAndErosion.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/Erosion.raw");
+
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ErosionP3.raw");
 
 	////Labelling
 	//int** labelArray = (int**)malloc(Height * sizeof(int*));
@@ -177,7 +205,6 @@ int main() {
 	//	status[k] = (bool*)malloc(dim2D * sizeof(bool));
 	//}
 	//if (labelArray == NULL || status == NULL) return false;
-
 	////initialization
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
@@ -191,7 +218,7 @@ int main() {
 	//labelling3D(ImageData.imageDataPtr, labelArray, status, Length, Width, Height, maxData);
 	//double finish = clock();
 	//printf("Execution time for the new code : %.3lf \n", (finish - start) / CLOCKS_PER_SEC);
-
+	////store3dRawData<int>(labelArray, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/segmented.raw");
 	////number of region cells
 	//int numberOfRegionsCells = 0;
 	//for (k = 0; k < Height; k++) {
@@ -204,7 +231,6 @@ int main() {
 	//	}
 	//}
 	//printf("Number of Regions Cells : %d \n", numberOfRegionsCells);
-
 	////Counting
 	//int* countingArray = (int*)malloc(numberOfRegionsCells * sizeof(int));
 	//if (countingArray == NULL) return false;
@@ -218,7 +244,6 @@ int main() {
 	//		}
 	//	}
 	//}
-
 	////Remove small regions 
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
@@ -229,7 +254,6 @@ int main() {
 	//		}
 	//	}
 	//}
-
 	////Number of regions
 	//int numberOfRegions = 0;
 	//for (i = 0; i < numberOfRegionsCells; i++) {
@@ -238,6 +262,27 @@ int main() {
 	//	}
 	//}
 	//printf("Number of regions = %d \n", numberOfRegions);
+	////Save biggest region 
+	//int maxVolume = 0;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (countingArray[labelArray[k][x_new(i, j, Length)]] > maxVolume) {
+	//				maxVolume = countingArray[labelArray[k][x_new(i, j, Length)]];
+	//			}
+	//		}
+	//	}
+	//}
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (countingArray[labelArray[k][x_new(i, j, Length)]] != maxVolume) {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			}
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/bigestRegionP3V2.raw");
 
 	////Statistics
 	//FILE* file;
@@ -261,70 +306,134 @@ int main() {
 	//}
 	//fclose(file);
 
-	////Save bigest region 
-	//int maxVolume = 0;
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			if (countingArray[labelArray[k][x_new(i, j, Length)]] > maxVolume) {
-	//				maxVolume = countingArray[labelArray[k][x_new(i, j, Length)]];
-	//			}
-	//		}
-	//	}
-	//}
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			if (countingArray[labelArray[k][x_new(i, j, Length)]] != maxVolume) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//		}
-	//	}
-	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/bigestRegionErosion7.raw");
-
 	//char pathSaveDil[300];
 	//for (int i = 0; i < 7; i++) {
 	//	dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//	sprintf_s(pathSaveDil, "C:/Users/Konan Allaly/Documents/Tests/output/dilatation0%d.raw", i);
 	//	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, pathSaveDil);
 	//}
-	//fastSweepingFunction_3D(distanceMap, ImageData.imageDataPtr, Length, Width, Height, 1, 100000, minData);
-	////store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
-	//dataType distanceMax = 0;
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			if (distanceMap[k][x_new(i, j, Length)] > distanceMax) {
-	//				distanceMax = distanceMap[k][x_new(i, j, Length)];
-	//			}
-	//		}
-	//	}
-	//}
 
-	//dataType cptMax = 0;
-	//int x_max = 0, y_max = 0, z_max = 0;
+	fastSweepingFunction_3D(distanceMap, ImageData.imageDataPtr, Length, Width, Height, 1, 100000000, minData);
+	//store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMapP6.raw");
+	dataType distanceMax = -1;
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				if (distanceMap[k][x_new(i, j, Length)] >= distanceMax) {
+					distanceMax = distanceMap[k][x_new(i, j, Length)];
+				}
+			}
+		}
+	}
+	dataType cptMax = 0;
+	int i_max = 0, j_max = 0, k_max = 0;
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				if (distanceMap[k][x_new(i, j, Length)] == distanceMax) {
+					cptMax++; 
+					i_max = (int)i; j_max = (int)j; k_max = (int)k;
+				}
+			}
+		}
+	}
+	//printf("The maximal distance is = %f, and %f points have that distance \n", distanceMax, cptMax);
+	//printf("The coordinates are : (%d, %d, %d)", j_max, i_max, k_max);
+
+	////save according distance
 	//for (k = 0; k < Height; k++) {
 	//	for (i = 0; i < Length; i++) {
 	//		for (j = 0; j < Width; j++) {
-	//			if (distanceMap[k][x_new(i, j, Length)] == distanceMax) {
-	//				cptMax++; x_max = i; y_max = j; z_max = k;
+	//			if (distanceMap[k][x_new(i, j, Length)] > 2.5) {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//			else {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
 	//			}
 	//		}
 	//	}
 	//}
-	//printf("The maximal distance is = %f, and %f points have that distance \n", distanceMax, cptMax);
-	//printf("The coordinates are : (%d, %d, %d)", x_max, y_max, z_max);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/segment2.raw");
+
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/dilateBigestV2.raw");
+
+	//// Centroid of the segmented Liver
+	//dataType* cenTroid = (dataType*)malloc(3 * sizeof(dataType));
+	//centroidImage(ImageData.imageDataPtr, cenTroid, Height, Length, Width, 0);
+	//printf("Coordinates of centroid  : ");
+	//for (i = 0; i < 3; i++) {
+	//	printf("%f, ", cenTroid[i]);
+	//}
+	//printf("\n");
+
+	////Ball arround the highest distance point
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (sqrt( (i_max - i)* (i_max - i) + (j_max - j) * (j_max - j) + (k_max - k) * (k_max - k) ) < 15 ) {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//			else {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			}
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ballP6.raw");
+
+	////Saving
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == maxData) {
+	//				inputImage[k][x_new(i, j, Length)] = minData;
+	//			}
+	//			if (inputImage[k][x_new(i, j, Length)] != maxData) {
+	//				inputImage[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/newSegment.raw");
+
+	//copy input image in container
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+			}
+		}
+	}
+
+	Segmentation_Parameters segment_parameters;
+	segment_parameters.maxNoGSIteration = 1000; segment_parameters.coef = 1000; segment_parameters.eps2 = 0.01;
+	segment_parameters.gauss_seidelTolerance = 1e-6; segment_parameters.h = 1; segment_parameters.numberOfTimeStep = 10;
+	segment_parameters.omega_c = 1.4; segment_parameters.mod = 1; segment_parameters.maxNoOfTimeSteps = 100;
+	Point3D * center_segment; center_segment->x = j_max; center_segment->y = i_max; center_segment->z = k_max;
+	size_t number_of_centers = 1;
+	Filter_Parameters filtering_parameters;
+	filtering_parameters.timeStepSize = 1.2; filtering_parameters.edge_detector_coefficient = 1000; filtering_parameters.maxNumberOfSolverIteration = 1000;
+	filtering_parameters.eps2 = 0.01; filtering_parameters.omega_c = 1.5; filtering_parameters.timeStepsNum = 10; filtering_parameters.tolerance = 1e-6;
+	filtering_parameters.h = 1; filtering_parameters.p = 1; filtering_parameters.sigma = 0.01; filtering_parameters.coef = 0.01;
+	unsigned char outputPath[] = "C:/Users/Konan Allaly/Documents/Tests/output/";
+
+	subsurfSegmentation(ImageData, segment_parameters, filtering_parameters, center_segment, number_of_centers, outputPath);
+
 
 	//free memory
 	for (k = 0; k < Height; k++) {
 		free(image[k]); 
 		free(ImageData.imageDataPtr[k]);
-		free(inputImage[k]); free(distanceMap[k]);
+		free(distanceMap[k]);
 		//free(labelArray[k]); free(status[k]);
 	}
-	free(image); free(ImageData.imageDataPtr); free(inputImage); free(distanceMap);
+	free(image); free(ImageData.imageDataPtr); free(distanceMap);
 	//free(labelArray); free(status); free(countingArray);
+	//free(Histogram);
 	
 	//free(HistoSliceBySlice); free(HistoRowByRow); free(HistoColumnByColumn);
 	//for (k = 0; k < height_new; k++) {

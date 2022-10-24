@@ -11,7 +11,7 @@
 bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType hh = explicitParameters.h * explicitParameters.h;
+	dataType hh = explicitParameters.h * explicitParameters.h* explicitParameters.h;
 	dataType tau = explicitParameters.timeStepSize;
 
 	// Perform Reflection of the tempPtr

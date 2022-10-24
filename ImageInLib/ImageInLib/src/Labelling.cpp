@@ -627,7 +627,7 @@ bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArr
 						while (iStack.size() > 0 && jStack.size() > 0 && kStack.size() > 0) {
 							//One is enought because they have same size
 
-				//We work with the last element in the initial stacks
+							//We work with the last element in the initial stacks
 							kNew = kStack.size() - 1;
 							iNew = iStack.size() - 1;
 							jNew = jStack.size() - 1;
