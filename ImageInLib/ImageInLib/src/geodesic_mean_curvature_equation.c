@@ -22,7 +22,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 		return false;
 
 	size_t k, i, j;
-	dataType hh = filterParameters.h * filterParameters.h * filterParameters.h;
+	dataType hhh = filterParameters.h * filterParameters.h * filterParameters.h;
 	dataType tau = filterParameters.timeStepSize;
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
@@ -39,7 +39,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
 
-	const dataType coef_tauh = tau / hh;
+	const dataType coef_tauh = tau / hhh;
 	dataType  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	dataType  orig_u, orig_uN, orig_uS, orig_uE, orig_uW, orig_uNW, orig_uNE, orig_uSE, orig_uSW, orig_Tu, orig_TuN, orig_TuS,

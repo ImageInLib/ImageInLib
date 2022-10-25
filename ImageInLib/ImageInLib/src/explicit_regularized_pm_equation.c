@@ -11,7 +11,7 @@
 bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType hh = explicitParameters.h * explicitParameters.h* explicitParameters.h;
+	dataType hhh = explicitParameters.h * explicitParameters.h* explicitParameters.h;
 	dataType tau = explicitParameters.timeStepSize;
 
 	// Perform Reflection of the tempPtr
@@ -20,7 +20,7 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
-	const dataType coeff = tau / hh;
+	const dataType coeff = tau / hhh;
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
