@@ -151,10 +151,11 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 		if ((i%segParameters.mod) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i); // .vtk
 			strcat_s(name, sizeof(name), name_ending);
-			Storage_Flags flags = { true, true };
-			store3dDataVtkD(imageData.segmentationFuntionPtr, length, width, height, name, segParameters.h, flags);
+			Storage_Flags flags = { false, false }; // {true, true}
+			//store3dDataVtkD(imageData.segmentationFuntionPtr, length, width, height, name, segParameters.h, flags);
+			store3dDataArrayD(imageData.segmentationFuntionPtr, length, width, height, name, flags);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
@@ -511,7 +512,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	size_t length_ext = inputImageData.length + 2;
 	size_t width_ext = inputImageData.width + 2;
 	dataType quotient = (dataType)(4.0 * segParameters.h);
-	dataType inverse = (dataType)(1.0 / (VTK_MAX_HEADER_LINE_LENGTH - 1));
+	dataType inverse = 1;//(dataType)(1.0 / (VTK_MAX_HEADER_LINE_LENGTH - 1));
 	dataType ux, uy, uz; //change in x, y and z respectively
 	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
@@ -530,6 +531,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 
 	//perfom presmoothing
 	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	//heatImplicitScheme(presmoothingData, implicitParameters);
 	copyDataToReducedArea(imageToBeSegPtr, extendedCoefPtr, inputImageData.height, inputImageData.length, inputImageData.width);
 
 	//calculation of coefficients

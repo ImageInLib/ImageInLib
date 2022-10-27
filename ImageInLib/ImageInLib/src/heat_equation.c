@@ -3,6 +3,7 @@
 #include <stdbool.h> // Boolean function bool
 #include <math.h> // Maths functions i.e. pow, sin, cos
 #include "heat_equation.h"
+#include "data_initialization.h"
 
 // Local Function Prototype
 
@@ -24,10 +25,11 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	// Create temp Image Data holder for Previous time step data - with extended boundary because of boundary condition
 
 	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
-	for (k = 0; k < ((height + 2)); k++)
+	for (k = 0; k < height_ext; k++)
 	{
-		tempPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		tempPtr[k] = malloc(sizeof(dataType)*length_ext*width_ext);
 	}
+	initialize3dArrayD(tempPtr, length_ext, width_ext, height_ext, 0);
 
 	size_t k_ext, j_ext, i_ext;
 	size_t sliceBound = (length_ext - 1)* width_ext;
@@ -42,22 +44,19 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	const dataType coeff = tau / hhh;
 
 	// The Explicit Scheme Evaluation
-	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++)
-	{
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-		{
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-			{
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-				{
+	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++){
+		for (k = 0, k_ext = 1; k < height; k++, k_ext++){
+			for (i = 0, i_ext = 1; i < length; i++, i_ext++){
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++){
+
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					x = x_new(i, j, length);
 
 					// Explicit formula
 					toExplicitImage.imageDataPtr[k][x] = (dataType)((1.0 - 6.0 * coeff)*tempPtr[k_ext][x_ext]
-						+ coeff * (tempPtr[k_ext][x_ext + 1]
-							+ tempPtr[k_ext][x_ext - 1]
+						+ coeff * (tempPtr[k_ext][x_new(i_ext - 1, j, length_ext)]
+							+ tempPtr[k_ext][x_new(i_ext + 1, j, length_ext)]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
 							+ tempPtr[k_ext + 1][x_ext]
@@ -66,8 +65,10 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 			}
 		}
 
+		initialize3dArrayD(tempPtr, length_ext, width_ext, height_ext, 0);
 		copyDataToExtendedArea(toExplicitImage.imageDataPtr, tempPtr, height, length, width);
 		reflection3D(tempPtr, height_ext, length_ext, width_ext);
+
 	}
 	// Freeing Memory after use
 	for (i = 0; i < height_ext; i++)
@@ -82,9 +83,10 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	size_t k, i, j, z, steps = implicitParameters.maxNumberOfSolverIteration, p = implicitParameters.p;
 	dataType hhh = implicitParameters.h*implicitParameters.h*implicitParameters.h;
 	dataType coeff = implicitParameters.timeStepSize / hhh;
+
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
-	dataType error, sor;
+	dataType error = 0, sor = 0;
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
 	// Less the borders because in the loops we add back the border p
 	size_t height = toImplicitImage.height, length = toImplicitImage.length, width = toImplicitImage.width;
@@ -93,7 +95,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	size_t width_ext = width + 2;// Create temp Image Data holder for Previous time step data
 	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 	dataType** currentPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext)); // holds current
-	for (i = 0; i < ((height_ext)); i++)
+	for (i = 0; i < height_ext; i++)
 	{
 		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
@@ -111,16 +113,13 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	{
 		z = z + 1;
 		// Gauss-Seidel Method
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-		{
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-			{
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-				{
+		for (k = 0, k_ext = 1; k < height; k++, k_ext++){
+			for (i = 0, i_ext = 1; i < length; i++, i_ext++){
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++){
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					// Begin Gauss-Seidel Formula Evaluation
-					sor = (float)((tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
+					sor = (dataType)((tempPtr[k_ext][x_ext] + coeff * (currentPtr[k_ext][x_new(i_ext + 1, j_ext, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext - 1, j_ext, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 						+ currentPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
@@ -133,12 +132,9 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 		// Error Evaluation
 		error = 0.0; // Initialize
 		//reflection3DB(tempPtr, height, length, width, p);
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-		{
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-			{
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-				{
+		for (k = 0, k_ext = 1; k < height; k++, k_ext++){
+			for (i = 0, i_ext = 1; i < length; i++, i_ext++){
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++){
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					// Begin Error Calculation
@@ -156,12 +152,9 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	printf("Error is %e\n", error);
 
 	// Copy back to original after filter
-	for (k = 0, k_ext = 1; k < height; k++, k_ext++)
-	{
-		for (i = 0, i_ext = 1; i < length; i++, i_ext++)
-		{
-			for (j = 0, j_ext = 1; j < width; j++, j_ext++)
-			{
+	for (k = 0, k_ext = 1; k < height; k++, k_ext++){
+		for (i = 0, i_ext = 1; i < length; i++, i_ext++){
+			for (j = 0, j_ext = 1; j < width; j++, j_ext++){
 				// 2D to 1D representation for i, j
 				x_ext = x_new(i_ext, j_ext, length_ext);
 				x = x_new(i, j, length);
@@ -170,7 +163,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 		}
 	}
 	// Freeing Memory after use
-	for (i = 0; i < ((height + 2)); i++)
+	for (i = 0; i < height_ext; i++)
 	{
 		free(tempPtr[i]);
 		free(currentPtr[i]);

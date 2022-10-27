@@ -84,6 +84,11 @@ int main() {
 		}
 	}
 
+	//Storage_Flags flags = { false, false };
+	//unsigned char name[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/loaded.vtk";
+	//store3dDataVtkD(ImageData.imageDataPtr, Length, Width, Height, name, 1, flags);
+	//store3dDataArrayD(ImageData.imageDataPtr, Length, Width, Height, name, flags);
+
 	//Find min and max values
 	dataType minData = 10000, maxData = -10000;
 	for (k = 0; k < Height; k++) {
@@ -101,16 +106,15 @@ int main() {
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/thresh.raw");
 
 	////Filtering by linear heat equation filter
-	//dataType timeStepSize = 1.2, h = 1;
-	//size_t p = 1, timeStepsNum = 1;
+	//dataType timeStepSize = 0.5, h = 1, tol = 1e-4, omega_c = 1.5;
+	//size_t p = 1, timeStepsNum = 5, iter_max = 100;
 	//Filter_Parameters LH_filterParameters;
 	//const FilterMethod methodFiltering = LINEAR_HEATEQUATION_EXPLICIT;
-	//
-	//LH_filterParameters = { timeStepSize, h, 0, 0, 0, 0, 0, 0, p, timeStepsNum, 0};
+	//LH_filterParameters = { timeStepSize, h, 0, 0, omega_c, tol, 0, 0, p, timeStepsNum, iter_max};
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
 	//filterImage(ImageData, LH_filterParameters, methodFiltering);
 	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_GMC.raw");
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_ex_M.raw");
 
 	//dataType* Histogram = (dataType*)malloc((int)(maxData - minData + 1) * sizeof(dataType));
 	//if (Histogram == NULL) return false;
@@ -315,7 +319,7 @@ int main() {
 	//}
 
 	fastSweepingFunction_3D(distanceMap, ImageData.imageDataPtr, Length, Width, Height, 1, 100000000, minData);
-	store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
+	//store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
 	dataType distanceMax = -1;
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
@@ -371,20 +375,20 @@ int main() {
 	//}
 	//printf("\n");
 
-	//Ball arround the highest distance point
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (sqrt( (i_max - i)* (i_max - i) + (j_max - j) * (j_max - j) + (k_max - k) * (k_max - k) ) < 15 ) {
-					ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
-				}
-				else {
-					ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-				}
-			}
-		}
-	}
-	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ball.raw");
+	////Ball arround the highest distance point
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (sqrt( (i_max - i)* (i_max - i) + (j_max - j) * (j_max - j) + (k_max - k) * (k_max - k) ) < 15 ) {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//			else {
+	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
+	//			}
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ball.raw");
 
 	////Saving
 	//for (k = 0; k < Height; k++) {
@@ -401,29 +405,29 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/newSegment.raw");
 
-	////copy input image in container
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
-	//		}
-	//	}
-	//}
+	//copy input image in container
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length; i++) {
+			for (j = 0; j < Width; j++) {
+				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+			}
+		}
+	}
 
-	//Segmentation_Parameters segment_parameters;
-	//segment_parameters.maxNoGSIteration = 1000; segment_parameters.coef = 1000; segment_parameters.eps2 = 0.01;
-	//segment_parameters.gauss_seidelTolerance = 1e-6; segment_parameters.h = 1; segment_parameters.numberOfTimeStep = 10;
-	//segment_parameters.omega_c = 1.4; segment_parameters.mod = 1; segment_parameters.maxNoOfTimeSteps = 100;
-	//Point3D * center_segment; center_segment->x = j_max; center_segment->y = i_max; center_segment->z = k_max;
-	//size_t number_of_centers = 1;
-	//Filter_Parameters filtering_parameters;
-	//filtering_parameters.timeStepSize = 1.2; filtering_parameters.edge_detector_coefficient = 1000; filtering_parameters.maxNumberOfSolverIteration = 1000;
-	//filtering_parameters.eps2 = 0.01; filtering_parameters.omega_c = 1.5; filtering_parameters.timeStepsNum = 10; filtering_parameters.tolerance = 1e-6;
-	//filtering_parameters.h = 1; filtering_parameters.p = 1; filtering_parameters.sigma = 0.01; filtering_parameters.coef = 0.01;
-	//unsigned char outputPath[] = "C:/Users/Konan Allaly/Documents/Tests/output/";
-
-	//subsurfSegmentation(ImageData, segment_parameters, filtering_parameters, center_segment, number_of_centers, outputPath);
-
+	Segmentation_Parameters segment_parameters;
+	segment_parameters.maxNoGSIteration = 100; segment_parameters.coef = 1000; segment_parameters.eps2 = 0.1;
+	segment_parameters.gauss_seidelTolerance = 1e-6; segment_parameters.h = 1; segment_parameters.numberOfTimeStep = 100;
+	segment_parameters.tau = 0.6; segment_parameters.omega_c = 1.0; segment_parameters.mod = 1; segment_parameters.maxNoOfTimeSteps = 100;
+	Point3D * center_segment = (Point3D*)malloc(sizeof(Point3D)); center_segment->x = i_max; center_segment->y = j_max; center_segment->z = k_max;
+	size_t number_of_centers = 1;
+	Filter_Parameters filtering_parameters;
+	filtering_parameters.timeStepSize = 0.5; filtering_parameters.edge_detector_coefficient = 1000; filtering_parameters.maxNumberOfSolverIteration = 100;
+	filtering_parameters.eps2 = 0.01; filtering_parameters.omega_c = 1.5; filtering_parameters.timeStepsNum = 1; filtering_parameters.tolerance = 1e-4;
+	filtering_parameters.h = 1.0; filtering_parameters.p = 1; filtering_parameters.sigma = 1.2; filtering_parameters.coef = 1000;
+	unsigned char outputPath[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
+	subsurfSegmentation(ImageData, segment_parameters, filtering_parameters, center_segment, number_of_centers, outputPath);
+	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
 
 	//free memory
 	for (k = 0; k < Height; k++) {

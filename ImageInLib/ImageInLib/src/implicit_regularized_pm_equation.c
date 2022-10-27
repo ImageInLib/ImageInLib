@@ -8,7 +8,7 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters, size_t numberOfTimeStep)
+bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters)
 {
 	size_t k, i, j;
 	dataType hhh = implicitParameters.h * implicitParameters.h * implicitParameters.h;
@@ -267,7 +267,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 	} while (error > implicitParameters.tolerance && z < implicitParameters.maxNumberOfSolverIteration);
 	printf("The number of iterations is %zd\n", z);
 	printf("Error is %e\n", error);
-	printf("Step is %zd\n", numberOfTimeStep);
+	//printf("Step is %zd\n", numberOfTimeStep);
 
 	//Copy the current time step to original data holder after timeStepsNum
 	copyDataToReducedArea(inputImageData.imageDataPtr, gauss_seidelPtr, height, length, width);
