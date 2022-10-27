@@ -9,7 +9,7 @@
 void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType hh = explicitParameters.h*explicitParameters.h;
+	dataType hhh = explicitParameters.h*explicitParameters.h*explicitParameters.h;
 	dataType tau = explicitParameters.timeStepSize;
 
 	// Perform Reflection of the tempPtr
@@ -38,7 +38,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	size_t x;
 	size_t x_ext;
 
-	const dataType coeff = tau / hh;
+	const dataType coeff = tau / hhh;
 
 	// The Explicit Scheme Evaluation
 	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++)
