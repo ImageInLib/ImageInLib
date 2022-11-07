@@ -23,66 +23,71 @@
 #include "../src/endianity_bl.h"
 #include "../include/morphological_change.h"
 #include "../src/shape_registration.h"
-#include "../src/noise_generator.h"
 #include "../src/segmentation3D_subsurf.h"
 
 #define originalMean 71.1245
 #define offSet 1024
 #define standarDeviation 22.001
-#define thresmin 995//(originalMean + offSet - 2*standarDeviation)
-#define thresmax 1213//(originalMean + offSet + 2*standarDeviation)
+#define thresmin 995
+#define thresmax 1213
 #define minimalSize 2000
 
 
 int main() {
 
 	size_t i, j, k;
-	const size_t Length = 512;
 	const size_t Width = 512;
+	const size_t Length = 512;
 	const size_t Height = 406;
-	const size_t dim2D = Length * Width;
+	const size_t dim2D = Width * Length;
 
 	short** image = (short**)malloc(Height * sizeof(short*));
+	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	for (k = 0; k < Height; k++) {
 		image[k] = (short*)malloc(dim2D * sizeof(short));
-		//imageDataVTK[k] = (int*)malloc(dim2D * sizeof(int));
+		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 	}
-	if (image == NULL ) return false;
+	if (image == NULL || imageData == NULL) return false;
 
 	//initialization
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
 				image[k][x_new(i, j, Length)] = 0;
+				imageData[k][x_new(i, j, Length)] = 0;
 			}
 		}
 	}
 
 	//Loading
 	load3dArrayRAW<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/input/patient2.raw");
-	//store3dRawData<short>(image, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
 
-	//Preparing Image container for float format
-	Image_Data ImageData; ImageData.height = Height; ImageData.length = Length; ImageData.width = Width;
-	ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
-	dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
-	for (k = 0;k < Height;k++) {
-		ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-	}
-	if (ImageData.imageDataPtr == NULL || distanceMap == NULL) return false;
-	
-	initialize3dArrayD(ImageData.imageDataPtr, Length, Width, Height, 0);
-	initialize3dArrayD(distanceMap, Length, Width, Height, 0);
-
-	//copy input image in container
+	//copy on data container
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
 			}
 		}
 	}
+	//store3dRawData<dataType>(imageData, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/loaded.raw");
+
+	////Preparing Image container for float format
+	//Image_Data ImageData; ImageData.height = Height; ImageData.length = Length; ImageData.width = Width;
+	//ImageData.imageDataPtr = (dataType**)malloc(Height * sizeof(dataType*));
+	//for (k = 0;k < Height;k++) {
+	//	ImageData.imageDataPtr[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (ImageData.imageDataPtr == NULL) return false;
+	//initialize3dArrayD(ImageData.imageDataPtr, Length, Width, Height, 0);
+	////copy input image in container
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+	//		}
+	//	}
+	//}
 
 	//Storage_Flags flags = { false, false };
 	//unsigned char name[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/loaded.vtk";
@@ -94,76 +99,53 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] < minData)
-					minData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
-				if (ImageData.imageDataPtr[k][x_new(i, j, Length)] > maxData)
-					maxData = ImageData.imageDataPtr[k][x_new(i, j, Length)];
+				if (imageData[k][x_new(i, j, Length)] < minData)
+					minData = imageData[k][x_new(i, j, Length)];
+				if (imageData[k][x_new(i, j, Length)] > maxData)
+					maxData = imageData[k][x_new(i, j, Length)];
 			}
 		}
 	}
+	printf("Min data = %1.lf and Max data = %.1lf\n", minData, maxData);
 
-	//thresholdingOTSU(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/thresh.raw");
-
-	////Filtering by linear heat equation filter
-	//dataType timeStepSize = 0.5, h = 1, tol = 1e-4, omega_c = 1.5;
-	//size_t p = 1, timeStepsNum = 5, iter_max = 100;
-	//Filter_Parameters LH_filterParameters;
-	//const FilterMethod methodFiltering = LINEAR_HEATEQUATION_EXPLICIT;
-	//LH_filterParameters = { timeStepSize, h, 0, 0, omega_c, tol, 0, 0, p, timeStepsNum, iter_max};
-	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	//filterImage(ImageData, LH_filterParameters, methodFiltering);
-	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_ex_M.raw");
-
-	//dataType* Histogram = (dataType*)malloc((int)(maxData - minData + 1) * sizeof(dataType));
-	//if (Histogram == NULL) return false;
-	//for (i = 0; i < maxData - minData + 1; i++) Histogram[i] = 0;
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			Histogram[image[k][x_new(i, j, Length)]]++;
+	//for (k = 0; k < zDim; k++) {
+	//	for (i = 0; i < xDim; i++) {
+	//		for (j = 0; j < yDim; j++) {
+	//			if (imageData[k][x_new(i, j, xDim)] == maxData) {
+	//				if (k < kMinCrop) kMinCrop = k; if (k > kMaxCrop) kMaxCrop = k;
+	//				if (i < iMinCrop) iMinCrop = i; if (i > iMaxCrop) iMaxCrop = i;
+	//				if (j < jMinCrop) jMinCrop = j; if (j > jMaxCrop) jMaxCrop = j;
+	//			}
 	//		}
 	//	}
 	//}
-	//dataType meanLiver = 0, maxFrequence = 0;
-	//for (i = 600; i < maxData - minData + 1; i++) {
-	//	if (Histogram[i] > maxFrequence) {
-	//		maxFrequence = Histogram[i];
-	//		meanLiver = i;
-	//	}
-	//}
-	//printf("The mean of the liver is = %f", meanLiver);
+	//printf("Coodinates of the cropped volume : %d , %d, %d \n", iMinCrop, jMinCrop, kMinCrop);
+	//printf("Coodinates of the cropped volume : %d , %d, %d \n", iMaxCrop, jMaxCrop, kMaxCrop);
 
-	////Remove fat tissues, bones , water, kidney, white matter
+	//const size_t Length = iMaxCrop - iMinCrop + 1, Width = jMaxCrop - jMinCrop + 1, Height = kMaxCrop - kMinCrop + 1;
+	//printf("Dimensions of cropped volume : %d x %d x %d", Length, Width, Height);
+	//dataType** croppedVolume = (dataType**)malloc(Height * sizeof(dataType*));
+	//dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
 	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			//Remove fat tissues
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 850 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 1000) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//			//bones
-	//			if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 1150 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 1250) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//			////water
-	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1000) {
-	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			//}
-	//			////kidney
-	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] == 1030) {
-	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			//}
-	//			////white matter
-	//			//if (ImageData.imageDataPtr[k][x_new(i, j, Length)] >= 970 && ImageData.imageDataPtr[k][x_new(i, j, Length)] <= 980) {
-	//			//	ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			//}
+	//	croppedVolume[k] = (dataType*)malloc(Length * Width * sizeof(dataType));
+	//	distanceMap[k] = (dataType*)malloc(Length * Width * sizeof(dataType));
+	//}
+	//if (croppedVolume == NULL || distanceMap == NULL) return false;
+
+	//initialize3dArrayD(croppedVolume, Length, Width, Height, 0);
+	//initialize3dArrayD(distanceMap, Length, Width, Height, 0);
+
+	//size_t i_c, j_c, k_c;
+	//for (k_c = 0, k = kMinCrop; k_c < Height; k_c++, k++) {
+	//	for (i_c = 0, i = iMinCrop; i_c < Length; i_c++, i++) {
+	//		for (j_c = 0, j = jMinCrop; j_c < Width; j_c++, j++) {
+	//			croppedVolume[k_c][x_new(i_c, j_c, Length)] = (dataType)image[k][x_new(i, j, xDim)];
 	//		}
 	//	}
 	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/RemovedSeveralElementsPM.raw");
-	
+	//printf("\nDimensions of the cropped volume : %d x %d x %d \n", Width, Length, Height);
+	//store3dRawData<dataType>(croppedVolume, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/newVolume.raw");
+
 	////segment a ball in the liver's centre of gravity
 	//const size_t x_liver = 258, y_liver = 157, z_liver = 288;
 	//for (k = 0; k < Height; k++) {
@@ -179,28 +161,7 @@ int main() {
 
 	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ErosionAfterRemoving.raw");
-
-	thresholding3dFunctionN(ImageData.imageDataPtr, Length, Width, Height, thresmin, thresmax, minData, maxData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ThreshP1b.raw");
-	//for (i = 0; i < 6; i++) {
-	//	erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/Erosion.raw");
-
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//erosion3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ErosionP3.raw");
+	//thresholding3dFunctionN(imageData, Length, Width, Height, thresmin, thresmax, minData, maxData);
 
 	////Labelling
 	//int** labelArray = (int**)malloc(Height * sizeof(int*));
@@ -311,61 +272,6 @@ int main() {
 	//}
 	//fclose(file);
 
-	//char pathSaveDil[300];
-	//for (int i = 0; i < 7; i++) {
-	//	dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//	sprintf_s(pathSaveDil, "C:/Users/Konan Allaly/Documents/Tests/output/dilatation0%d.raw", i);
-	//	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, pathSaveDil);
-	//}
-
-	fastSweepingFunction_3D(distanceMap, ImageData.imageDataPtr, Length, Width, Height, 1, 100000000, minData);
-	//store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
-	dataType distanceMax = -1;
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (distanceMap[k][x_new(i, j, Length)] >= distanceMax) {
-					distanceMax = distanceMap[k][x_new(i, j, Length)];
-				}
-			}
-		}
-	}
-	dataType cptMax = 0;
-	int i_max = 0, j_max = 0, k_max = 0;
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (distanceMap[k][x_new(i, j, Length)] == distanceMax) {
-					cptMax++; 
-					i_max = (int)i; j_max = (int)j; k_max = (int)k;
-				}
-			}
-		}
-	}
-	printf("The maximal distance is = %f, and %f points have that distance \n", distanceMax, cptMax);
-	printf("The coordinates are : (%d, %d, %d)", j_max, i_max, k_max);
-
-	////save according distance
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			if (distanceMap[k][x_new(i, j, Length)] > 2.5) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
-	//			}
-	//			else {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//		}
-	//	}
-	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/segment2.raw");
-
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/dilateBigestV2.raw");
-
 	//// Centroid of the segmented Liver
 	//dataType* cenTroid = (dataType*)malloc(3 * sizeof(dataType));
 	//centroidImage(ImageData.imageDataPtr, cenTroid, Height, Length, Width, 0);
@@ -374,21 +280,6 @@ int main() {
 	//	printf("%f, ", cenTroid[i]);
 	//}
 	//printf("\n");
-
-	////Ball arround the highest distance point
-	//for (k = 0; k < Height; k++) {
-	//	for (i = 0; i < Length; i++) {
-	//		for (j = 0; j < Width; j++) {
-	//			if (sqrt( (i_max - i)* (i_max - i) + (j_max - j) * (j_max - j) + (k_max - k) * (k_max - k) ) < 15 ) {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = maxData;
-	//			}
-	//			else {
-	//				ImageData.imageDataPtr[k][x_new(i, j, Length)] = minData;
-	//			}
-	//		}
-	//	}
-	//}
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ball.raw");
 
 	////Saving
 	//for (k = 0; k < Height; k++) {
@@ -405,48 +296,200 @@ int main() {
 	//}
 	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/newSegment.raw");
 
-	//copy input image in container
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				ImageData.imageDataPtr[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+	//char pathSaveDil[300];
+	//for (int i = 0; i < 7; i++) {
+	//	dilatation3dHeighteenNeigbours(ImageData.imageDataPtr, Length, Width, Height, maxData, minData);
+	//	sprintf_s(pathSaveDil, "C:/Users/Konan Allaly/Documents/Tests/output/dilatation0%d.raw", i);
+	//	store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, pathSaveDil);
+	//}
+
+
+	//Manual Cropping
+	size_t iMinCrop = 170, iMaxCrop = 360, jMinCrop = 130, jMaxCrop = 310, kMinCrop = 157, kMaxCrop = 231;
+	size_t lengthNew = jMaxCrop - jMinCrop + 1, widthNew = iMaxCrop - iMinCrop + 1, heightNew = kMaxCrop - kMinCrop + 1;
+
+	Image_Data segment;
+	segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew;
+	segment.imageDataPtr = (dataType**)malloc(heightNew * sizeof(dataType*));
+	dataType** distanceMap = (dataType**)malloc(heightNew * sizeof(dataType*));
+	dataType** maskThresh = (dataType**)malloc(heightNew * sizeof(dataType*));
+	for (k = 0; k < heightNew; k++) {
+		segment.imageDataPtr[k] = (dataType*)malloc(lengthNew * widthNew * sizeof(dataType));
+		distanceMap[k] = (dataType*)malloc(lengthNew * widthNew * sizeof(dataType));
+		maskThresh[k] = (dataType*)malloc(lengthNew * widthNew * sizeof(dataType));
+	}
+	if (segment.imageDataPtr == NULL || distanceMap == NULL || maskThresh == NULL) return false;
+	initialize3dArrayD(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0);
+	initialize3dArrayD(distanceMap, lengthNew, widthNew, heightNew, 0);
+	initialize3dArrayD(maskThresh, lengthNew, widthNew, heightNew, 0);
+	//copy data (Cropping)
+	for (k = 0; k < heightNew; k++) {
+		for (i = 0; i < lengthNew; i++) {
+			for (j = 0; j < widthNew; j++) {
+				segment.imageDataPtr[k][x_new(i, j, lengthNew)] = imageData[k + kMinCrop][x_new(i + iMinCrop, j + jMinCrop, Length)];
+				maskThresh[k][x_new(i, j, lengthNew)] = imageData[k + kMinCrop][x_new(i + iMinCrop, j + jMinCrop, Length)];
 			}
 		}
 	}
+	printf("New dimensions %d x %d x %d\n", widthNew, lengthNew, heightNew);
+	store3dRawData<dataType>(segment.imageDataPtr, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/newVolume.raw");
 
+	//Filtering
+	dataType timeStepSize = 1.2, h = 1.0, sigma = 1e-3, K = 200, omega_c = 1.1, tol = 1e-7, coef = 1e-3, eps2 = 1e-3;
+	size_t p = 1, timeStepsNum = 1, iter_max = 1000;
+	Filter_Parameters PM_filterParameters;
+	const FilterMethod methodFiltering = GEODESIC_MEAN_CURVATURE_FILTER;
+	PM_filterParameters = {timeStepSize, h, sigma, K, omega_c, tol, eps2, coef, p, timeStepsNum, iter_max};
+	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
+	filterImage(segment, PM_filterParameters, methodFiltering);
+	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, minData, maxData);
+	store3dRawData<dataType>(segment.imageDataPtr, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/filtered_3GMC.raw");
+
+	thresholding3dFunctionN(maskThresh, lengthNew, widthNew, heightNew, thresmin, thresmax, minData, maxData);
+	store3dRawData<dataType>(maskThresh, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/Thresh.raw");
+
+	//Fast sweeping for cropped volume
+	fastSweepingFunction_3D(distanceMap, maskThresh, lengthNew, widthNew, heightNew, 1, 100000000, minData);
+	store3dRawData<dataType>(distanceMap, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
+	dataType distanceMax = -1;
+	for (k = 0; k < heightNew; k++) {
+		for (i = 0; i < lengthNew; i++) {
+			for (j = 0; j < widthNew; j++) {
+				if (distanceMap[k][x_new(i, j, lengthNew)] >= distanceMax) {
+					distanceMax = distanceMap[k][x_new(i, j, lengthNew)];
+				}
+			}
+		}
+	}
+	dataType cptMax = 0;
+	int i_max = 0, j_max = 0, k_max = 0;
+	for (k = 0; k < heightNew; k++) {
+		for (i = 0; i < lengthNew; i++) {
+			for (j = 0; j < widthNew; j++) {
+				if (distanceMap[k][x_new(i, j, lengthNew)] == distanceMax) {
+					cptMax++;
+					i_max = (int)i; j_max = (int)j; k_max = (int)k;
+				}
+			}
+		}
+	}
+	printf("\nThe maximal distance is = %f, and %f points have that distance \n", distanceMax, cptMax);
+	printf("Coordinates of the point with highest distance : (%d, %d, %d)\n\n", j_max, i_max, k_max);
+
+	//Segmentation
 	Segmentation_Parameters segment_parameters;
-	segment_parameters.maxNoGSIteration = 100; segment_parameters.coef = 1000; segment_parameters.eps2 = 0.1;
-	segment_parameters.gauss_seidelTolerance = 1e-6; segment_parameters.h = 1; segment_parameters.numberOfTimeStep = 100;
-	segment_parameters.tau = 0.6; segment_parameters.omega_c = 1.0; segment_parameters.mod = 1; segment_parameters.maxNoOfTimeSteps = 100;
-	Point3D * center_segment = (Point3D*)malloc(sizeof(Point3D)); center_segment->x = i_max; center_segment->y = j_max; center_segment->z = k_max;
+	segment_parameters.maxNoGSIteration = 100; segment_parameters.coef = 200; segment_parameters.eps2 = 1e-10;
+	segment_parameters.numberOfTimeStep = 300; segment_parameters.mod = 1; segment_parameters.maxNoOfTimeSteps = 300;
+	segment_parameters.tau = 4.0; segment_parameters.h = 1; segment_parameters.omega_c = 1.1;
+	segment_parameters.gauss_seidelTolerance = 1e-6; segment_parameters.segTolerance = 1e-4;
+	Point3D* center_segment = (Point3D*)malloc(sizeof(Point3D)); //center_segment->x = 50; center_segment->y = 55; center_segment->z = 20;
+	center_segment->x = i_max; center_segment->y = j_max; center_segment->z = k_max;
 	size_t number_of_centers = 1;
 	Filter_Parameters filtering_parameters;
-	filtering_parameters.timeStepSize = 0.5; filtering_parameters.edge_detector_coefficient = 1000; filtering_parameters.maxNumberOfSolverIteration = 100;
-	filtering_parameters.eps2 = 0.01; filtering_parameters.omega_c = 1.5; filtering_parameters.timeStepsNum = 1; filtering_parameters.tolerance = 1e-4;
+	filtering_parameters.timeStepSize = 1.0/6.0; filtering_parameters.edge_detector_coefficient = 200; filtering_parameters.maxNumberOfSolverIteration = 300;
+	filtering_parameters.eps2 = 0.001; filtering_parameters.omega_c = 1.2; filtering_parameters.timeStepsNum = 1; filtering_parameters.tolerance = 1e-4;
 	filtering_parameters.h = 1.0; filtering_parameters.p = 1; filtering_parameters.sigma = 1.2; filtering_parameters.coef = 1000;
 	unsigned char outputPath[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//rescaleNewRange(ImageData.imageDataPtr, Length, Width, Height, 0, 1);
-	subsurfSegmentation(ImageData, segment_parameters, filtering_parameters, center_segment, number_of_centers, outputPath);
-	//store3dRawData<dataType>(ImageData.imageDataPtr, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.raw");
+	//rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
+	////store3dRawData<dataType>(segment.imageDataPtr, xDim, yDim, zDim, "C:/Users/Konan Allaly/Documents/Tests/output/rescalled.raw");
+	subsurfSegmentation(segment, segment_parameters, filtering_parameters, center_segment, number_of_centers, outputPath);
+
+	////Fast sweeping for whole volume
+	//dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
+	//dataType** ballCode = (dataType**)malloc(Height * sizeof(dataType*));
+	//dataType** ballSlicer = (dataType**)malloc(Height * sizeof(dataType*));
+	//for (k = 0; k < Height; k++) {
+	//	distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//	ballCode[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//	ballSlicer[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (distanceMap == NULL || ballCode == NULL || ballSlicer == NULL) return false;
+	////initialization
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			distanceMap[k][x_new(i, j, Length)] = 0;
+	//			ballCode[k][x_new(i, j, Length)] = 0;
+	//			ballSlicer[k][x_new(i, j, Length)] = 0;
+	//		}
+	//	}
+	//}
+	////initialize3dArrayD(distanceMap, Height, Width, Length, 0);
+	////initialize3dArrayD(ballCode, Height, Width, Length, 0);
+	////initialize3dArrayD(ballSlicer, Height, Width, Length, 0);
+	//fastSweepingFunction_3D(distanceMap, imageData, Length, Width, Height, 1, 100000000, minData);
+	//store3dRawData<dataType>(distanceMap, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/distanceMapP7.raw");
+	//dataType distanceMax = -1;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (distanceMap[k][x_new(i, j, Length)] >= distanceMax) {
+	//				distanceMax = distanceMap[k][x_new(i, j, Length)];
+	//			}
+	//		}
+	//	}
+	//}
+	//dataType cptMax = 0;
+	//int i_max = 0, j_max = 0, k_max = 0;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (distanceMap[k][x_new(i, j, Length)] == distanceMax) {
+	//				cptMax++;
+	//				i_max = (int)i; j_max = (int)j; k_max = (int)k;
+	//			}
+	//		}
+	//	}
+	//}
+	//printf("\nThe maximal distance is = %f, and %f points have that distance \n", distanceMax, cptMax);
+	//printf("Coordinates of the point with highest distance : (%d, %d, %d)\n", j_max, i_max, k_max);
+	//float i_s = 189.022, j_s = 308.971, k_s = 351.193;
+	//printf("Centroid from Slicer : (%.3f, %.3f, %.3f)\n", i_s, j_s, k_s);
+	//printf("The distance between the two points is : %.3f", sqrt((j_max - i_s)*((j_max - i_s)) + (i_max - j_s)*(i_max - j_s) + (k_max - k_s)* (k_max - k_s)) );
+	////Ball arround the highest distance point and centroid from Slicer
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			//ball around the highest distance
+	//			if (sqrt( (i_max - i)* (i_max - i) + (j_max - j) * (j_max - j) + (k_max - k) * (k_max - k) ) < 10 ) {
+	//				ballCode[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//			else {
+	//				ballCode[k][x_new(i, j, Length)] = minData;
+	//			}
+	//			//ball around centroid
+	//			if (sqrt((i_s - j) * (i_s - j) + (j_s - i) * (j_s - i) + (k_s - k) * (k_s - k)) < 10) {
+	//				ballSlicer[k][x_new(i, j, Length)] = maxData;
+	//			}
+	//			else {
+	//				ballSlicer[k][x_new(i, j, Length)] = minData;
+	//			}
+	//		}
+	//	}
+	//}
+	//store3dRawData<dataType>(ballCode, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ballCodeP7.raw");
+	//store3dRawData<dataType>(ballSlicer, Length, Width, Height, "C:/Users/Konan Allaly/Documents/Tests/output/ballSlicerP7.raw");
 
 	//free memory
 	for (k = 0; k < Height; k++) {
-		free(image[k]); 
-		free(ImageData.imageDataPtr[k]);
-		free(distanceMap[k]);
+		free(image[k]);
+		free(imageData[k]);
+		//free(distanceMap[k]); free(ballCode[k]); free(ballSlicer[k]);
 		//free(labelArray[k]); free(status[k]);
 	}
-	free(image); free(ImageData.imageDataPtr); free(distanceMap);
+	free(image); free(imageData); 
+	//free(distanceMap); free(ballCode); free(ballSlicer);
 	//free(labelArray); free(status); free(countingArray);
-	//free(Histogram);
-	
-	//free(HistoSliceBySlice); free(HistoRowByRow); free(HistoColumnByColumn);
-	//for (k = 0; k < height_new; k++) {
-	//	free(distanceMap[k]); free(croppedImage);
-	//}
-	//free(croppedImage); free(distanceMap);
-	//free(Proba); free(histogram); free(interClassVariance);
-	//free(cenTroid);
-	
+
+	for (k = 0; k < heightNew; k++) {
+		free(segment.imageDataPtr[k]);
+		free(distanceMap[k]);
+		free(maskThresh[k]);
+	}
+	free(segment.imageDataPtr); 
+	free(distanceMap); 
+	free(maskThresh);
+	free(center_segment);
+
 	return EXIT_SUCCESS;
 }

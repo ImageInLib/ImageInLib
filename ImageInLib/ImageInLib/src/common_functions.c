@@ -164,7 +164,7 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 	dataType maxData = -10000;
 	dataType minData = 10000;
 
-	// Find the Max Intensity
+	// Find the Min and Max Intensity
 	for (k = 0; k < imageHeight; k++) {
 		for (i = 0; i < imageLength; i++) {
 			for (j = 0; j < imageWidth; j++) {

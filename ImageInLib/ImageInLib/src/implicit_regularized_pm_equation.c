@@ -55,9 +55,9 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	for (k = 0; k < height_ext; k++)
 	{
-		presmoothed_coefPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		gauss_seidelPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		prevSolPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		presmoothed_coefPtr[k] = (dataType*)malloc(sizeof(dataType) * length_ext * width_ext);
+		gauss_seidelPtr[k] = (dataType*)malloc(sizeof(dataType) * length_ext * width_ext);
+		prevSolPtr[k] = (dataType*)malloc(sizeof(dataType) * length_ext * width_ext);
 		//checks if the memory was allocated
 		if (presmoothed_coefPtr[k] == NULL || gauss_seidelPtr[k] == NULL || prevSolPtr[k] == NULL)
 			return false;
@@ -65,12 +65,12 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	/* Create tempporary Image Data holder for diffusion coefficients
 	- with extended boundary because of boundary condition*/
-	dataType** e_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
-	dataType** w_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
-	dataType** n_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
-	dataType** s_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
-	dataType** t_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
-	dataType** b_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height));
+	dataType** e_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** w_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** n_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** s_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** t_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** b_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
 
 	//checks if the memory was allocated
 	if (e_coefPtr == NULL || w_coefPtr == NULL || n_coefPtr == NULL || s_coefPtr == NULL || t_coefPtr == NULL || b_coefPtr == NULL)
@@ -78,12 +78,12 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 
 	for (k = 0; k < height; k++)
 	{
-		e_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
-		w_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
-		n_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
-		s_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
-		t_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
-		b_coefPtr[k] = malloc(sizeof(dataType)*(length)*(height));
+		e_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
+		w_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
+		n_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
+		s_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
+		t_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
+		b_coefPtr[k] = (dataType*)malloc( sizeof(dataType) * length * width );
 
 		//checks if the memory was allocated
 		if (e_coefPtr[k] == NULL || w_coefPtr[k] == NULL || n_coefPtr[k] == NULL || s_coefPtr[k] == NULL || t_coefPtr[k] == NULL || b_coefPtr[k] == NULL)
