@@ -358,11 +358,11 @@ bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const cha
 	return true;
 }
 
-bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, double h)
+bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, dataType h)
 {
 	FILE* outputfile; //file stream
 	size_t i, j, k, dimXYZ = xDim * yDim * zDim;
-	double sx = h, sy = h, sz = h;
+	dataType sx = h, sy = h, sz = h;
 	//checks if the memory was allocated
 	if (array3DPtr == NULL)
 		return false;
@@ -377,11 +377,12 @@ bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, con
 		fprintf(outputfile, "file in binary format\n");
 		fprintf(outputfile, "BINARY\n");
 		fprintf(outputfile, "DATASET STRUCTURED_POINTS\n");
-		fprintf(outputfile, "DIMENSIONS %d %d %d\n", xDim, yDim, zDim);
-		fprintf(outputfile, "ORIGIN %f %f %f\n", 0., 0., 0.);
+		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
+		fprintf(outputfile, "ORIGIN  0 0 0\n");
+		//fprintf(outputfile, "ORIGIN %f %f %f\n", (h - 1), (h - 1), (h - 1));
 		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
-		fprintf(outputfile, "POINT_DATA %d\n", dimXYZ);
-		fprintf(outputfile, "SCALARS scalars double\n");
+		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
+		fprintf(outputfile, "SCALARS scalars float\n");
 		fprintf(outputfile, "LOOKUP_TABLE default\n");
 	}
 	
@@ -389,7 +390,9 @@ bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, con
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < xDim; i++) {
 			for (j = 0; j < yDim; j++) {
-				fprintf(outputfile, "%.4lf \n", array3DPtr[k][x_new(i, j, xDim)]);
+				dataType tmp = array3DPtr[k][x_new(i, j, xDim)];
+				//revertBytes(&tmp, sizeof(dataType));
+				fwrite(&tmp, sizeof(dataType), 1, outputfile);
 			}
 		}
 	}

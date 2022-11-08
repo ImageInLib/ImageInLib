@@ -9,6 +9,7 @@
 #include <math.h> // Maths functions i.e. pow, sin, cos
 #include <stdbool.h> // Boolean function bool
 #include <string.h>
+#include <common_vtk.h>
 #include "heat_equation.h"
 #include "non_linear_heat_equation.h"
 #include "segmentation3D_subsurf.h"
@@ -121,9 +122,20 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
 
+	
+	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	vtkInfo->spacing[0] = 1.0; vtkInfo->spacing[1] = 1.0; vtkInfo->spacing[2] = 1.0;
+	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
+	const char* pathsaveVTK;
+
 	//Array for name construction
 	unsigned char name[350];
 	unsigned char name_ending[100];
+
+
+	//vtkInfo->dataPointer = inputDataArrayPtr;
 
 	//loop for segmentation time steps
 	i = 1;
@@ -151,11 +163,14 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 		if ((i%segParameters.mod) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i); // .vtk
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i); // .vtk
 			strcat_s(name, sizeof(name), name_ending);
-			Storage_Flags flags = { false, false }; // {true, true}
+			pathsaveVTK = name;
+			vtkInfo->dataPointer = imageData.segmentationFuntionPtr;
+			storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+			//Storage_Flags flags = { false, false }; // {true, true}
 			//store3dDataVtkD(imageData.segmentationFuntionPtr, length, width, height, name, segParameters.h, flags);
-			store3dDataArrayD(imageData.segmentationFuntionPtr, length, width, height, name, flags);
+			//store3dDataArrayD(imageData.segmentationFuntionPtr, length, width, height, name, flags);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
@@ -201,6 +216,8 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 	}
 	free(prevSol_extPtr);
 	free(gauss_seidelPtr);
+
+	free(vtkInfo);
 
 	return true;
 }
@@ -441,9 +458,16 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	//checks if the memory was allocated
 	if (inputDataArrayPtr == NULL)
 		return false;
-	//Storage paths
-	unsigned char pathArray1[] = "D:\\segmentation\\test for library release\\segFunction.vtk";
 
+
+	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	vtkInfo->spacing[0] = 1.0; vtkInfo->spacing[1] = 1.0; vtkInfo->spacing[2] = 1.0;
+	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
+	vtkDataForm dataForm = dta_binary;
+	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/segFunction.vtk";
+	
 	// Construction of segmentation function
 	for (s = 0; s < no_of_centers; s++)
 	{
@@ -490,8 +514,10 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 			}
 		}
 	}
-	Storage_Flags flags = { true, true };
-	store3dDataVtkD(inputDataArrayPtr, length, width, height, pathArray1, (2.5 / (length)), flags);
+	//Storage_Flags flags = { true, true };
+	//store3dDataVtkD(inputDataArrayPtr, length, width, height, pathArray1, (2.5 / (length)), flags);
+	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+	free(vtkInfo);
 	return true;
 }
 

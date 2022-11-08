@@ -13,7 +13,8 @@ extern "C" {
 		dta_Int,
 		dta_UInt,
 		dta_Flt,
-		dta_Dbl
+		dta_Dbl,
+		dta_Short
 	} VtkDataType;
 	//==============================================================================
 	typedef enum {
@@ -23,7 +24,7 @@ extern "C" {
 	typedef struct {
 		double spacing[3]; // distance between neighboring pixels
 		double origin[3]; // world coordinate position of the lower left hand corner of the data
-		int dimensions[3]; // length, width. height
+		int dimensions[3]; // length, width, height
 		VtkDataType vDataType; // datatype
 		dataType ** dataPointer; // Pointer with data values
 		vtkOperation operation;
