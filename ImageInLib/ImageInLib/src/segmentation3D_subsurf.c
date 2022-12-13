@@ -27,7 +27,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
 	size_t i, j, k; // length == xDim, width == yDim, height == zDim
@@ -117,8 +117,8 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	CoefPtrs.b_Ptr = b_Ptr;
 
 	//generate initial segmentation function
-	//generateInitialSegmentationFunctionForMultipleCentres(segmFuntionPtr, length, width, height, centers, 0.5, 5, no_of_centers);
-	copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
+	generateInitialSegmentationFunctionForMultipleCentres(segmFuntionPtr, length, width, height, centers, 0.5, 15, no_of_centers);
+	//copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
 
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);

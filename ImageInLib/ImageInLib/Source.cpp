@@ -381,7 +381,7 @@ int main() {
 	//centerSeg[0].x = 77; centerSeg[0].y = 68; centerSeg[0].z = 49;
 	//centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max;
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//subsurfSegmentation(segment, initialSeg, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
+	//subsurfSegmentation(segment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
 	generalizedSubsurfSegmentation(segment, initialSeg, segmentParameters, filterParameters, outputPathPtr, 1.0, 1.0);
 
 	//thresholding3dFunctionN(imageData, Length, Width, Height, thresmin, thresmax, minData, maxData);
