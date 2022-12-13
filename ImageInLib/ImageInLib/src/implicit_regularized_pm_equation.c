@@ -11,8 +11,8 @@
 bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters)
 {
 	size_t k, i, j;
-	dataType  hh = implicitParameters.h * implicitParameters.h;
-	dataType  tau = 100 * implicitParameters.timeStepSize;
+	dataType  hhh = implicitParameters.h * implicitParameters.h * implicitParameters.h;
+	dataType  tau = implicitParameters.timeStepSize;
 
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
@@ -27,7 +27,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters im
 	size_t x; //x = x_new(i, j, length);
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
-	const dataType  coeff = tau / hh;
+	const dataType  coeff = tau / hhh;
 	dataType  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
