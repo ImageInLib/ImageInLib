@@ -43,7 +43,6 @@ extern "C" {
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
-
 		dataType ** imageDataPtr; // Image Data Containers
 	} Image_Data;
 
@@ -112,7 +111,7 @@ extern "C" {
 	to an array extendedDataPtr representing enlarged data (by 1 vx in each direction)
 	of dimensions originalHeight + 2, originalLength + 2 and originalWidth + 2
 	*/
-	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToExtendedArea(dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	void copyDataToReducedArea(dataType** originalDataPtr, const dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================

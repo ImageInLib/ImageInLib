@@ -4,6 +4,8 @@ extern "C" {
 
 #pragma once
 #include "common_functions.h"
+#include "../src/filter_params.h"
+#include "../src/heat_equation.h"
 
 
 	//for 2D image using 2D arrays
@@ -11,6 +13,8 @@ extern "C" {
 
 	//For 3D Images
 	bool labelling3D(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType object);
+
+	bool regionGrowing(dataType** imageDataPtr, int** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType thres_min, dataType thres_max, Filter_Parameters smoothParameters);
 	
 
 	//===========================
@@ -25,6 +29,9 @@ extern "C" {
 
 	bool sortArray(int* valuePtr, int sizeArray);
 	//=============================
+
+	////Compute image gradient
+	//bool imageGradient(dataType imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType thresMin, dataType threshMax);
 
 #ifdef __cplusplus
 }

@@ -104,7 +104,7 @@ extern "C" {
 	- Finally, it also generates initial segmentation function
 	- no_of_centers is no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+	bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr);
 
 	/* gFunctionForImageToBeSegmented manages computation of norm of presmoothed image to be segmented
@@ -136,6 +136,14 @@ extern "C" {
 	bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, size_t height,
 		dataType center_x, dataType center_y, dataType center_z, dataType R, size_t counter);
 
+	bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters,
+		Filter_Parameters explicit_lhe_Parameters, unsigned char* outputPathPtr, dataType a, dataType b);
+	bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** extendedCoefPtr, dataType** edgeGradientPtr, Gradient_Pointers GPtrs, Gradient_Pointers VPtrs,
+		Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters);
+	bool generalizedGaussSeidelCoefficients(dataType** extendedCoefPtr, Segment_Image_Data inputImageData, dataType** edgeGradientPtr,
+		Coefficient_Pointers CoefPtrs, Segmentation_Parameters segParameters);
+	bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType** gauss_seidelPtr, Segment_Image_Data inputImageData, Gradient_Pointers GPtrs, Gradient_Pointers VPtrs,
+		Segmentation_Parameters segParameters, Coefficient_Pointers CoefPtrs, dataType a, dataType b);
 #ifdef __cplusplus
 }
 #endif

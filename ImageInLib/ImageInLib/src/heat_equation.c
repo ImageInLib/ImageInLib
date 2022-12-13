@@ -10,7 +10,7 @@
 void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType hhh = explicitParameters.h*explicitParameters.h * explicitParameters.h;
+	dataType hhh = explicitParameters.h * explicitParameters.h * explicitParameters.h;
 	dataType tau = explicitParameters.timeStepSize;
 
 
@@ -24,10 +24,10 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 
 	// Create temp Image Data holder for Previous time step data - with extended boundary because of boundary condition
 
-	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
+	dataType** tempPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
 	for (k = 0; k < height_ext; k++)
 	{
-		tempPtr[k] = malloc(sizeof(dataType)*length_ext*width_ext);
+		tempPtr[k] = malloc(sizeof(dataType) * length_ext * width_ext);
 	}
 	initialize3dArrayD(tempPtr, length_ext, width_ext, height_ext, 0);
 

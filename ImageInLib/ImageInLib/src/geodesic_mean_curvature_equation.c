@@ -54,14 +54,14 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	presmoothingData.width = width_ext;
 
 	// Create temporary Image Data holder for Previous time step data - with extended boundary because of boundary condition
-	dataType** prevSolPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
+	dataType** prevSolPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
 
 	// Create temporary Image Data holder for Current time step data - with extended boundary because of boundary condition
-	dataType** gauss_seidelPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
+	dataType** gauss_seidelPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
 
 	/* Create tempporary Image Data holder for calculation of diffusion coefficients on presmoothed image
 	- with extended boundary because of boundary condition*/
-	dataType** presmoothed_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
+	dataType** presmoothed_coefPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || gauss_seidelPtr == NULL || presmoothed_coefPtr == NULL)
@@ -69,9 +69,9 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 
 	for (k = 0; k < height_ext; k++)
 	{
-		presmoothed_coefPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		gauss_seidelPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		prevSolPtr[k] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		presmoothed_coefPtr[k] = malloc(sizeof(dataType) * length_ext * width_ext);
+		gauss_seidelPtr[k] = malloc(sizeof(dataType) * length_ext * width_ext);
+		prevSolPtr[k] = malloc(sizeof(dataType) * length_ext * width_ext);
 		//checks if the memory was allocated
 		if (presmoothed_coefPtr[k] == NULL || gauss_seidelPtr[k] == NULL || prevSolPtr[k] == NULL)
 			return false;
@@ -428,25 +428,25 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	copyDataToReducedArea(inputImageData.imageDataPtr, gauss_seidelPtr, height, length, width);
 
 	// Freeing Memory after use
-	for (i = 0; i < height_ext; i++)
+	for (k = 0; k < height_ext; k++)
 	{
-		free(presmoothed_coefPtr[i]);
-		free(gauss_seidelPtr[i]);
-		free(prevSolPtr[i]);
+		free(presmoothed_coefPtr[k]);
+		free(gauss_seidelPtr[k]);
+		free(prevSolPtr[k]);
 	}
 	free(presmoothed_coefPtr);
 	free(gauss_seidelPtr);
 	free(prevSolPtr);
 
 	// free _coefPtr pointers
-	for (i = 0; i < height; i++)
+	for (k = 0; k < height; k++)
 	{
-		free(presmoot_e_coefPtr[i]);
-		free(presmoot_w_coefPtr[i]);
-		free(presmoot_n_coefPtr[i]);
-		free(presmoot_s_coefPtr[i]);
-		free(presmoot_t_coefPtr[i]);
-		free(presmoot_b_coefPtr[i]);
+		free(presmoot_e_coefPtr[k]);
+		free(presmoot_w_coefPtr[k]);
+		free(presmoot_n_coefPtr[k]);
+		free(presmoot_s_coefPtr[k]);
+		free(presmoot_t_coefPtr[k]);
+		free(presmoot_b_coefPtr[k]);
 	}
 	free(presmoot_e_coefPtr);
 	free(presmoot_w_coefPtr);
@@ -456,14 +456,14 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	free(presmoot_b_coefPtr);
 
 	// free orig_ _coefPtr pointers
-	for (i = 0; i < height; i++)
+	for (k = 0; k < height; k++)
 	{
-		free(orig_e_coefPtr[i]);
-		free(orig_w_coefPtr[i]);
-		free(orig_n_coefPtr[i]);
-		free(orig_s_coefPtr[i]);
-		free(orig_t_coefPtr[i]);
-		free(orig_b_coefPtr[i]);
+		free(orig_e_coefPtr[k]);
+		free(orig_w_coefPtr[k]);
+		free(orig_n_coefPtr[k]);
+		free(orig_s_coefPtr[k]);
+		free(orig_t_coefPtr[k]);
+		free(orig_b_coefPtr[k]);
 	}
 	free(orig_e_coefPtr);
 	free(orig_w_coefPtr);
@@ -473,14 +473,14 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	free(orig_b_coefPtr);
 
 	// free coefPtr_ pointers
-	for (i = 0; i < height; i++)
+	for (k = 0; k < height; k++)
 	{
-		free(coefPtr_e[i]);
-		free(coefPtr_w[i]);
-		free(coefPtr_n[i]);
-		free(coefPtr_s[i]);
-		free(coefPtr_t[i]);
-		free(coefPtr_b[i]);
+		free(coefPtr_e[k]);
+		free(coefPtr_w[k]);
+		free(coefPtr_n[k]);
+		free(coefPtr_s[k]);
+		free(coefPtr_t[k]);
+		free(coefPtr_b[k]);
 	}
 	free(coefPtr_e);
 	free(coefPtr_w);

@@ -97,7 +97,7 @@ size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLe
 	return rowIndex + columnIndex * rowLength; // x + y*DimX
 }
 //==============================================================================
-void copyDataToExtendedArea(const dataType** originalDataPtr, dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
+void copyDataToExtendedArea(dataType** originalDataPtr, dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t length_ext = originalLength + 2;
