@@ -1437,6 +1437,7 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters, unsigned char* outputPathPtr, dataType a, dataType b) {
 
+	//test differentes branches
 	size_t i, j, k;
 	size_t dim2D = inputImageData.length * inputImageData.width;
 	size_t height = inputImageData.height;
