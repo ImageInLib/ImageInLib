@@ -150,7 +150,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 
 	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	if (vtkInfo == NULL) return false;
-	vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
+	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
 	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
 	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
 	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;

@@ -27,7 +27,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
 {
 	size_t i, j, k; // length == xDim, width == yDim, height == zDim
@@ -117,8 +117,8 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 	CoefPtrs.b_Ptr = b_Ptr;
 
 	//generate initial segmentation function
-	generateInitialSegmentationFunctionForMultipleCentres(segmFuntionPtr, length, width, height, centers, 0.5, 15, no_of_centers);
-	//copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
+	//generateInitialSegmentationFunctionForMultipleCentres(segmFuntionPtr, length, width, height, centers, 0.5, 15, no_of_centers);
+	copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
 
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
@@ -135,51 +135,12 @@ bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segP
 	unsigned char name[350];
 	unsigned char name_ending[100];
 
-
 	strcpy_s(name, sizeof name, outputPathPtr);
-	sprintf_s(name_ending, sizeof(name_ending), "_g_est%03zd.vtk", i);
+	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.vtk");
 	strcat_s(name, sizeof(name), name_ending);
 	pathsaveVTK = name;
 	vtkInfo->dataPointer = GPtrs.GePtr;
 	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-	//strcpy_s(name, sizeof name, outputPathPtr);
-	//sprintf_s(name_ending, sizeof(name_ending), "_g_west.vtk", i);
-	//strcat_s(name, sizeof(name), name_ending);
-	//pathsaveVTK = name;
-	//vtkInfo->dataPointer = GPtrs.GwPtr;
-	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-	//strcpy_s(name, sizeof name, outputPathPtr);
-	//sprintf_s(name_ending, sizeof(name_ending), "_g_north.vtk", i);
-	//strcat_s(name, sizeof(name), name_ending);
-	//pathsaveVTK = name;
-	//vtkInfo->dataPointer = GPtrs.GnPtr;
-	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-	//strcpy_s(name, sizeof name, outputPathPtr);
-	//sprintf_s(name_ending, sizeof(name_ending), "_g_south.vtk", i);
-	//strcat_s(name, sizeof(name), name_ending);
-	//pathsaveVTK = name;
-	//vtkInfo->dataPointer = GPtrs.GsPtr;
-	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-	//strcpy_s(name, sizeof name, outputPathPtr);
-	//sprintf_s(name_ending, sizeof(name_ending), "_g_top.vtk", i);
-	//strcat_s(name, sizeof(name), name_ending);
-	//pathsaveVTK = name;
-	//vtkInfo->dataPointer = GPtrs.GtPtr;
-	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-	//strcpy_s(name, sizeof name, outputPathPtr);
-	//sprintf_s(name_ending, sizeof(name_ending), "_g_bottom.vtk", i);
-	//strcat_s(name, sizeof(name), name_ending);
-	//pathsaveVTK = name;
-	//vtkInfo->dataPointer = GPtrs.GbPtr;
-	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-
-
-	//vtkInfo->dataPointer = inputDataArrayPtr;
 
 	//loop for segmentation time steps
 	i = 1;
@@ -502,12 +463,12 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 		return false;
 
 	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	vtkInfo->spacing[0] = 1.0; vtkInfo->spacing[1] = 1.0; vtkInfo->spacing[2] = 1.0;
+	vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
 	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
 	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
 	vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
 	vtkDataForm dataForm = dta_binary;
-	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/segFunction.vtk";
+	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
 	
 	// Construction of segmentation function
 	for (s = 0; s < no_of_centers; s++)
@@ -555,8 +516,6 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 			}
 		}
 	}
-	//Storage_Flags flags = { true, true };
-	//store3dDataVtkD(inputDataArrayPtr, length, width, height, pathArray1, (2.5 / (length)), flags);
 	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 	free(vtkInfo);
 	return true;

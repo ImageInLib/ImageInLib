@@ -1,3 +1,4 @@
+#include "interpolations.h"
 #include "imageInterpolation.h"
 #include<math.h>
 
