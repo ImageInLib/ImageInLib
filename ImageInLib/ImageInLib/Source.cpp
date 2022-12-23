@@ -27,7 +27,7 @@
 #include "../src/image_difference.h"
 #include "../src/noise_generator.h"
 #include "../src/image_norm.h"
-#include "resamplingVolume.h"
+#include "../src/imageInterpolation.h"
 
 #define originalMean 71.1245
 #define offSet 1024
