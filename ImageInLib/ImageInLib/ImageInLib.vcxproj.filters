@@ -314,6 +314,9 @@
     <ClCompile Include="src\morphological_change.c">
       <Filter>Source Files\morphology</Filter>
     </ClCompile>
+    <ClCompile Include="src\imageInterpolation.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -462,6 +465,9 @@
     </ClInclude>
     <ClInclude Include="include\morphological_change.h">
       <Filter>Header Files\morphology</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imageInterpolation.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

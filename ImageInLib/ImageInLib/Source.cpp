@@ -187,6 +187,19 @@ int main() {
 	printf("Coordinates of the highest distance x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
 	//----------------------------------------------------------------------------------------------------
+	//Saving
+
+	Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
+	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
+	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	vtkDataForm dataForm = dta_binary;
+	savingInfo->dataPointer = distanceMap;
+	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
+	storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	//----------------------------------------------------------------------------------------------------
 
 	////Create artificial image : if we are working with artificial image , everything befor this part is not needed
 	//const size_t heightNew = 64, lengthNew = 150, widthNew = 150;
@@ -246,9 +259,9 @@ int main() {
 	////centerSeg[0].x = i_n; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
 	////centerSeg[1].x = i_m; centerSeg[1].y = j_max; centerSeg[1].z = k_max;
 
-	//If we want to start with the segmentatation function originally implemented in the library
-	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 60, numb_centers);
-	//If we want start by the liver model just comment the previous line
+	////If we want to start with the segmentatation function originally implemented in the library
+	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 60, numb_centers);
+	////If we want start by the liver model just comment the previous line
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
 	rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
@@ -261,7 +274,7 @@ int main() {
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
 	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
+	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
 

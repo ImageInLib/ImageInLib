@@ -33,6 +33,7 @@
     <ClCompile Include="src\generate_3d_shapes.c" />
     <ClCompile Include="src\geodesic_mean_curvature_equation.c" />
     <ClCompile Include="src\heat_equation.c" />
+    <ClCompile Include="src\imageInterpolation.c" />
     <ClCompile Include="src\image_difference.c" />
     <ClCompile Include="src\image_norm.c" />
     <ClCompile Include="src\implicit_regularized_pm_equation.c" />
@@ -91,6 +92,7 @@
     <ClInclude Include="src\filter_params.h" />
     <ClInclude Include="src\generate_3d_shapes.h" />
     <ClInclude Include="src\heat_equation.h" />
+    <ClInclude Include="src\imageInterpolation.h" />
     <ClInclude Include="src\image_difference.h" />
     <ClInclude Include="src\image_norm.h" />
     <ClInclude Include="src\interpolations.h" />
