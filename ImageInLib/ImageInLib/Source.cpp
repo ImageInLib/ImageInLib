@@ -189,15 +189,23 @@ int main() {
 	//----------------------------------------------------------------------------------------------------
 	//Saving
 
-	Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
-	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
-	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
-	vtkDataForm dataForm = dta_binary;
-	savingInfo->dataPointer = distanceMap;
-	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
-	storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
+	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	//savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
+	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	//vtkDataForm dataForm = dta_binary;
+	//savingInfo->dataPointer = distanceMap;
+	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	//savingInfo->dataPointer = croppedLiver;
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/initialSeg.vtk";
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	//savingInfo->dataPointer = croppedImage;
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedVolume.vtk";
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//----------------------------------------------------------------------------------------------------
 
@@ -259,21 +267,21 @@ int main() {
 	////centerSeg[0].x = i_n; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
 	////centerSeg[1].x = i_m; centerSeg[1].y = j_max; centerSeg[1].z = k_max;
 
-	////If we want to start with the segmentatation function originally implemented in the library
-	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 60, numb_centers);
-	////If we want start by the liver model just comment the previous line
+	//If we want to start with the segmentatation function originally implemented in the library
+	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 60, numb_centers);
+	//If we want start by the liver model just comment the previous line
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
 	rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
-	segmentParameters.h = 1.171875; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 10; segmentParameters.mod = 1;
+	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 10; segmentParameters.mod = 1;
 	segmentParameters.numberOfTimeStep = 10; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
 	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
-	filterParameters.h = 1.171875; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.1; filterParameters.p = 1;
+	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
+	subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
 	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
@@ -294,7 +302,7 @@ int main() {
 	}
 	free(croppedImage); free(croppedLiver); free(distanceMap); free(maskThreshold); free(initialSegment);
 	 
-	//free(centerSeg);
+	free(centerSeg);
 	////free(savingInfo);
 
 	return EXIT_SUCCESS;
