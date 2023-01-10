@@ -59,8 +59,16 @@ int main() {
 		image[k] = (short*)malloc(dim2D * sizeof(short));
 	}
 	if (imageData == NULL || image == NULL) return false;
-	const char* pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/patient2.raw";
-	load3dArrayRAW<short>(image, Length, Width, Height, pathLoad);
+
+	std::string inputPath = "input/";//C:/Users/Konan Allaly/Documents/Tests/input/
+	std::string outputPath = "output/";//C:/Users/Konan Allaly/Documents/Tests/output/
+	std::string inputImagePath = inputPath + "patient2.raw";
+
+	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
+	{
+		printf("inputImagePath does not exist\n");
+	}
+
 	//Copy
 	//Original data type is short, so I load it with short pointer and copy in dataType=float pointer
 	for (k = 0; k < Height; k++) {
@@ -89,8 +97,15 @@ int main() {
 	}
 	if (resampledImageData == NULL || liverContainer == NULL || liver == NULL) return false;
 
-	pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/liverP222.raw";
-	load3dArrayRAW<short>(liver, Length, Width, zDim, pathLoad);
+	std::string inputShapePath = inputPath + "liver_p2.raw";
+	//TODO: interpolate shape!!!
+
+	if(load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
+	{
+		printf("inputShapePath does not exist\n");
+	}
+
+
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
@@ -103,7 +118,9 @@ int main() {
 	//nearestNeighborInterpolation(imageData, resampledImageData, Length, Width, Height, k_spacingOld, k_spacingNew);
 
 	////Save as .raw file
-	////store3dRawData<dataType>(resampledImageData, Length, Width, zDim, "C:/Users/Konan Allaly/Documents/Tests/output/interpolatedImage_LI.raw");
+	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
+	store3dRawData<dataType>(resampledImageData, Length, Width, zDim, outputInterpolatedImagePath.c_str());
+
 	////Save as .vtk file
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//savingInfo->spacing[0] = 1.0; savingInfo->spacing[1] = 1.0; savingInfo->spacing[2] = 1.0;
@@ -141,6 +158,8 @@ int main() {
 	}
 	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) return false;
 
+	const dataType initialSegmentationValue = 1.0;
+
 	for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
 		for (i = 0, in = iMin; i < lengthNew; i++, in++) {
 			for (j = 0, jn = jMin; j < widthNew; j++, jn++) {
@@ -149,7 +168,7 @@ int main() {
 				croppedLiver[k][x_new(i, j, lengthNew)] = liverContainer[kn][x_new(in, jn, Length)];
 				//just use the shape of the liver model from slicer
 				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
-					initialSegment[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
+					initialSegment[k][x_new(i, j, lengthNew)] = initialSegmentationValue;// croppedImage[k][x_new(i, j, lengthNew)];
 					//maskThreshold[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
 				}
 			}
@@ -273,7 +292,7 @@ int main() {
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
+	subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
 	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
