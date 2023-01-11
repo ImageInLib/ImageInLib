@@ -50,28 +50,50 @@ int main() {
 	/*The Width and Lenght are the same for all the patients
 	Height : patient1b = patient3 = 508, patient2 = 406, patient6 = 880, patient7 = 607*/
 	
-
 	//Preparation of image data pointers
 	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	short** image = (short**)malloc(Height * sizeof(short*));
+	dataType** liverContainer = (dataType**)malloc(Height * sizeof(dataType*));
+	short** liver = (short**)malloc(Height * sizeof(short*));
 	for (k = 0; k < Height; k++) {
 		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		image[k] = (short*)malloc(dim2D * sizeof(short));
+		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType*));
+		liver[k] = (short*)malloc(dim2D * sizeof(short*));
 	}
-	if (imageData == NULL || image == NULL) return false;
+	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) return false;
+
 	const char* pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/patient2.raw";
 	load3dArrayRAW<short>(image, Length, Width, Height, pathLoad);
+
+	pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/liver_p2.raw";
+	load3dArrayRAW<short>(liver, Length, Width, Height, pathLoad);
+
 	//Copy
 	//Original data type is short, so I load it with short pointer and copy in dataType=float pointer
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
 				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
+				liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x_new(i, j, Length)];
 			}
 		}
 	}
-	//--------------------------------------------------------------------------------------------------
 
+	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//savingInfo->spacing[0] = 1.171875; savingInfo->spacing[1] = 1.171875; savingInfo->spacing[2] = 1.171875;
+	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	//savingInfo->dimensions[0] = Length; savingInfo->dimensions[1] = Width; savingInfo->dimensions[2] = Height;
+	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	//vtkDataForm dataForm = dta_binary;
+	//savingInfo->dataPointer = imageData;
+	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/loadedImage.vtk";
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/loadedLiver.vtk";
+	//savingInfo->dataPointer = liverContainer;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	//--------------------------------------------------------------------------------------------------
 	//Image Interpolation
 	dataType k_spacingNew = 1.171875, k_spacingOld = 2.5;
 	//const size_t zDim = (size_t)((k_spacingOld / k_spacingNew) * Height);
@@ -79,28 +101,26 @@ int main() {
 	spacing patient 6, patient7, x = y = 0.9765625*/
 	const size_t zDim = 866;
 	//Interpolated Image container
-	dataType** resampledImageData = (dataType**)malloc(zDim * sizeof(dataType*));
-	dataType** liverContainer = (dataType**)malloc(zDim * sizeof(dataType*));
-	short** liver = (short**)malloc(zDim * sizeof(short*));
+	dataType** resampledImage = (dataType**)malloc(zDim * sizeof(dataType*));
+	dataType** resampledLiver = (dataType**)malloc(zDim * sizeof(dataType*));
 	for (k = 0; k < zDim; k++) {
-		resampledImageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		liver[k] = (short*)malloc(dim2D * sizeof(short));
+		resampledImage[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+		resampledLiver[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 	}
-	if (resampledImageData == NULL || liverContainer == NULL || liver == NULL) return false;
+	if (resampledImage == NULL || resampledLiver == NULL) return false;
 
-	pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/liverP222.raw";
-	load3dArrayRAW<short>(liver, Length, Width, zDim, pathLoad);
-	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x_new(i, j, Length)];
-			}
-		}
-	}
+	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
+	linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
 
-	linear2dInterpolation(imageData, resampledImageData, Length, Width, Height, k_spacingOld, k_spacingNew);
-	//nearestNeighborInterpolation(imageData, resampledImageData, Length, Width, Height, k_spacingOld, k_spacingNew);
+	//savingInfo->dimensions[2] = zDim;
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/resampledImage.vtk";
+	//savingInfo->dataPointer = resampledImage;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/resampledLiver.vtk";
+	//savingInfo->dataPointer = resampledLiver;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	 
+	//-----------------------------------------------------------------------------------------------------
 
 	////Save as .raw file
 	////store3dRawData<dataType>(resampledImageData, Length, Width, zDim, "C:/Users/Konan Allaly/Documents/Tests/output/interpolatedImage_LI.raw");
@@ -124,7 +144,7 @@ int main() {
 
 	//kMin depends on the interpolated image
 	size_t kMin = 332, iMin = 180, jMin = 126, kn, in, jn;
-	const size_t heightNew = 170, lengthNew = 180, widthNew = 180;
+	const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
 	//size_t kMin = 388, iMin = 210, jMin = 148, kn, in, jn;
 	//const size_t heightNew = 200, lengthNew = 210, widthNew = 210;
 	dataType** croppedImage = (dataType**)malloc(sizeof(dataType*) * heightNew);
@@ -133,28 +153,37 @@ int main() {
 	dataType** distanceMap = (dataType**)malloc(sizeof(dataType*) * heightNew);
 	dataType** initialSegment = (dataType**)malloc(sizeof(dataType*) * heightNew);
 	for (k = 0; k < heightNew; k++) {
-		croppedImage[k] = (dataType*)malloc(sizeof(dataType) * lengthNew * widthNew);
-		croppedLiver[k] = (dataType*)malloc(sizeof(dataType) * lengthNew * widthNew);
-		distanceMap[k] = (dataType*)malloc(sizeof(dataType) * lengthNew * widthNew);
-		maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * lengthNew * widthNew);
-		initialSegment[k] = (dataType*)malloc(sizeof(dataType) * lengthNew * widthNew);
+		croppedImage[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+		croppedLiver[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+		distanceMap[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+		maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+		initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
 	}
 	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) return false;
 
 	for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
 		for (i = 0, in = iMin; i < lengthNew; i++, in++) {
 			for (j = 0, jn = jMin; j < widthNew; j++, jn++) {
-				croppedImage[k][x_new(i, j, lengthNew)] = resampledImageData[kn][x_new(in, jn, Length)];
+				croppedImage[k][x_new(i, j, lengthNew)] = resampledImage[kn][x_new(in, jn, Length)];
 				maskThreshold[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
-				croppedLiver[k][x_new(i, j, lengthNew)] = liverContainer[kn][x_new(in, jn, Length)];
-				//just use the shape of the liver model from slicer
-				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
-					initialSegment[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
-					//maskThreshold[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
-				}
+				croppedLiver[k][x_new(i, j, lengthNew)] = resampledLiver[kn][x_new(in, jn, Length)];
+				initialSegment[k][x_new(i, j, lengthNew)] = 0;
 			}
 		}
 	}
+
+	//Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//savingInfo->spacing[0] = 1.171875; savingInfo->spacing[1] = 1.171875; savingInfo->spacing[2] = 1.171875;
+	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	//savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
+	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	//vtkDataForm dataForm = dta_binary;
+	//savingInfo->dataPointer = croppedImage;
+	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedImage.vtk";
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedLiver.vtk";
+	//savingInfo->dataPointer = croppedLiver;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//------------------------------------------------------------------------------------------------------------
 
@@ -171,13 +200,11 @@ int main() {
 			}
 		}
 	}
-	dataType cptMax = 0;
 	int i_max = 0, j_max = 0, k_max = 0;
 	for (k = 0; k < heightNew; k++) {
 		for (i = 0; i < lengthNew; i++) {
 			for (j = 0; j < widthNew; j++) {
 				if (distanceMap[k][x_new(i, j, lengthNew)] == distanceMax) {
-					cptMax++;
 					i_max = (int)i; j_max = (int)j; k_max = (int)k;
 				}
 			}
@@ -186,8 +213,96 @@ int main() {
 	printf("Maximal distance : %f \n", distanceMax);
 	printf("Coordinates of the highest distance x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
+	//dataType diff = distanceMax - 10, distanceMin = distanceMax;
+	//int i_min = 0, j_min = 0, k_min = 0;
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (distanceMap[k][x_new(i, j, lengthNew)] <= diff) {
+	//				distanceMap[k][x_new(i, j, lengthNew)] = 0;
+	//			}
+	//			if (distanceMap[k][x_new(i, j, lengthNew)] != 0 && distanceMap[k][x_new(i, j, lengthNew)] <= distanceMin) {
+	//				distanceMin = distanceMap[k][x_new(i, j, lengthNew)];
+	//				i_min = (int)i; j_min = (int)j; k_min = (int)k;
+	//			}
+	//		}
+	//	}
+	//}
+	//printf("Second distance : %f \n", distanceMin);
+	//printf("Coordinates of the second Point x = %d, y = %d and z = %d \n", i_min, j_min, k_min);
+
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/thresholded.vtk";
+	//savingInfo->dataPointer = maskThreshold;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
+	//savingInfo->dataPointer = distanceMap;
+	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	////------------------------------------------------------------------------------------------------------------
+	////Labelling
+	//int** labelArray = (int**)malloc(sizeof(int*) * heightNew);
+	//bool** statusArray = (bool**)malloc(sizeof(bool*) * heightNew);
+	//for (k = 0; k < heightNew; k++) {
+	//	labelArray[k] = (int*)malloc(sizeof(int) * lengthNew * widthNew);
+	//	statusArray[k] = (bool*)malloc(sizeof(bool) * lengthNew * widthNew);
+	//}
+	//if (labelArray == NULL || statusArray == NULL) return false;
+	////Initialization
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			labelArray[k][x_new(i, j, lengthNew)] = 0;
+	//			statusArray[k][x_new(i, j, lengthNew)] = false;
+	//		}
+	//	}
+	//}
+	//labelling3D(maskThreshold, labelArray, statusArray, lengthNew, widthNew, heightNew, 1);
+	////Number of object voxels
+	//int objectVoxels = 0;
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (maskThreshold[k][x_new(i, j, lengthNew)] == 1) {
+	//				objectVoxels++;
+	//			}
+	//		}
+	//	}
+	//}
+	////Counting
+	//int* countingArray = (int*)malloc(sizeof(int) * objectVoxels);
+	//if (countingArray == NULL) return false;
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (labelArray[k][x_new(i, j, lengthNew)] > 0) {
+	//				countingArray[labelArray[k][x_new(i,j,lengthNew)]]++;
+	//			}
+	//		}
+	//	}
+	//}
+	////biggest region
+	//int maxElement = 0;
+	//for (i = 0; i < objectVoxels; i++) {
+	//	if (countingArray[i] > maxElement) {
+	//		maxElement = countingArray[i];
+	//	}
+	//}
+	////Saving the biggest element
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (countingArray[labelArray[k][x_new(i, j, lengthNew)]] != maxElement) {
+	//				maskThreshold[k][x_new(i, j, lengthNew)] = 0;
+	//			}
+	//		}
+	//	}
+	//}
+
 	//----------------------------------------------------------------------------------------------------
 	//Saving
+	 
+	//rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
+	//store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/initialSegRescall.raw");
 
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
@@ -195,8 +310,8 @@ int main() {
 	//savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
 	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
 	//vtkDataForm dataForm = dta_binary;
-	//savingInfo->dataPointer = distanceMap;
-	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
+	//savingInfo->dataPointer = initialSegment;
+	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
 	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//savingInfo->dataPointer = croppedLiver;
@@ -208,6 +323,7 @@ int main() {
 	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//----------------------------------------------------------------------------------------------------
+	//Artificial Image
 
 	////Create artificial image : if we are working with artificial image , everything befor this part is not needed
 	//const size_t heightNew = 64, lengthNew = 150, widthNew = 150;
@@ -259,23 +375,43 @@ int main() {
 	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
 	//--------------------------------------------------------------------------------------------------------------
 
+	//------------------------------------------------------------------------------------------------------
 	//Segmentation parameters for real image
+
 	size_t numb_centers = 1; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
 	centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
+	// used for multiple centers
+	//centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
+	//centerSeg[1].x = i_max - 70; centerSeg[1].y = j_max + 50; centerSeg[1].z = k_max;
 
-	//// used for multiple centers
-	////centerSeg[0].x = i_n; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
-	////centerSeg[1].x = i_m; centerSeg[1].y = j_max; centerSeg[1].z = k_max;
+	//////If we want to start with the segmentatation function originally implemented in the library
+	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
+	for (k = 0; k < heightNew; k++) {
+		for (i = 0; i < lengthNew; i++) {
+			for (j = 0; j < widthNew; j++) {
+				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
+					initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
+				}
+			}
+		}
+	}
 
-	//If we want to start with the segmentatation function originally implemented in the library
-	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 60, numb_centers);
+	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
+	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
+	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	vtkDataForm dataForm = dta_binary;
+	savingInfo->dataPointer = initialSegment;
+	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
+	storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
 	//If we want start by the liver model just comment the previous line
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
-	rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
-	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 10; segmentParameters.mod = 1;
-	segmentParameters.numberOfTimeStep = 10; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
+	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 500; segmentParameters.mod = 1;
+	segmentParameters.numberOfTimeStep = 500; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
 	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
 	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
@@ -289,21 +425,25 @@ int main() {
 	//free memory
 	for (k = 0; k < Height; k++) {
 		free(imageData[k]); free(image[k]);
+		free(liverContainer[k]); free(liver[k]);
 	}
-	free(imageData); free(image);
+	free(imageData); free(image); free(liverContainer); free(liver);
 
 	for (k = 0; k < zDim; k++) {
-		free(resampledImageData[k]); free(liver[k]); free(liverContainer[k]);
+		free(resampledImage[k]); free(resampledLiver[k]);
 	}
-	free(resampledImageData); free(liver); free(liverContainer);
+	free(resampledImage); free(resampledLiver);
 
 	for (k = 0; k < heightNew; k++) {
 		free(croppedImage[k]); free(croppedLiver[k]); free(distanceMap[k]); free(maskThreshold[k]); free(initialSegment[k]);
+		//free(labelArray[k]); free(statusArray[k]);
 	}
 	free(croppedImage); free(croppedLiver); free(distanceMap); free(maskThreshold); free(initialSegment);
+	//free(labelArray); free(statusArray);
 	 
 	free(centerSeg);
-	////free(savingInfo);
+	free(savingInfo);
+	//free(countingArray);
 
 	return EXIT_SUCCESS;
 }

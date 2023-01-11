@@ -317,6 +317,9 @@
     <ClCompile Include="src\imageInterpolation.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\segmentation3d_gsubsurf.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -468,6 +471,9 @@
     </ClInclude>
     <ClInclude Include="src\imageInterpolation.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3d_gsubsurf.h">
+      <Filter>Header Files\Segmentation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

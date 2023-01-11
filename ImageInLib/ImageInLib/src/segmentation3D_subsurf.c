@@ -125,7 +125,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 
 	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	if (vtkInfo == NULL) return false;
-	vtkInfo->spacing[0] = 1.0; vtkInfo->spacing[1] = 1.0; vtkInfo->spacing[2] = 1.0;
+	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
 	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
 	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
 	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
@@ -147,7 +147,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	do
 	{
 		segParameters.numberOfTimeStep = i;
-		firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+		//firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 		//calcution of coefficients
 		gaussSeidelCoefficients(prevSol_extPtr, imageData, GPtrs, CoefPtrs, segParameters);
@@ -155,14 +155,14 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 		// Call to function that will evolve segmentation function in each discrete time step
 		subsurfSegmentationTimeStep(prevSol_extPtr, gauss_seidelPtr, imageData, GPtrs, segParameters, CoefPtrs, centers, no_of_centers);
 
-		secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+		//secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 		//Compute the L2 norm of the difference between the current and previous solutions
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length, width, height, segParameters.h);
 
 		printf("mass is %e\n", difference_btw_current_and_previous_sol);
-		printf("segTolerance is %e\n", segParameters.segTolerance);
-		printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
+		//printf("segTolerance is %e\n", segParameters.segTolerance);
+		//printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
 		//writing density.
 		if ((i%segParameters.mod) == 0)
@@ -319,7 +319,7 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 		}
 	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
 	printf("The number of iterations is %zd\n", z);
-	printf("Residuum is %e\n", mean_square_residue);
+	//printf("Residuum is %e\n", mean_square_residue);
 	printf("Step is %zd\n", segParameters.numberOfTimeStep);
 
 	//Copy the current time step to original data array after timeStepsNum
@@ -486,7 +486,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					size_t x_n = x_new(i, j, length);
 					// Set Value
 					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
-					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
+					new_value = 1; // (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
 					if (s == 0)
 					{
 						if (norm_of_distance > R)
@@ -504,17 +504,17 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 			}
 		}
 
-		if (no_of_centers == 1)
-		{
-			rescaleToIntervalZeroOne(inputDataArrayPtr, length, width, height);
-		}
-		else
-		{
-			for (i = 0; i < no_of_centers; i++)
-			{
-				rescaleLocallyToIntervalZeroOne(inputDataArrayPtr, length, width, height, centers[s].x, centers[s].y, centers[s].z, 6., s);
-			}
-		}
+		//if (no_of_centers == 1)
+		//{
+		//	rescaleToIntervalZeroOne(inputDataArrayPtr, length, width, height);
+		//}
+		//else
+		//{
+		//	for (i = 0; i < no_of_centers; i++)
+		//	{
+		//		rescaleLocallyToIntervalZeroOne(inputDataArrayPtr, length, width, height, centers[s].x, centers[s].y, centers[s].z, 6., s);
+		//	}
+		//}
 	}
 	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 	free(vtkInfo);

@@ -54,6 +54,7 @@
     <ClCompile Include="src\segmentation.c" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
     <ClCompile Include="src\segmentation3D_common.c" />
+    <ClCompile Include="src\segmentation3d_gsubsurf.c" />
     <ClCompile Include="src\segmentation3D_subsurf.c" />
     <ClCompile Include="src\setting_boundary_values.c" />
     <ClCompile Include="src\shapeGeneration.c" />
@@ -106,6 +107,7 @@
     <ClInclude Include="src\registration_params.h" />
     <ClInclude Include="src\segmentation3D_atlas.h" />
     <ClInclude Include="src\segmentation3D_common.h" />
+    <ClInclude Include="src\segmentation3d_gsubsurf.h" />
     <ClInclude Include="src\segmentation3D_subsurf.h" />
     <ClInclude Include="src\setting_boundary_values.h" />
     <ClInclude Include="src\shapeAnalysis_params.h" />
