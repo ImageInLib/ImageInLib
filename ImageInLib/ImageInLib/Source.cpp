@@ -61,13 +61,17 @@ int main() {
 		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType*));
 		liver[k] = (short*)malloc(dim2D * sizeof(short*));
 	}
-	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) return false;
+	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) 
+		return false;
 
-	const char* pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/patient2.raw";
-	load3dArrayRAW<short>(image, Length, Width, Height, pathLoad);
+	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/"; /*"input/"; */
+	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";//C:/Users/Konan Allaly/Documents/Tests/output/
+	std::string inputImagePath = inputPath + "patient2.raw";
 
-	pathLoad = "C:/Users/Konan Allaly/Documents/Tests/input/liver_p2.raw";
-	load3dArrayRAW<short>(liver, Length, Width, Height, pathLoad);
+	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
+	{
+		printf("inputImagePath does not exist\n");
+	}
 
 	//Copy
 	//Original data type is short, so I load it with short pointer and copy in dataType=float pointer
@@ -109,6 +113,15 @@ int main() {
 	}
 	if (resampledImage == NULL || resampledLiver == NULL) return false;
 
+	std::string inputShapePath = inputPath + "liver_p2.raw";
+	//TODO: interpolate shape!!!
+
+	if(load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
+	{
+		printf("inputShapePath does not exist\n");
+	}
+
+
 	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
 	linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
 
@@ -123,7 +136,9 @@ int main() {
 	//-----------------------------------------------------------------------------------------------------
 
 	////Save as .raw file
-	////store3dRawData<dataType>(resampledImageData, Length, Width, zDim, "C:/Users/Konan Allaly/Documents/Tests/output/interpolatedImage_LI.raw");
+	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
+	store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
+
 	////Save as .vtk file
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//savingInfo->spacing[0] = 1.0; savingInfo->spacing[1] = 1.0; savingInfo->spacing[2] = 1.0;
@@ -160,6 +175,8 @@ int main() {
 		initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
 	}
 	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) return false;
+
+	const dataType initialSegmentationValue = 1.0;
 
 	for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
 		for (i = 0, in = iMin; i < lengthNew; i++, in++) {
