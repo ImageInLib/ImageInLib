@@ -67,14 +67,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	}
 	else {
 		for (k = 0; k < zDim; k++){
-			for (i = 0; i < xDim; i++){
-				for (j = 0; j < yDim; j++){
-					// 2D to 1D representation for i, j
-					xd = x_new(i, j, xDim);
-					fread(&value, sizeof(T), 1, file);
-					imageDataPtr[k][xd] = (T)value;
-				}
-			}
+			fread(imageDataPtr[k], sizeof(T), xDim*yDim, file);
 		}
 	}
 	//----
