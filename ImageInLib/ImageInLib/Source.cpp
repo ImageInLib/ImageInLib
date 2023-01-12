@@ -38,6 +38,7 @@
 #define minimalSize 2000
 
 
+
 int main() {
 
 	size_t i, j, k;
@@ -58,19 +59,25 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		image[k] = (short*)malloc(dim2D * sizeof(short));
-		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType*));
-		liver[k] = (short*)malloc(dim2D * sizeof(short*));
+		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+		liver[k] = (short*)malloc(dim2D * sizeof(short));
 	}
 	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) 
 		return false;
 
-	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/"; /*"input/"; */
+	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/"; /*"input/"*/
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";//C:/Users/Konan Allaly/Documents/Tests/output/
 	std::string inputImagePath = inputPath + "patient2.raw";
+	std::string inputShapePath = inputPath + "liver_p2.raw";
 
 	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
 	{
 		printf("inputImagePath does not exist\n");
+	}
+
+	if (load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
+	{
+		printf("inputShapePath does not exist\n");
 	}
 
 	//Copy
@@ -91,6 +98,8 @@ int main() {
 	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
 	//vtkDataForm dataForm = dta_binary;
 	//savingInfo->dataPointer = imageData;
+
+	////std::string outputPathVTK = outputPath + "loadedImage.vtk";
 	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/loadedImage.vtk";
 	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/loadedLiver.vtk";
@@ -113,15 +122,6 @@ int main() {
 	}
 	if (resampledImage == NULL || resampledLiver == NULL) return false;
 
-	std::string inputShapePath = inputPath + "liver_p2.raw";
-	//TODO: interpolate shape!!!
-
-	if(load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
-	{
-		printf("inputShapePath does not exist\n");
-	}
-
-
 	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
 	linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
 
@@ -136,8 +136,8 @@ int main() {
 	//-----------------------------------------------------------------------------------------------------
 
 	////Save as .raw file
-	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
-	store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
+	//std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
+	//store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
 
 	////Save as .vtk file
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
@@ -158,10 +158,12 @@ int main() {
 	//const size_t heightNew = 80, lengthNew = 180, widthNew = 180;
 
 	//kMin depends on the interpolated image
-	size_t kMin = 332, iMin = 180, jMin = 126, kn, in, jn;
+	size_t kMin = 332, iMin = 126, jMin = 180, kn, in, jn;
 	const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
-	//size_t kMin = 388, iMin = 210, jMin = 148, kn, in, jn;
-	//const size_t heightNew = 200, lengthNew = 210, widthNew = 210;
+
+	//size_t kMin = 332, iMin = 180, jMin = 126, kn, in, jn;
+	//const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
+
 	dataType** croppedImage = (dataType**)malloc(sizeof(dataType*) * heightNew);
 	dataType** croppedLiver = (dataType**)malloc(sizeof(dataType*) * heightNew);
 	dataType** maskThreshold = (dataType**)malloc(sizeof(dataType*) * heightNew);
@@ -395,24 +397,26 @@ int main() {
 	//------------------------------------------------------------------------------------------------------
 	//Segmentation parameters for real image
 
-	size_t numb_centers = 1; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
-	centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
-	// used for multiple centers
-	//centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
+	size_t numb_centers = 2; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
+	//centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
+	////used for multiple centers
+	centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
+	centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
 	//centerSeg[1].x = i_max - 70; centerSeg[1].y = j_max + 50; centerSeg[1].z = k_max;
 
-	//////If we want to start with the segmentatation function originally implemented in the library
+	//If we want to start with the segmentatation function originally implemented in the library
 	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
-	for (k = 0; k < heightNew; k++) {
-		for (i = 0; i < lengthNew; i++) {
-			for (j = 0; j < widthNew; j++) {
-				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
-					initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
-				}
-			}
-		}
-	}
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
+	//				initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
+	//			}
+	//		}
+	//	}
+	//}
 
+	//Save the initial segmentation function
 	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
 	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
@@ -427,15 +431,15 @@ int main() {
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
-	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 500; segmentParameters.mod = 1;
-	segmentParameters.numberOfTimeStep = 500; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
+	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 5000; segmentParameters.mod = 10;
+	segmentParameters.numberOfTimeStep = 5000; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
 	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
 	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
+	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
+	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.1);
 
 	//------------------------------------------------------------------------------------------------
 
