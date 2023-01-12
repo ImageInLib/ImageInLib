@@ -62,11 +62,12 @@ int main() {
 		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		liver[k] = (short*)malloc(dim2D * sizeof(short));
 	}
+
 	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) 
 		return false;
 
-	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/"; /*"input/"*/
-	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";//C:/Users/Konan Allaly/Documents/Tests/output/
+	std::string inputPath = "input/";	// "C:/Users/Konan Allaly/Documents/Tests/input/";
+	std::string outputPath = "output/";	// "C:/Users/Konan Allaly/Documents/Tests/output/";
 	std::string inputImagePath = inputPath + "patient2.raw";
 	std::string inputShapePath = inputPath + "liver_p2.raw";
 
@@ -82,11 +83,14 @@ int main() {
 
 	//Copy
 	//Original data type is short, so I load it with short pointer and copy in dataType=float pointer
+
+	size_t x;
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x_new(i, j, Length)];
-				liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x_new(i, j, Length)];
+				x = x_new(i, j, Length);
+				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x];
+				liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x];
 			}
 		}
 	}
