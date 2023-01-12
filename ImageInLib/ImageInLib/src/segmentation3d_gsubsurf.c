@@ -426,7 +426,7 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 				norm_image_smoothed_average = (norm_image_smoothed_e + norm_image_smoothed_w + norm_image_smoothed_n + norm_image_smoothed_s +
 					norm_image_smoothed_t + norm_image_smoothed_b) / 6.0;
 
-				edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average, segParameters.coef);
+				edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average * norm_image_smoothed_average, segParameters.coef);
 
 			}
 		}
