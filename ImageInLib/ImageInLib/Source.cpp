@@ -180,7 +180,9 @@ int main() {
 		maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
 		initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
 	}
-	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) return false;
+	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) {
+		return false;
+	}
 
 	const dataType initialSegmentationValue = 1.0;
 
@@ -213,26 +215,22 @@ int main() {
 	//Fast sweeping to find the point with the higest distance
 	thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
 	fastSweepingFunction_3D(distanceMap, maskThreshold, lengthNew, widthNew, heightNew, 1, 100000000, 0);
+
+	//finding of a point with the highest distance
 	dataType distanceMax = -1;
+	int i_max = 0, j_max = 0, k_max = 0;
+
 	for (k = 0; k < heightNew; k++) {
 		for (i = 0; i < lengthNew; i++) {
 			for (j = 0; j < widthNew; j++) {
 				if (distanceMap[k][x_new(i, j, lengthNew)] >= distanceMax) {
 					distanceMax = distanceMap[k][x_new(i, j, lengthNew)];
-				}
-			}
-		}
-	}
-	int i_max = 0, j_max = 0, k_max = 0;
-	for (k = 0; k < heightNew; k++) {
-		for (i = 0; i < lengthNew; i++) {
-			for (j = 0; j < widthNew; j++) {
-				if (distanceMap[k][x_new(i, j, lengthNew)] == distanceMax) {
 					i_max = (int)i; j_max = (int)j; k_max = (int)k;
 				}
 			}
 		}
 	}
+	
 	printf("Maximal distance : %f \n", distanceMax);
 	printf("Coordinates of the highest distance x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
