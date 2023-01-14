@@ -1,6 +1,7 @@
 #include "interpolations.h"
 #include "imageInterpolation.h"
 #include<math.h>
+#include "time.h"
 
 bool nearestNeighborInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType originalSpacing, dataType newSpacing)
 {
@@ -39,7 +40,8 @@ bool nearestNeighborInterpolation(dataType** originalImage, dataType** newImage,
     return false;
 }
 
-bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType originalSpacing, dataType newSpacing){
+bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType originalSpacing, dataType newSpacing)
+{
     if (originalImage == NULL || newImage == NULL)
         return false;
 
@@ -49,17 +51,19 @@ bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t
     k_int = 0; kn = 0;
     for (k = 0; k < imageHeight - 1; k++) {
         k1 = k * originalSpacing;
-        k2 = (k + 1) * originalSpacing;
+        k2 = k1 + originalSpacing;// (k + 1)* originalSpacing;
         do {
             for (i = 0; i < imageLength; i++) {
                 for (j = 0; j < imageWidth; j++) {
                     x = x_new(i, j, imageLength);
-                    newImage[kn][x] = (dataType)(originalImage[k][x] * ((k2 - k_int) / (k2 - k1)) + originalImage[k + 1][x] * ((k_int - k1) / (k2 - k1)));
+                    newImage[kn][x] = (dataType)(originalImage[k][x] * ((k2 - k_int) / originalSpacing) + 
+                        originalImage[k + 1][x] * ((k_int - k1) / originalSpacing));
                 }
             }
             k_int = k_int + newSpacing;
             kn = kn + 1;
         } while (k_int < k2);
     }
+
     return true;
 }
