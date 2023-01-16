@@ -426,6 +426,7 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 				norm_image_smoothed_average = (norm_image_smoothed_e + norm_image_smoothed_w + norm_image_smoothed_n + norm_image_smoothed_s +
 					norm_image_smoothed_t + norm_image_smoothed_b) / 6.0;
 
+				//edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average, segParameters.coef);
 				edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average * norm_image_smoothed_average, segParameters.coef);
 
 			}
@@ -719,7 +720,8 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 	//Copy the current time step to original data array after timeStepsNum
 	copyDataToReducedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
 
-	////Rescale values of segmentation function and current time step to interval (0, 1)
+	//Rescale values of segmentation function and current time step to interval (0, 1)
+	 
 	//rescaleToIntervalZeroOne(inputImageData.segmentationFuntionPtr, length, width, height);
 	//rescaleToIntervalZeroOne(gauss_seidelPtr, length_ext, width_ext, height_ext);
 

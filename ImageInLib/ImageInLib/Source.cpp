@@ -397,24 +397,26 @@ int main() {
 	//------------------------------------------------------------------------------------------------------
 	//Segmentation parameters for real image
 
-	size_t numb_centers = 2; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
-	//centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
+	size_t numb_centers = 1; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
+	centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
 	////used for multiple centers
-	centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
-	centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
-	//centerSeg[1].x = i_max - 70; centerSeg[1].y = j_max + 50; centerSeg[1].z = k_max;
+	//centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
+	//centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
 
 	//If we want to start with the segmentatation function originally implemented in the library
-	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
-	//for (k = 0; k < heightNew; k++) {
-	//	for (i = 0; i < lengthNew; i++) {
-	//		for (j = 0; j < widthNew; j++) {
-	//			if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
-	//				initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
-	//			}
-	//		}
-	//	}
-	//}
+	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
+	for (k = 0; k < heightNew; k++) {
+		for (i = 0; i < lengthNew; i++) {
+			for (j = 0; j < widthNew; j++) {
+				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
+					initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
+					//initialSegment[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
+				}
+			}
+		}
+	}
+	//If we are use original intensities to fill the initial segment
+	//rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 
 	//Save the initial segmentation function
 	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
@@ -431,15 +433,15 @@ int main() {
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
-	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 5000; segmentParameters.mod = 10;
-	segmentParameters.numberOfTimeStep = 5000; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
+	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 300; segmentParameters.mod = 1;
+	segmentParameters.numberOfTimeStep = 300; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
 	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
 	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
 	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
+	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, - 1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
 
