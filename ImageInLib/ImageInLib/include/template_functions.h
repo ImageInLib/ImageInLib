@@ -49,11 +49,10 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	dataType firstCpuTime, secondCpuTime;
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//checks if the memory was allocated
-	if (imageDataPtr == NULL)
+	if (imageDataPtr == NULL || pathPtr == NULL) {
+		printf("Not initialized data \n");
 		return false;
-
-	if (pathPtr == NULL)
-		return false;
+	}
 
 	size_t i, j, k, xd;
 	T value;
@@ -70,6 +69,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 			fread(imageDataPtr[k], sizeof(T), xDim*yDim, file);
 		}
 	}
+
 	//----
 	//Endianness check
 
@@ -80,12 +80,17 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	//	printf("big endian before swaping \n");
 	//}
 
+	const size_t step = xDim * yDim;
+	const size_t dataSize = sizeof(T);
+	char* swapBuf = (char *)malloc(dataSize);
 	//revert byte
 	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < xDim * yDim; i++) {
-			revertBytes(&imageDataPtr[k][i], sizeof(T));
+		for (i = 0; i < step; i++) {
+			revertBytesEx(&imageDataPtr[k][i], dataSize, swapBuf);
 		}
 	}
+
+	free(swapBuf);
 
 	////Endianness check
 	//if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
@@ -96,7 +101,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	//}
 
 	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
+	printf("time CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
 	fclose(file);
 	return true;
