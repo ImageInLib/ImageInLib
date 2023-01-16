@@ -98,7 +98,7 @@ int main() {
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//savingInfo->spacing[0] = 1.171875; savingInfo->spacing[1] = 1.171875; savingInfo->spacing[2] = 1.171875;
 	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	//savingInfo->dimensions[0] = Length; savingInfo->dimensions[1] = Width; savingInfo->dimensions[2] = Height;
+	//savingInfo->dimensions[1] = Length; savingInfo->dimensions[0] = Width; savingInfo->dimensions[2] = Height;
 	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
 	//vtkDataForm dataForm = dta_binary;
 	//savingInfo->dataPointer = imageData;
@@ -129,13 +129,6 @@ int main() {
 	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
 	linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
 
-	//savingInfo->dimensions[2] = zDim;
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/resampledImage.vtk";
-	//savingInfo->dataPointer = resampledImage;
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/resampledLiver.vtk";
-	//savingInfo->dataPointer = resampledLiver;
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 	 
 	//-----------------------------------------------------------------------------------------------------
 
@@ -143,16 +136,6 @@ int main() {
 	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
 	store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
 
-	////Save as .vtk file
-	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	//savingInfo->spacing[0] = 1.0; savingInfo->spacing[1] = 1.0; savingInfo->spacing[2] = 1.0;
-	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	//savingInfo->dimensions[0] = Length; savingInfo->dimensions[1] = Width; savingInfo->dimensions[2] = zDim;
-	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
-	//vtkDataForm dataForm = dta_binary;
-	//savingInfo->dataPointer = resampledImageData;
-	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/resampledImage2.vtk";
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 	//------------------------------------------------------------------------------------------------------
 
 	//Manual croppping
@@ -197,19 +180,6 @@ int main() {
 		}
 	}
 
-	//Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	//savingInfo->spacing[0] = 1.171875; savingInfo->spacing[1] = 1.171875; savingInfo->spacing[2] = 1.171875;
-	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	//savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
-	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
-	//vtkDataForm dataForm = dta_binary;
-	//savingInfo->dataPointer = croppedImage;
-	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedImage.vtk";
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedLiver.vtk";
-	//savingInfo->dataPointer = croppedLiver;
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-
 	//------------------------------------------------------------------------------------------------------------
 
 	//Fast sweeping to find the point with the higest distance
@@ -251,13 +221,6 @@ int main() {
 	//}
 	//printf("Second distance : %f \n", distanceMin);
 	//printf("Coordinates of the second Point x = %d, y = %d and z = %d \n", i_min, j_min, k_min);
-
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/thresholded.vtk";
-	//savingInfo->dataPointer = maskThreshold;
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/distanceMap.vtk";
-	//savingInfo->dataPointer = distanceMap;
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	////------------------------------------------------------------------------------------------------------------
 	////Labelling
@@ -324,24 +287,6 @@ int main() {
 	 
 	//rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 	//store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, "C:/Users/Konan Allaly/Documents/Tests/output/initialSegRescall.raw");
-
-	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	//savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
-	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	//savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
-	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
-	//vtkDataForm dataForm = dta_binary;
-	//savingInfo->dataPointer = initialSegment;
-	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-
-	//savingInfo->dataPointer = croppedLiver;
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/initialSeg.vtk";
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
-
-	//savingInfo->dataPointer = croppedImage;
-	//pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/croppedVolume.vtk";
-	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//----------------------------------------------------------------------------------------------------
 	//Artificial Image
@@ -424,7 +369,7 @@ int main() {
 	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
 	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	savingInfo->dimensions[0] = lengthNew; savingInfo->dimensions[1] = widthNew; savingInfo->dimensions[2] = heightNew;
+	savingInfo->dimensions[1] = lengthNew; savingInfo->dimensions[0] = widthNew; savingInfo->dimensions[2] = heightNew;
 	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
 	vtkDataForm dataForm = dta_binary;
 	savingInfo->dataPointer = initialSegment;
