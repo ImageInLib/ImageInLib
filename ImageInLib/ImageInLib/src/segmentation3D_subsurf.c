@@ -127,7 +127,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	if (vtkInfo == NULL) return false;
 	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
 	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
 	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
 	const char* pathsaveVTK;
 
@@ -465,7 +465,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	//Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
 	//vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	//vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	//vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
 	//vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
 	//vtkDataForm dataForm = dta_binary;
 	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";

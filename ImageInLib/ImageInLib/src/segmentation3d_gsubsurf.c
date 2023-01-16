@@ -152,7 +152,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	if (vtkInfo == NULL) return false;
 	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
 	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
 	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
 	const char* pathsaveVTK;
 
@@ -753,13 +753,13 @@ bool generateInitialSegmentationFunction(dataType** inputDataArrayPtr, size_t le
 	if (inputDataArrayPtr == NULL)
 		return false;
 
-	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
-	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
-	vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
-	vtkDataForm dataForm = dta_binary;
-	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
+	//Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
+	//vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	//vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
+	//vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
+	//vtkDataForm dataForm = dta_binary;
+	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
 
 	// Construction of segmentation function
 	for (s = 0; s < no_of_centers; s++)
@@ -807,7 +807,7 @@ bool generateInitialSegmentationFunction(dataType** inputDataArrayPtr, size_t le
 			}
 		}
 	}
-	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
-	free(vtkInfo);
+	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+	//free(vtkInfo);
 	return true;
 }
