@@ -24,15 +24,11 @@ inline bool store3dRawData(T** imageDataPtr, const size_t xDim, const size_t yDi
 	if (fopen_s(&file, pathPtr, "wb") != 0)
 		return false;
 
+	const size_t pointsInSlice = xDim * yDim;
+
 	for (k = 0; k < zDim; k++)
 	{
-		for (i = 0; i < xDim; i++)
-		{
-			for (j = 0; j < yDim; j++)
-			{
-				fwrite(&imageDataPtr[k][x_new(i, j, xDim)], sizeof(T), 1, file);
-			}
-		}
+		fwrite(imageDataPtr[k], sizeof(T), pointsInSlice, file);
 	}
 
 	fclose(file);
@@ -46,8 +42,6 @@ bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDim, cons
 template <typename T>
 inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, const char* pathPtr)
 {
-	dataType firstCpuTime, secondCpuTime;
-	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//checks if the memory was allocated
 	if (imageDataPtr == NULL || pathPtr == NULL) {
 		printf("Not initialized data \n");
@@ -58,6 +52,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	T value;
 	FILE* file;
 	char rmode[4] = "rb";
+	const size_t pointsInSlice = xDim * yDim;
 
 	// Reading data file
 	if (fopen_s(&file, pathPtr, rmode) != 0) {
@@ -66,19 +61,9 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	}
 	else {
 		for (k = 0; k < zDim; k++){
-			fread(imageDataPtr[k], sizeof(T), xDim*yDim, file);
+			fread(imageDataPtr[k], sizeof(T), pointsInSlice, file);
 		}
 	}
-
-	//----
-	//Endianness check
-
-	//if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
-	//	printf("little endian before swaping \n");
-	//}
-	//else {
-	//	printf("big endian before swaping \n");
-	//}
 
 	const size_t step = xDim * yDim;
 	const size_t dataSize = sizeof(T);
@@ -92,16 +77,6 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 
 	free(swapBuf);
 
-	////Endianness check
-	//if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
-	//	printf("little endian after swaping \n");
-	//}
-	//else {
-	//	printf("big endian after swaping \n");
-	//}
-
-	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	printf("time CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
 	fclose(file);
 	return true;

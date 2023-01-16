@@ -1,7 +1,6 @@
 #include "interpolations.h"
 #include "imageInterpolation.h"
 #include<math.h>
-#include "time.h"
 
 bool nearestNeighborInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType originalSpacing, dataType newSpacing)
 {
@@ -47,17 +46,18 @@ bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t
 
     size_t i, j, k, x, kn; 
     dataType k_int, k1, k2;
+    dataType divisionByOriginalSpacing = 1.0 / originalSpacing;
 
     k_int = 0; kn = 0;
     for (k = 0; k < imageHeight - 1; k++) {
         k1 = k * originalSpacing;
-        k2 = k1 + originalSpacing;// (k + 1)* originalSpacing;
+        k2 = k1 + originalSpacing;
         do {
             for (i = 0; i < imageLength; i++) {
                 for (j = 0; j < imageWidth; j++) {
                     x = x_new(i, j, imageLength);
-                    newImage[kn][x] = (dataType)(originalImage[k][x] * ((k2 - k_int) / originalSpacing) + 
-                        originalImage[k + 1][x] * ((k_int - k1) / originalSpacing));
+                    newImage[kn][x] = (dataType)(originalImage[k][x] * ((k2 - k_int) * divisionByOriginalSpacing) +
+                        originalImage[k + 1][x] * ((k_int - k1) * divisionByOriginalSpacing));
                 }
             }
             k_int = k_int + newSpacing;

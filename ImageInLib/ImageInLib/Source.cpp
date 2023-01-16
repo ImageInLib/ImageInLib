@@ -140,8 +140,8 @@ int main() {
 	//-----------------------------------------------------------------------------------------------------
 
 	////Save as .raw file
-	//std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
-	//store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
+	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
+	store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
 
 	////Save as .vtk file
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
