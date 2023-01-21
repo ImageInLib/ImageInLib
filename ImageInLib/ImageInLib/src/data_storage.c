@@ -120,12 +120,11 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 	}
 	else
 	{
-		for (k = 0; k < zDim; k++) {
-			for (i = 0; i < xDim; i++) {
-				for (j = 0; j < yDim; j++) {
-					fwrite(&array3DPtr[k][x_new(i, j, xDim)], sizeof(dataType), 1, cfPtr);
-				}
-			}
+		const size_t pointsInSlice = xDim * yDim;
+
+		for (k = 0; k < zDim; k++)
+		{
+			fwrite(array3DPtr[k], sizeof(dataType), pointsInSlice, cfPtr);
 		}
 	}
 

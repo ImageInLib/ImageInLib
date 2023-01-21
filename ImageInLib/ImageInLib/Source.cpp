@@ -365,6 +365,7 @@ int main() {
 	//If we are use original intensities to fill the initial segment
 	//rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 
+	std::string segmFolderPath = outputPath + "segmentation/";
 	//Save the initial segmentation function
 	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
@@ -373,8 +374,8 @@ int main() {
 	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
 	vtkDataForm dataForm = dta_binary;
 	savingInfo->dataPointer = initialSegment;
-	const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
-	storeVtkFile(pathsaveVTK, savingInfo, dataForm);
+
+	store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
 
 	//If we want start by the liver model just comment the previous line
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
@@ -386,9 +387,9 @@ int main() {
 	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
-	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
+	unsigned char outputPathPtr[] = "output/segmentation/"; //"C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
 	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, - 1.0, 1.0);
+	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, -1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
 

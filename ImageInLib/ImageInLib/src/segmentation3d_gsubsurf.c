@@ -5,6 +5,7 @@
 #include <stdbool.h> // Boolean function bool
 #include <string.h>
 #include <common_vtk.h>
+#include "file.h"
 #include "heat_equation.h"
 #include "non_linear_heat_equation.h"
 #include "segmentation3D_subsurf.h"
@@ -21,6 +22,7 @@
 #include "ctype.h"
 #include "filter_params.h"
 #include "vtk_params.h"
+
 // Local Function Prototype
 
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
@@ -167,6 +169,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	vtkInfo->dataPointer = edgeGradientPtr;
 	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 
+	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
 	i = 1;
 	do
@@ -193,15 +196,21 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		if ((i % segParameters.mod) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
 			strcat_s(name, sizeof(name), name_ending);
-			pathsaveVTK = name;
-			vtkInfo->dataPointer = imageData.segmentationFuntionPtr;
-			storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+			//pathsaveVTK = name;
+			//vtkInfo->dataPointer = imageData.segmentationFuntionPtr;
+			//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+
+			Storage_Flags storageFlags = { false, false };
+			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, 
+				STORE_DATA_RAW, BINARY_DATA, storageFlags);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
 
+	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	printf("GSUBSURF CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 	//printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
 
 	for (i = 0; i < height; i++)
