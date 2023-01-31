@@ -28,7 +28,7 @@
 // Local Function Prototype
 
 bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
-	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)//bool subsurfSegmentation()
+	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)
 {
 	size_t i, j, k; // length == xDim, width == yDim, height == zDim
 	size_t dim2D = inputImageData.length * inputImageData.width;
@@ -123,24 +123,15 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
 
-	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	if (vtkInfo == NULL) return false;
-	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
-	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
-	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
-	const char* pathsaveVTK;
-
 	//Array for name construction
 	unsigned char name[350];
 	unsigned char name_ending[100];
+	Storage_Flags flags = {false,false};
 
 	strcpy_s(name, sizeof name, outputPathPtr);
-	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.vtk");
+	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.raw");
 	strcat_s(name, sizeof(name), name_ending);
-	pathsaveVTK = name;
-	vtkInfo->dataPointer = GPtrs.GePtr;
-	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+	store3dDataArrayD(GPtrs.GePtr, length, width, height, name, flags);
 
 	//loop for segmentation time steps
 	i = 1;
@@ -168,11 +159,9 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 		if ((i%segParameters.mod) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.vtk", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
 			strcat_s(name, sizeof(name), name_ending);
-			pathsaveVTK = name;
-			vtkInfo->dataPointer = imageData.segmentationFuntionPtr;
-			storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+			store3dDataArrayD(imageData.segmentationFuntionPtr, length, width, height, name, flags);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
@@ -218,8 +207,6 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	}
 	free(prevSol_extPtr);
 	free(gauss_seidelPtr);
-
-	free(vtkInfo);
 
 	return true;
 }
