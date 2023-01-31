@@ -33,10 +33,9 @@
 #define originalMean 71.1245
 #define offSet 1024
 #define standarDeviation 22.001
-#define thresmin 995
-#define thresmax 1213
+#define thresmin 1085 //995
+#define thresmax 1105 //1213
 #define minimalSize 2000
-
 
 
 int main() {
@@ -55,34 +54,36 @@ int main() {
 	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
 	short** image = (short**)malloc(Height * sizeof(short*));
 	dataType** liverContainer = (dataType**)malloc(Height * sizeof(dataType*));
+	dataType** distanceMap = (dataType**)malloc(Height * sizeof(dataType*));
 	short** liver = (short**)malloc(Height * sizeof(short*));
 	for (k = 0; k < Height; k++) {
 		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+		distanceMap[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		image[k] = (short*)malloc(dim2D * sizeof(short));
 		liverContainer[k] = (dataType*)malloc(dim2D * sizeof(dataType));
 		liver[k] = (short*)malloc(dim2D * sizeof(short));
 	}
 
-	if (imageData == NULL || image == NULL || liverContainer == NULL || liver == NULL) 
+	if (imageData == NULL || distanceMap == NULL || image == NULL || liverContainer == NULL || liver == NULL) 
 		return false;
 
-	std::string inputPath = "input/";	// "C:/Users/Konan Allaly/Documents/Tests/input/";
-	std::string outputPath = "output/";	// "C:/Users/Konan Allaly/Documents/Tests/output/";
-	std::string inputImagePath = inputPath + "patient2.raw";
-	std::string inputShapePath = inputPath + "liver_p2.raw";
+	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
+	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
+	std::string inputImagePath = inputPath +  "patient2.raw"; // "Slices304.raw";
+	//std::string inputShapePath = inputPath + "liver_p2.raw";
 
 	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
 	{
 		printf("inputImagePath does not exist\n");
 	}
 
-	if (load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
-	{
-		printf("inputShapePath does not exist\n");
-	}
+	//if (load3dArrayRAW<short>(liver, Length, Width, Height /*zDim*/, inputShapePath.c_str()) == false)
+	//{
+	//	printf("inputShapePath does not exist\n");
+	//}
 
 	//Copy
-	//Original data type is short, so I load it with short pointer and copy in dataType=float pointer
+	//Original data type is short, so I load it with short pointer and copy in dataType = float pointer
 
 	size_t x;
 	for (k = 0; k < Height; k++) {
@@ -90,10 +91,26 @@ int main() {
 			for (j = 0; j < Width; j++) {
 				x = x_new(i, j, Length);
 				imageData[k][x_new(i, j, Length)] = (dataType)image[k][x];
-				liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x];
+				distanceMap[k][x_new(i, j, Length)];
+				//liverContainer[k][x_new(i, j, Length)] = (dataType)liver[k][x];
 			}
 		}
 	}
+
+	//std::string loadedImagePath = outputPath + "loaded.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
+
+	thresholding3dFunctionN(imageData, Length, Width, Height, thresmin, thresmax, 0, 1);
+	std::string thresholdedImagePath = outputPath + "thresholded.raw";
+	store3dRawData<dataType>(imageData, Length, Width, Height, thresholdedImagePath.c_str());
+
+	//erosion3dHeighteenNeigbours(imageData, Length, Width, Height, 1, 0);
+	//std::string erodedImagePath = outputPath + "erodedV2.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, erodedImagePath.c_str());
+
+	//fastSweepingFunction_3D(distanceMap, imageData, Length, Width, Height, 1, 100000000, 0);
+	//std::string distanceImagePath = outputPath + "distanceMapV2.raw";
+	//store3dRawData<dataType>(distanceMap, Length, Width, Height, distanceImagePath.c_str());
 
 	//Vtk_File_Info * savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
 	//savingInfo->spacing[0] = 1.171875; savingInfo->spacing[1] = 1.171875; savingInfo->spacing[2] = 1.171875;
@@ -111,30 +128,29 @@ int main() {
 	//storeVtkFile(pathsaveVTK, savingInfo, dataForm);
 
 	//--------------------------------------------------------------------------------------------------
-	//Image Interpolation
-	dataType k_spacingNew = 1.171875, k_spacingOld = 2.5;
-	//const size_t zDim = (size_t)((k_spacingOld / k_spacingNew) * Height);
-	/*spacing patient1b, patient2, patient3 , x = y = 1.171875, z = 2.5
-	spacing patient 6, patient7, x = y = 0.9765625*/
-	const size_t zDim = 866;
-	//Interpolated Image container
-	dataType** resampledImage = (dataType**)malloc(zDim * sizeof(dataType*));
-	dataType** resampledLiver = (dataType**)malloc(zDim * sizeof(dataType*));
-	for (k = 0; k < zDim; k++) {
-		resampledImage[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		resampledLiver[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-	}
-	if (resampledImage == NULL || resampledLiver == NULL) return false;
-
-	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
-	linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
+	////Image Interpolation
+	//dataType k_spacingNew = 1.171875, k_spacingOld = 2.5;
+	////const size_t zDim = (size_t)((k_spacingOld / k_spacingNew) * Height);
+	//*spacing patient1b, patient2, patient3 , x = y = 1.171875, z = 2.5
+	//spacing patient 6, patient7, x = y = 0.9765625*/
+	//const size_t zDim = 866;
+	////Interpolated Image container
+	//dataType** resampledImage = (dataType**)malloc(zDim * sizeof(dataType*));
+	//dataType** resampledLiver = (dataType**)malloc(zDim * sizeof(dataType*));
+	//for (k = 0; k < zDim; k++) {
+	//	resampledImage[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//	resampledLiver[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+	//}
+	//if (resampledImage == NULL || resampledLiver == NULL) return false;
+	//linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
+	//linear2dInterpolation(liverContainer, resampledLiver, Length, Width, Height, k_spacingOld, k_spacingNew);
 
 	 
 	//-----------------------------------------------------------------------------------------------------
 
 	////Save as .raw file
-	std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
-	store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
+	//std::string outputInterpolatedImagePath = outputPath + "interpolatedImage_LI.raw";
+	//store3dRawData<dataType>(resampledImage, Length, Width, zDim, outputInterpolatedImagePath.c_str());
 
 	//------------------------------------------------------------------------------------------------------
 
@@ -144,65 +160,65 @@ int main() {
 	//size_t kMin = 155, iMin = 180, jMin = 126, kn, in, jn;
 	//const size_t heightNew = 80, lengthNew = 180, widthNew = 180;
 
-	//kMin depends on the interpolated image
-	size_t kMin = 332, iMin = 126, jMin = 180, kn, in, jn;
-	const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
+	////kMin depends on the interpolated image
+	//size_t kMin = 332, iMin = 126, jMin = 180, kn, in, jn;
+	//const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
 
 	//size_t kMin = 332, iMin = 180, jMin = 126, kn, in, jn;
 	//const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
 
-	dataType** croppedImage = (dataType**)malloc(sizeof(dataType*) * heightNew);
-	dataType** croppedLiver = (dataType**)malloc(sizeof(dataType*) * heightNew);
-	dataType** maskThreshold = (dataType**)malloc(sizeof(dataType*) * heightNew);
-	dataType** distanceMap = (dataType**)malloc(sizeof(dataType*) * heightNew);
-	dataType** initialSegment = (dataType**)malloc(sizeof(dataType*) * heightNew);
-	for (k = 0; k < heightNew; k++) {
-		croppedImage[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
-		croppedLiver[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
-		distanceMap[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
-		maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
-		initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
-	}
-	if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) {
-		return false;
-	}
+	//dataType** croppedImage = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** croppedLiver = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** maskThreshold = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** distanceMap = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** initialSegment = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//for (k = 0; k < heightNew; k++) {
+	//	croppedImage[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	croppedLiver[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	distanceMap[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//}
+	//if (croppedImage == NULL || croppedLiver == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) {
+	//	return false;
+	//}
 
-	const dataType initialSegmentationValue = 1.0;
+	//const dataType initialSegmentationValue = 1.0;
 
-	for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
-		for (i = 0, in = iMin; i < lengthNew; i++, in++) {
-			for (j = 0, jn = jMin; j < widthNew; j++, jn++) {
-				croppedImage[k][x_new(i, j, lengthNew)] = resampledImage[kn][x_new(in, jn, Length)];
-				maskThreshold[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
-				croppedLiver[k][x_new(i, j, lengthNew)] = resampledLiver[kn][x_new(in, jn, Length)];
-				initialSegment[k][x_new(i, j, lengthNew)] = 0;
-			}
-		}
-	}
+	//for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
+	//	for (i = 0, in = iMin; i < lengthNew; i++, in++) {
+	//		for (j = 0, jn = jMin; j < widthNew; j++, jn++) {
+	//			croppedImage[k][x_new(i, j, lengthNew)] = resampledImage[kn][x_new(in, jn, Length)];
+	//			maskThreshold[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
+	//			croppedLiver[k][x_new(i, j, lengthNew)] = resampledLiver[kn][x_new(in, jn, Length)];
+	//			initialSegment[k][x_new(i, j, lengthNew)] = 0;
+	//		}
+	//	}
+	//}
 
 	//------------------------------------------------------------------------------------------------------------
 
 	//Fast sweeping to find the point with the higest distance
-	thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
-	fastSweepingFunction_3D(distanceMap, maskThreshold, lengthNew, widthNew, heightNew, 1, 100000000, 0);
+	//thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
+	//fastSweepingFunction_3D(distanceMap, maskThreshold, lengthNew, widthNew, heightNew, 1, 100000000, 0);
 
 	//finding of a point with the highest distance
-	dataType distanceMax = -1;
-	int i_max = 0, j_max = 0, k_max = 0;
+	//dataType distanceMax = -1;
+	//int i_max = 0, j_max = 0, k_max = 0;
 
-	for (k = 0; k < heightNew; k++) {
-		for (i = 0; i < lengthNew; i++) {
-			for (j = 0; j < widthNew; j++) {
-				if (distanceMap[k][x_new(i, j, lengthNew)] >= distanceMax) {
-					distanceMax = distanceMap[k][x_new(i, j, lengthNew)];
-					i_max = (int)i; j_max = (int)j; k_max = (int)k;
-				}
-			}
-		}
-	}
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (distanceMap[k][x_new(i, j, lengthNew)] >= distanceMax) {
+	//				distanceMax = distanceMap[k][x_new(i, j, lengthNew)];
+	//				i_max = (int)i; j_max = (int)j; k_max = (int)k;
+	//			}
+	//		}
+	//	}
+	//}
 	
-	printf("Maximal distance : %f \n", distanceMax);
-	printf("Coordinates of the highest distance x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
+	//printf("Maximal distance : %f \n", distanceMax);
+	//printf("Coordinates of the highest distance x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
 	//dataType diff = distanceMax - 10, distanceMin = distanceMax;
 	//int i_min = 0, j_min = 0, k_min = 0;
@@ -342,54 +358,54 @@ int main() {
 	//--------------------------------------------------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------------
+	 
 	//Segmentation parameters for real image
-
-	size_t numb_centers = 1; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
-	centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
+	//size_t numb_centers = 1; Point3D* centerSeg = (Point3D*)malloc(sizeof(Point3D) * numb_centers);
+	//centerSeg->x = i_max; centerSeg->y = j_max; centerSeg->z = k_max; //---> used for one center
 	////used for multiple centers
 	//centerSeg[0].x = i_max; centerSeg[0].y = j_max; centerSeg[0].z = k_max;
 	//centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
 
 	//If we want to start with the segmentatation function originally implemented in the library
 	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
-	for (k = 0; k < heightNew; k++) {
-		for (i = 0; i < lengthNew; i++) {
-			for (j = 0; j < widthNew; j++) {
-				if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
-					initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
-					//initialSegment[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
-				}
-			}
-		}
-	}
+	//for (k = 0; k < heightNew; k++) {
+	//	for (i = 0; i < lengthNew; i++) {
+	//		for (j = 0; j < widthNew; j++) {
+	//			if (croppedLiver[k][x_new(i, j, lengthNew)] != 0) {
+	//				initialSegment[k][x_new(i, j, lengthNew)] = 1.0;
+	//				//initialSegment[k][x_new(i, j, lengthNew)] = croppedImage[k][x_new(i, j, lengthNew)];
+	//			}
+	//		}
+	//	}
+	//}
 	//If we are use original intensities to fill the initial segment
 	//rescaleNewRange(initialSegment, lengthNew, widthNew, heightNew, 0, 1);
 
-	std::string segmFolderPath = outputPath + "segmentation/";
+	//std::string segmFolderPath = outputPath + "segmentation/";
 	//Save the initial segmentation function
-	Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
-	savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
-	savingInfo->dimensions[1] = lengthNew; savingInfo->dimensions[0] = widthNew; savingInfo->dimensions[2] = heightNew;
-	savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
-	vtkDataForm dataForm = dta_binary;
-	savingInfo->dataPointer = initialSegment;
+	//Vtk_File_Info* savingInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//savingInfo->spacing[0] = k_spacingNew; savingInfo->spacing[1] = k_spacingNew; savingInfo->spacing[2] = k_spacingNew;
+	//savingInfo->origin[0] = 0.0; savingInfo->origin[1] = 0.0; savingInfo->origin[2] = 0.0;
+	//savingInfo->dimensions[1] = lengthNew; savingInfo->dimensions[0] = widthNew; savingInfo->dimensions[2] = heightNew;
+	//savingInfo->vDataType = dta_Flt; savingInfo->operation = copyTo;
+	//vtkDataForm dataForm = dta_binary;
+	//savingInfo->dataPointer = initialSegment;
 
-	store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
+	//store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
 
-	//If we want start by the liver model just comment the previous line
-	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
-	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
-	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
-	segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 300; segmentParameters.mod = 1;
-	segmentParameters.numberOfTimeStep = 300; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
-	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
-	filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
-	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
+	////If we want start by the liver model just comment the previous line
+	//Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
+	//rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
+	//Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
+	//segmentParameters.h = k_spacingNew; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 300; segmentParameters.mod = 1;
+	//segmentParameters.numberOfTimeStep = 300; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 4;
+	//Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
+	//filterParameters.h = k_spacingNew; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
+	//filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
 
-	unsigned char outputPathPtr[] = "output/segmentation/"; //"C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, -1.0, 1.0);
+	//unsigned char outputPathPtr[] = "output/segmentation/"; //"C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
+	////subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
+	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, -1.0, 1.0);
 
 	//------------------------------------------------------------------------------------------------
 
@@ -397,23 +413,25 @@ int main() {
 	for (k = 0; k < Height; k++) {
 		free(imageData[k]); free(image[k]);
 		free(liverContainer[k]); free(liver[k]);
+		free(distanceMap[k]);
 	}
 	free(imageData); free(image); free(liverContainer); free(liver);
+	free(distanceMap);
 
-	for (k = 0; k < zDim; k++) {
-		free(resampledImage[k]); free(resampledLiver[k]);
-	}
-	free(resampledImage); free(resampledLiver);
+	//for (k = 0; k < zDim; k++) {
+	//	free(resampledImage[k]); free(resampledLiver[k]);
+	//}
+	//free(resampledImage); free(resampledLiver);
 
-	for (k = 0; k < heightNew; k++) {
-		free(croppedImage[k]); free(croppedLiver[k]); free(distanceMap[k]); free(maskThreshold[k]); free(initialSegment[k]);
-		//free(labelArray[k]); free(statusArray[k]);
-	}
-	free(croppedImage); free(croppedLiver); free(distanceMap); free(maskThreshold); free(initialSegment);
+	//for (k = 0; k < heightNew; k++) {
+	//	free(croppedImage[k]); free(croppedLiver[k]); free(distanceMap[k]); free(maskThreshold[k]); free(initialSegment[k]);
+	//	//free(labelArray[k]); free(statusArray[k]);
+	//}
+	//free(croppedImage); free(croppedLiver); free(distanceMap); free(maskThreshold); free(initialSegment);
 	//free(labelArray); free(statusArray);
 	 
-	free(centerSeg);
-	free(savingInfo);
+	//free(centerSeg);
+	//free(savingInfo);
 	//free(countingArray);
 
 	return EXIT_SUCCESS;
