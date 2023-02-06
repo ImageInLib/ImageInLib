@@ -286,3 +286,4 @@ __pycache__/
 *.schema
 
 *.vtk
+/ImageInLib/ImageInLib/output/segmentation
