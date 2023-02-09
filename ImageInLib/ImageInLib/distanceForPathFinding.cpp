@@ -12,7 +12,8 @@ using namespace std;
 bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, Point2D* seedPoints)
 {
 
-	short* labelArray = (short*)malloc(height * width * sizeof(short));
+	//short* labelArray = (short*)malloc(height * width * sizeof(short));
+	short* labelArray = new short[height * width];
 
 	if (imageDataPtr == NULL || distanceFuncPtr == NULL || seedPoints == NULL || labelArray == NULL) {
 		return false;
@@ -21,11 +22,11 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 	size_t i = 0, j = 0, k = 0, dim2D = width * height, cpt = 0;
 	vector<size_t> i_Processed, i_inProcess;
 	vector<size_t> j_Processed, j_inProcess;
-	dataType x, y, speed = 1.0, space = 1.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
+	dataType x = 0.0, y = 0.0, speed = 1.0, space = 1.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
 	size_t nbNeighborsFound = 0;
 	size_t h_n = 0, w_n = 0, iSol = 0, jSol = 0, iNew = 0, jNew = 0;
 	vector<dataType> tempTimeFunc;
-	dataType a, b, c, delta;
+	dataType a = 0.0, b = 0.0, c = 0.0, delta = 0.0;
 
 	//STEP 1
 	//Initialization : distance is set to infinity
@@ -37,7 +38,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 	//--------------------End of STEP 1 -----------------------------------
 
 	//STEP 2
-	//Add the neighbors of the seed point in the list of pixels to be processed
+	//Add the neighbors of the seed point in the vector of pixels to be processed
 	i = seedPoints->x; j = seedPoints->y;
 	distanceFuncPtr[x_new(i, j, height)] = 0;
 	i_Processed.push_back(i); j_Processed.push_back(j);
@@ -58,7 +59,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 			}
 		}
 		else {
-			if (j == width - 1) {
+			if ( j == (width - 1) ) {
 				//West
 				if (labelArray[x_new(i, j - 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
@@ -95,7 +96,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 		}
 	}
 	else {
-		if (i == height - 1) {
+		if (i == (height - 1)) {
 			if (j == 0) {
 				//North
 				if (labelArray[x_new(i - 1, j, height)] == 3) {
@@ -111,7 +112,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 				}
 			}
 			else {
-				if (j == width - 1) {
+				if (j == (width - 1)) {
 					//North
 					if (labelArray[x_new(i - 1, j, height)] == 3) {
 						i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
@@ -222,7 +223,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 	//Update the label of seed point as processed
 	labelArray[x_new(i, j, height)] = 1;
 
-	cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
+	//cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
 	//---------------------End of STEP 2 -------------------------------------
 
 	//STEP 3
@@ -256,6 +257,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 			if (y == INFINITY) {
 				a--; y = 0;
 			}
+
 			b = -2 * (x + y);
 			c = pow(x, 2) + pow(y, 2) - pow(coef, 2);
 			delta = pow(b, 2) - 4 * a * c;
@@ -282,7 +284,6 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 			tempTimeFunc.push_back(dist);
 			
 			//cout << "\ndistance  : " << dist << endl;
-
 		}
 
 		//Find the minimal solution  ---> same article page 12
@@ -297,7 +298,6 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 
 		//cout << "\ndistance  : " << minSolution << endl;
 		
-
 		//Set the distance to the processed pixel
 		distanceFuncPtr[x_new(iNew, jNew, height)] = minSolution;
 		labelArray[x_new(iNew, jNew, height)] = 1;
@@ -309,15 +309,21 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 			j_inProcess.erase(j_inProcess.begin());
 		}
 		else {
-			if (iSol == i_inProcess.size() - 1 || jSol == j_inProcess.size() - 1) {
+			/*if (iSol == i_inProcess.size() - 1 || jSol == j_inProcess.size() - 1) {
 				i_inProcess.erase(i_inProcess.end());
 				j_inProcess.erase(j_inProcess.end());
 			}
 			else {
-				i_inProcess.erase(i_inProcess.begin() + iSol);
-				j_inProcess.erase(j_inProcess.begin() + jSol);
-			}
+				i_inProcess.erase(i_inProcess.begin() + iSol );
+				j_inProcess.erase(j_inProcess.begin() + jSol );
+			}*/
+			i_inProcess.erase(i_inProcess.begin() + iSol);
+			j_inProcess.erase(j_inProcess.begin() + jSol);
 		}
+
+		/*while (tempTimeFunc.size() > 0) {
+			tempTimeFunc.pop_back();
+		}*/
 		tempTimeFunc.clear();
 
 		//STEP 4
@@ -432,7 +438,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 					}
 				}
 				else {
-					if (jNew == width - 1) {
+					if (jNew == (width - 1) ) {
 						//North
 						if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
@@ -455,120 +461,25 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
 							labelArray[x_new(iNew - 1, jNew, height)] = 2;
 						}
-						/*else {
-							if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 2) {
-								if ((iNew - 1) == 0 || (iNew - 1) == (imageHeight - 1) ) {
-									x = 0;
-								}
-								else {
-									x = min(outputImage[x_new((iNew - 1) + 1, jNew, imageHeight)], outputImage[x_new((iNew - 1) - 1, jNew, imageHeight)]);
-								}
-								if (jNew == 0 || jNew == (imageWidth - 1)) {
-									y = 0;
-								}
-								else {
-									y = min(outputImage[x_new(iNew - 1, jNew + 1, imageHeight)], outputImage[x_new(iNew - 1, jNew - 1, imageHeight)]);
-								}
-								if (sqrt(2) * coef > abs(x - y)) {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
-								}
-								else {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
-								}
-							}
-						}*/
 						//West
 						if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
 							labelArray[x_new(iNew, jNew - 1, height)] = 2;
 						}
-						/*else {
-							if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 2) {
-								if (iNew == 0 || iNew == (imageHeight - 1)) {
-									x = 0;
-								}
-								else {
-									x = min(outputImage[x_new(iNew + 1, (jNew - 1), imageHeight)], outputImage[x_new(iNew - 1, (jNew - 1), imageHeight)]);
-								}
-								if ((jNew - 1) == 0 || (jNew - 1) == (imageWidth - 1)) {
-									y = 0;
-								}
-								else {
-									y = min(outputImage[x_new(iNew, (jNew - 1) + 1, imageHeight)], outputImage[x_new(iNew, (jNew - 1) - 1, imageHeight)]);
-								}
-								if (sqrt(2) * coef > abs(x - y)) {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
-								}
-								else {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
-								}
-							}
-						}*/
 						//East
 						if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
 							labelArray[x_new(iNew, jNew + 1, height)] = 2;
 						}
-						/*else {
-							if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 2) {
-								if (iNew == 0 || iNew == (imageHeight - 1)) {
-									x = 0;
-								}
-								else {
-									x = min(outputImage[x_new(iNew + 1, (jNew + 1), imageHeight)], outputImage[x_new(iNew - 1, (jNew + 1), imageHeight)]);
-								}
-								if ((jNew + 1) == 0 || (jNew + 1) == (imageWidth - 1) ) {
-									y = 0;
-								}
-								else {
-									y = min(outputImage[x_new(iNew, (jNew + 1) + 1, imageHeight)], outputImage[x_new(iNew, (jNew + 1) - 1, imageHeight)]);
-								}
-								if (sqrt(2) * coef > abs(x - y)) {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
-								}
-								else {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
-								}
-							}
-						}*/
 						//South
 						if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
 							labelArray[x_new(iNew + 1, jNew, height)] = 2;
 						}
-						/*else {
-							if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 2) {
-								if ((iNew + 1) == 0 || (iNew + 1) == (imageHeight - 1)) {
-									x = 0;
-								}
-								else {
-									x = min(outputImage[x_new((iNew + 1) + 1, jNew, imageHeight)], outputImage[x_new((iNew + 1) - 1, jNew, imageHeight)]);
-								}
-								if (jNew == 0 || jNew == (imageWidth - 1)) {
-									y = 0;
-								}
-								else {
-									y = min(outputImage[x_new((iNew + 1), jNew + 1, imageHeight)], outputImage[x_new((iNew + 1), jNew - 1, imageHeight)]);
-								}
-								if (sqrt(2) * coef > abs(x - y)) {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
-								}
-								else {
-									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
-								}
-							}
-						}*/
 					}
 				}
 			}
 		}
-
-		//Empty the solution list after finding the good value
-		//tempTimeFunc.clear();
-		/*while (tempTimeFunc.size() > 0) {
-			tempTimeFunc.pop_back();
-		}*/
-
 	}
 
 	for (k = 0; k < dim2D; k++) {
@@ -577,9 +488,10 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const siz
 			cpt++;
 		}
 	}
-	cout << "\n" << cpt << " pixels with distance = infinity : " << endl;
+	//cout << "\n" << cpt << " pixels with distance = INFINITY : " << endl;
 
-	free(labelArray);
+	//free(labelArray);
+	delete[] labelArray;
 
 	return true;
 }
