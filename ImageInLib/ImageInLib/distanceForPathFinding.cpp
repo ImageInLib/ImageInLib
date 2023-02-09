@@ -19,14 +19,15 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		return false;
 	}
 
-	size_t i = 0, j = 0, dim2D = imageWidth * imageHeight;
+	size_t i = 0, j = 0, k = 0, dim2D = imageWidth * imageHeight;
 	vector<size_t> i_Processed, i_inProcess;
 	vector<size_t> j_Processed, j_inProcess;
-	dataType x, y, timeFunction = 0, speed = 1.0, space = 1.0, minSolution = 0, coef = 0, dist = 0;
+	dataType x, y, speed = 1.0, space = 1.0, minSolution = 0, coef = 0, dist = 0;
 	size_t nbNeighborsFound = 0;
 	size_t h_n = 0, w_n = 0, iSol = 0, jSol = 0, iNew = 0, jNew = 0;
 	vector<dataType> tempTimeFunc;
 	dataType a, b, c, delta;
+	short cpt = 0;
 
 	//STEP 1
 	//Initialization : distance is set to infinity
@@ -224,7 +225,7 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 	//Update the label of seed point as processed
 	labelArray[x_new(i, j, imageHeight)] = 1;
 
-	cout << "\nNumber of Neigbors found : " << nbNeighborsFound << endl;
+	cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
 	//---------------------End of STEP 2 -------------------------------------
 
 	//STEP 3
@@ -243,7 +244,6 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 			else {
 				x = min(outputImage[x_new(i_inProcess[i] + 1, j_inProcess[j], imageHeight)], outputImage[x_new(i_inProcess[i] - 1, j_inProcess[j], imageHeight)]);
 			}
-
 			if (j_inProcess[j] == 0 || j_inProcess[j] == imageWidth - 1) {
 				y = 0;
 			}
@@ -252,40 +252,54 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 			}
 
 			coef = space / speed; 
-			a = 2;
 
+			a = 2;
 			if (x == INFINITY) {
 				a--; x = 0;
 			}
 			if (y == INFINITY) {
 				a--; y = 0;
 			}
-
 			b = -2 * (x + y);
 			c = pow(x, 2) + pow(y, 2) - pow(coef, 2);
 			delta = pow(b, 2) - 4 * a * c;
-
+			
+			//We need to select the largest quadratic solution
+			//J.A Sethian, A Fast Marching Level Set method for Monotonically advancing fronts, 1995, page 8.
+			//link to article ---> http://ugweb.cs.ualberta.ca/~vis/courses/CompVis/readings/modelrec/sethian95fastlev.pdf 
 			if (delta >= 0) {
-				dist = (dataType)( ( (-b + sqrt(delta)) / (2 * a) ) );
+				dist = (dataType)( ( (- b + sqrt(delta)) / (2 * a) ) );
+				//cout << "\nT1  : " << (dataType)(((-b + sqrt(delta)) / (2 * a))) << endl;
+				//cout << "\nT2  : " << (dataType)(((-b - sqrt(delta)) / (2 * a))) << endl;
 			}
 			else {
 				dist = (dataType)(min(x, y) + pow(coef, 2));
 			}
-			tempTimeFunc.push_back(dist);
 
+			/*if (sqrt(2) * coef > abs(x - y)) {
+				dist = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
+			}
+			else {
+				dist = min(x, y) + pow(coef, 2);
+			}*/
+
+			tempTimeFunc.push_back(dist);
+			
 			//cout << "\ndistance  : " << dist << endl;
 
 		}
 
-		//Find the minimal solution
+		//Find the minimal solution  ---> same article page 12
 		minSolution = INFINITY;
-		for (i = 0; i < h_n; i++) {
-			if (minSolution > tempTimeFunc[i]) {
-				minSolution = tempTimeFunc[i];
-				iSol = i; iNew = i_inProcess[iSol];
-				jSol = i; jNew = j_inProcess[jSol];
+		for (k = 0; k < h_n; k++) {
+			if (minSolution > tempTimeFunc[k]) {
+				minSolution = tempTimeFunc[k];
+				iSol = k; iNew = i_inProcess[iSol];
+				jSol = k; jNew = j_inProcess[jSol];
 			}
 		}
+
+		//cout << "\ndistance  : " << minSolution << endl;
 
 		//Set the distance to the processed pixel
 		outputImage[x_new(iNew, jNew, imageHeight)] = minSolution;
@@ -443,28 +457,122 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
 							labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
 						}
+						/*else {
+							if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 2) {
+								if ((iNew - 1) == 0 || (iNew - 1) == (imageHeight - 1) ) {
+									x = 0;
+								}
+								else {
+									x = min(outputImage[x_new((iNew - 1) + 1, jNew, imageHeight)], outputImage[x_new((iNew - 1) - 1, jNew, imageHeight)]);
+								}
+								if (jNew == 0 || jNew == (imageWidth - 1)) {
+									y = 0;
+								}
+								else {
+									y = min(outputImage[x_new(iNew - 1, jNew + 1, imageHeight)], outputImage[x_new(iNew - 1, jNew - 1, imageHeight)]);
+								}
+								if (sqrt(2) * coef > abs(x - y)) {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
+								}
+								else {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
+								}
+							}
+						}*/
 						//West
 						if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
 							labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
 						}
+						/*else {
+							if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 2) {
+								if (iNew == 0 || iNew == (imageHeight - 1)) {
+									x = 0;
+								}
+								else {
+									x = min(outputImage[x_new(iNew + 1, (jNew - 1), imageHeight)], outputImage[x_new(iNew - 1, (jNew - 1), imageHeight)]);
+								}
+								if ((jNew - 1) == 0 || (jNew - 1) == (imageWidth - 1)) {
+									y = 0;
+								}
+								else {
+									y = min(outputImage[x_new(iNew, (jNew - 1) + 1, imageHeight)], outputImage[x_new(iNew, (jNew - 1) - 1, imageHeight)]);
+								}
+								if (sqrt(2) * coef > abs(x - y)) {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
+								}
+								else {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
+								}
+							}
+						}*/
 						//East
 						if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
 							labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
 						}
+						/*else {
+							if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 2) {
+								if (iNew == 0 || iNew == (imageHeight - 1)) {
+									x = 0;
+								}
+								else {
+									x = min(outputImage[x_new(iNew + 1, (jNew + 1), imageHeight)], outputImage[x_new(iNew - 1, (jNew + 1), imageHeight)]);
+								}
+								if ((jNew + 1) == 0 || (jNew + 1) == (imageWidth - 1) ) {
+									y = 0;
+								}
+								else {
+									y = min(outputImage[x_new(iNew, (jNew + 1) + 1, imageHeight)], outputImage[x_new(iNew, (jNew + 1) - 1, imageHeight)]);
+								}
+								if (sqrt(2) * coef > abs(x - y)) {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
+								}
+								else {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
+								}
+							}
+						}*/
 						//South
 						if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
 							i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
 							labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
 						}
+						/*else {
+							if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 2) {
+								if ((iNew + 1) == 0 || (iNew + 1) == (imageHeight - 1)) {
+									x = 0;
+								}
+								else {
+									x = min(outputImage[x_new((iNew + 1) + 1, jNew, imageHeight)], outputImage[x_new((iNew + 1) - 1, jNew, imageHeight)]);
+								}
+								if (jNew == 0 || jNew == (imageWidth - 1)) {
+									y = 0;
+								}
+								else {
+									y = min(outputImage[x_new((iNew + 1), jNew + 1, imageHeight)], outputImage[x_new((iNew + 1), jNew - 1, imageHeight)]);
+								}
+								if (sqrt(2) * coef > abs(x - y)) {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
+								}
+								else {
+									outputImage[x_new(iNew - 1, jNew, imageHeight)] = min(x, y) + pow(coef, 2);
+								}
+							}
+						}*/
 					}
 				}
 			}
 		}
+
+		//Empty the solution list after finding the good value
+		while (tempTimeFunc.size() > 0) {
+			//tempTimeFunc.pop_back();
+			tempTimeFunc.erase(tempTimeFunc.begin());
+		}
+
 	}
 
-	short cpt = 0;
 	for (i = 0; i < dim2D; i++) {
 		if (outputImage[i] == INFINITY) {
 			outputImage[i] = 0;
