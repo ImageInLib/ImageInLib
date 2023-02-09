@@ -15,7 +15,7 @@ extern "C" {
 		size_t x, y;
 	} Point2D;
 
-	bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t imageHeight, const size_t imageWidth, Point2D* seedPoints);
+	bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, Point2D* seedPoints);
 
 
 

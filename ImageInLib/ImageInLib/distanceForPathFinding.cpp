@@ -9,142 +9,139 @@
 
 using namespace std;
 
-bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t imageHeight, const size_t imageWidth, Point2D* seedPoints)
+bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, Point2D* seedPoints)
 {
-	// The image should be threshoded before (or at least define the background pixels).
 
-	short* labelArray = (short*)malloc(imageHeight * imageWidth * sizeof(short));
+	short* labelArray = (short*)malloc(height * width * sizeof(short));
 
-	if (inputImagePtr == NULL || outputImage == NULL || seedPoints == NULL || labelArray == NULL) {
+	if (imageDataPtr == NULL || distanceFuncPtr == NULL || seedPoints == NULL || labelArray == NULL) {
 		return false;
 	}
 
-	size_t i = 0, j = 0, k = 0, dim2D = imageWidth * imageHeight;
+	size_t i = 0, j = 0, k = 0, dim2D = width * height, cpt = 0;
 	vector<size_t> i_Processed, i_inProcess;
 	vector<size_t> j_Processed, j_inProcess;
-	dataType x, y, speed = 1.0, space = 1.0, minSolution = 0, coef = 0, dist = 0;
+	dataType x, y, speed = 1.0, space = 1.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
 	size_t nbNeighborsFound = 0;
 	size_t h_n = 0, w_n = 0, iSol = 0, jSol = 0, iNew = 0, jNew = 0;
 	vector<dataType> tempTimeFunc;
 	dataType a, b, c, delta;
-	short cpt = 0;
 
 	//STEP 1
 	//Initialization : distance is set to infinity
 	//In labelAray we have : 1 ---> already processed, 2 ---> in process and 3 ---> not processed
-	for (i = 0; i < dim2D; i++) {
-		outputImage[i] = INFINITY;
-		labelArray[i] = 3;
+	for (k = 0; k < dim2D; k++) {
+		distanceFuncPtr[k] = INFINITY;
+		labelArray[k] = 3;
 	}
-
 	//--------------------End of STEP 1 -----------------------------------
 
 	//STEP 2
 	//Add the neighbors of the seed point in the list of pixels to be processed
 	i = seedPoints->x; j = seedPoints->y;
-	outputImage[x_new(i, j, imageHeight)] = 0;
+	distanceFuncPtr[x_new(i, j, height)] = 0;
 	i_Processed.push_back(i); j_Processed.push_back(j);
 
 	if (i == 0) {
 		if (j == 0) {
 			//East
-			if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+			if (labelArray[x_new(i, j + 1, height)] == 3) {
 				i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-				labelArray[x_new(i, j + 1, imageHeight)] = 2;
+				labelArray[x_new(i, j + 1, height)] = 2;
 				nbNeighborsFound++;
 			}
 			//South
-			if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+			if (labelArray[x_new(i + 1, j, height)] == 3) {
 				i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-				labelArray[x_new(i + 1, j, imageHeight)] = 2;
+				labelArray[x_new(i + 1, j, height)] = 2;
 				nbNeighborsFound++;
 			}
 		}
 		else {
-			if (j == imageWidth - 1) {
+			if (j == width - 1) {
 				//West
-				if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+				if (labelArray[x_new(i, j - 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-					labelArray[x_new(i, j - 1, imageHeight)] = 2;
+					labelArray[x_new(i, j - 1, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+				if (labelArray[x_new(i + 1, j, height)] == 3) {
 					i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-					labelArray[x_new(i + 1, j, imageHeight)] = 2;
+					labelArray[x_new(i + 1, j, height)] = 2;
 					nbNeighborsFound++;
 				}
 			}
 			else {
 				//West
-				if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+				if (labelArray[x_new(i, j - 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-					labelArray[x_new(i, j - 1, imageHeight)] = 2;
+					labelArray[x_new(i, j - 1, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//East
-				if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+				if (labelArray[x_new(i, j + 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-					labelArray[x_new(i, j + 1, imageHeight)] = 2;
+					labelArray[x_new(i, j + 1, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+				if (labelArray[x_new(i + 1, j, height)] == 3) {
 					i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-					labelArray[x_new(i + 1, j, imageHeight)] = 2;
+					labelArray[x_new(i + 1, j, height)] = 2;
 					nbNeighborsFound++;
 				}
 			}
 		}
 	}
 	else {
-		if (i == imageHeight - 1) {
+		if (i == height - 1) {
 			if (j == 0) {
 				//North
-				if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+				if (labelArray[x_new(i - 1, j, height)] == 3) {
 					i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-					labelArray[x_new(i - 1, j, imageHeight)] = 2;
+					labelArray[x_new(i - 1, j, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//East
-				if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+				if (labelArray[x_new(i, j + 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-					labelArray[x_new(i, j + 1, imageHeight)] = 2;
+					labelArray[x_new(i, j + 1, height)] = 2;
 					nbNeighborsFound++;
 				}
 			}
 			else {
-				if (j == imageWidth - 1) {
+				if (j == width - 1) {
 					//North
-					if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i - 1, j, height)] == 3) {
 						i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-						labelArray[x_new(i - 1, j, imageHeight)] = 2;
+						labelArray[x_new(i - 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j - 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-						labelArray[x_new(i, j - 1, imageHeight)] = 2;
+						labelArray[x_new(i, j - 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 				}
 				else {
 					//West
-					if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j - 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-						labelArray[x_new(i, j - 1, imageHeight)] = 2;
+						labelArray[x_new(i, j - 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//North
-					if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i - 1, j, height)] == 3) {
 						i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-						labelArray[x_new(i - 1, j, imageHeight)] = 2;
+						labelArray[x_new(i - 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//East
-					if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j + 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-						labelArray[x_new(i, j + 1, imageHeight)] = 2;
+						labelArray[x_new(i, j + 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 				}
@@ -153,68 +150,68 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		else {
 			if (j == 0) {
 				//North
-				if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+				if (labelArray[x_new(i - 1, j, height)] == 3) {
 					i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-					labelArray[x_new(i - 1, j, imageHeight)] = 2;
+					labelArray[x_new(i - 1, j, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//East
-				if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+				if (labelArray[x_new(i, j + 1, height)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-					labelArray[x_new(i, j + 1, imageHeight)] = 2;
+					labelArray[x_new(i, j + 1, height)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+				if (labelArray[x_new(i + 1, j, height)] == 3) {
 					i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-					labelArray[x_new(i + 1, j, imageHeight)] = 2;
+					labelArray[x_new(i + 1, j, height)] = 2;
 					nbNeighborsFound++;
 				}
 			}
 			else {
-				if (j == imageWidth - 1) {
+				if (j == width - 1) {
 					//North
-					if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i - 1, j, height)] == 3) {
 						i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-						labelArray[x_new(i - 1, j, imageHeight)] = 2;
+						labelArray[x_new(i - 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j - 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-						labelArray[x_new(i, j - 1, imageHeight)] = 2;
+						labelArray[x_new(i, j - 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//South
-					if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i + 1, j, height)] == 3) {
 						i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-						labelArray[x_new(i + 1, j, imageHeight)] = 2;
+						labelArray[x_new(i + 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 				}
 				else {
 					//North
-					if (labelArray[x_new(i - 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i - 1, j, height)] == 3) {
 						i_inProcess.push_back(i - 1); j_inProcess.push_back(j);
-						labelArray[x_new(i - 1, j, imageHeight)] = 2;
+						labelArray[x_new(i - 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, j - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j - 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j - 1);
-						labelArray[x_new(i, j - 1, imageHeight)] = 2;
+						labelArray[x_new(i, j - 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//East
-					if (labelArray[x_new(i, j + 1, imageHeight)] == 3) {
+					if (labelArray[x_new(i, j + 1, height)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(j + 1);
-						labelArray[x_new(i, j + 1, imageHeight)] = 2;
+						labelArray[x_new(i, j + 1, height)] = 2;
 						nbNeighborsFound++;
 					}
 					//South
-					if (labelArray[x_new(i + 1, j, imageHeight)] == 3) {
+					if (labelArray[x_new(i + 1, j, height)] == 3) {
 						i_inProcess.push_back(i + 1); j_inProcess.push_back(j);
-						labelArray[x_new(i + 1, j, imageHeight)] = 2;
+						labelArray[x_new(i + 1, j, height)] = 2;
 						nbNeighborsFound++;
 					}
 				}
@@ -223,7 +220,7 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 	}
 
 	//Update the label of seed point as processed
-	labelArray[x_new(i, j, imageHeight)] = 1;
+	labelArray[x_new(i, j, height)] = 1;
 
 	cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
 	//---------------------End of STEP 2 -------------------------------------
@@ -235,20 +232,19 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		//w_n = j_inProcess.size(); // they have the same value
 
 		//Solve the Eikonale equation for all the neighbors in the stack
-		for (i = 0; i < h_n; i++) {
-			j = i;
+		for (k = 0; k < h_n; k++) {
 
-			if (i_inProcess[i] == 0 || i_inProcess[i] == imageHeight - 1) {
+			if (i_inProcess[k] == 0 || i_inProcess[k] == (height - 1) ) {
 				x = 0;
 			}
 			else {
-				x = min(outputImage[x_new(i_inProcess[i] + 1, j_inProcess[j], imageHeight)], outputImage[x_new(i_inProcess[i] - 1, j_inProcess[j], imageHeight)]);
+				x = min(distanceFuncPtr[x_new(i_inProcess[k] + 1, j_inProcess[k], height)], distanceFuncPtr[x_new(i_inProcess[k] - 1, j_inProcess[k], height)]);
 			}
-			if (j_inProcess[j] == 0 || j_inProcess[j] == imageWidth - 1) {
+			if (j_inProcess[k] == 0 || j_inProcess[k] == (width - 1) ) {
 				y = 0;
 			}
 			else {
-				y = min(outputImage[x_new(i_inProcess[i], j_inProcess[j] + 1, imageHeight)], outputImage[x_new(i_inProcess[i], j_inProcess[j] - 1, imageHeight)]);
+				y = min(distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] + 1, height)], distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] - 1, height)]);
 			}
 
 			coef = space / speed; 
@@ -269,8 +265,8 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 			//link to article ---> http://ugweb.cs.ualberta.ca/~vis/courses/CompVis/readings/modelrec/sethian95fastlev.pdf 
 			if (delta >= 0) {
 				dist = (dataType)( ( (- b + sqrt(delta)) / (2 * a) ) );
-				//cout << "\nT1  : " << (dataType)(((-b + sqrt(delta)) / (2 * a))) << endl;
-				//cout << "\nT2  : " << (dataType)(((-b - sqrt(delta)) / (2 * a))) << endl;
+				//cout << "\nT1  : " << (dataType)(( (- b + sqrt(delta)) / (2 * a)) ) << endl;
+				//cout << "\nT2  : " << (dataType)(( (- b - sqrt(delta)) / (2 * a)) ) << endl;
 			}
 			else {
 				dist = (dataType)(min(x, y) + pow(coef, 2));
@@ -292,7 +288,7 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		//Find the minimal solution  ---> same article page 12
 		minSolution = INFINITY;
 		for (k = 0; k < h_n; k++) {
-			if (minSolution > tempTimeFunc[k]) {
+			if (minSolution >= tempTimeFunc[k]) {
 				minSolution = tempTimeFunc[k];
 				iSol = k; iNew = i_inProcess[iSol];
 				jSol = k; jNew = j_inProcess[jSol];
@@ -300,10 +296,11 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		}
 
 		//cout << "\ndistance  : " << minSolution << endl;
+		
 
 		//Set the distance to the processed pixel
-		outputImage[x_new(iNew, jNew, imageHeight)] = minSolution;
-		labelArray[x_new(iNew, jNew, imageHeight)] = 1;
+		distanceFuncPtr[x_new(iNew, jNew, height)] = minSolution;
+		labelArray[x_new(iNew, jNew, height)] = 1;
 		i_Processed.push_back(iNew); j_Processed.push_back(jNew);
 
 		//Remove the processed pixel to the stack
@@ -321,96 +318,97 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 				j_inProcess.erase(j_inProcess.begin() + jSol);
 			}
 		}
+		tempTimeFunc.clear();
 
 		//STEP 4
 		//Find the neighbors of the processed pixel
 		if (iNew == 0) {
 			if (jNew == 0) {
 				//East
-				if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+				if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 					i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-					labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+					labelArray[x_new(iNew, jNew + 1, height)] = 2;
 				}
 				//South
-				if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+				if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 					i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-					labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+					labelArray[x_new(iNew + 1, jNew, height)] = 2;
 				}
 			}
 			else {
-				if (jNew == imageWidth - 1) {
+				if (jNew == width - 1) {
 					//West
-					if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 						i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+						labelArray[x_new(iNew, jNew - 1, height)] = 2;
 					}
 					//South
-					if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 						i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-						labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+						labelArray[x_new(iNew + 1, jNew, height)] = 2;
 					}
 				}
 				else {
 					//West
-					if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 						i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+						labelArray[x_new(iNew, jNew - 1, height)] = 2;
 					}
 					//East
-					if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 						i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-						labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+						labelArray[x_new(iNew, jNew + 1, height)] = 2;
 					}
 					//South
-					if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 						i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-						labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+						labelArray[x_new(iNew + 1, jNew, height)] = 2;
 					}
 				}
 			}
 		}
 		else {
-			if (iNew == imageHeight - 1) {
+			if (iNew == height - 1) {
 				if (jNew == 0) {
 					//North
-					if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 						i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+						labelArray[x_new(iNew - 1, jNew, height)] = 2;
 					}
 					//East
-					if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 						i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-						labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+						labelArray[x_new(iNew, jNew + 1, height)] = 2;
 					}
 				}
 				else {
-					if (jNew == imageWidth - 1) {
+					if (jNew == width - 1) {
 						//North
-						if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew - 1, jNew, height)] = 2;
 						}
 						//West
-						if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-							labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew - 1, height)] = 2;
 						}
 					}
 					else {
 						//West
-						if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-							labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew - 1, height)] = 2;
 						}
 						//North
-						if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew - 1, jNew, height)] = 2;
 						}
 						//East
-						if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-							labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew + 1, height)] = 2;
 						}
 					}
 				}
@@ -418,44 +416,44 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 			else {
 				if (jNew == 0) {
 					//North
-					if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 						i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+						labelArray[x_new(iNew - 1, jNew, height)] = 2;
 					}
 					//East
-					if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 						i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-						labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+						labelArray[x_new(iNew, jNew + 1, height)] = 2;
 					}
 					//South
-					if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+					if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 						i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-						labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+						labelArray[x_new(iNew + 1, jNew, height)] = 2;
 					}
 				}
 				else {
-					if (jNew == imageWidth - 1) {
+					if (jNew == width - 1) {
 						//North
-						if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew - 1, jNew, height)] = 2;
 						}
 						//West
-						if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-							labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew - 1, height)] = 2;
 						}
 						//South
-						if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew + 1, jNew, height)] = 2;
 						}
 					}
 					else {
 						//North
-						if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew - 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew - 1, jNew, height)] = 2;
 						}
 						/*else {
 							if (labelArray[x_new(iNew - 1, jNew, imageHeight)] == 2) {
@@ -480,9 +478,9 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 							}
 						}*/
 						//West
-						if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-							labelArray[x_new(iNew, jNew - 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew - 1, height)] = 2;
 						}
 						/*else {
 							if (labelArray[x_new(iNew, jNew - 1, imageHeight)] == 2) {
@@ -507,9 +505,9 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 							}
 						}*/
 						//East
-						if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
 							i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-							labelArray[x_new(iNew, jNew + 1, imageHeight)] = 2;
+							labelArray[x_new(iNew, jNew + 1, height)] = 2;
 						}
 						/*else {
 							if (labelArray[x_new(iNew, jNew + 1, imageHeight)] == 2) {
@@ -534,9 +532,9 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 							}
 						}*/
 						//South
-						if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 3) {
+						if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
 							i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-							labelArray[x_new(iNew + 1, jNew, imageHeight)] = 2;
+							labelArray[x_new(iNew + 1, jNew, height)] = 2;
 						}
 						/*else {
 							if (labelArray[x_new(iNew + 1, jNew, imageHeight)] == 2) {
@@ -566,21 +564,22 @@ bool fastMarching2d(dataType* inputImagePtr, dataType* outputImage, const size_t
 		}
 
 		//Empty the solution list after finding the good value
-		while (tempTimeFunc.size() > 0) {
-			//tempTimeFunc.pop_back();
-			tempTimeFunc.erase(tempTimeFunc.begin());
-		}
+		//tempTimeFunc.clear();
+		/*while (tempTimeFunc.size() > 0) {
+			tempTimeFunc.pop_back();
+		}*/
 
 	}
 
-	for (i = 0; i < dim2D; i++) {
-		if (outputImage[i] == INFINITY) {
-			outputImage[i] = 0;
+	for (k = 0; k < dim2D; k++) {
+		if (distanceFuncPtr[k] == INFINITY) {
+			distanceFuncPtr[k] = 0;
 			cpt++;
 		}
 	}
 	cout << "\n" << cpt << " pixels with distance = infinity : " << endl;
 
 	free(labelArray);
+
 	return true;
 }
