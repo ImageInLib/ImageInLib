@@ -15,7 +15,15 @@ extern "C" {
 		size_t x, y;
 	} Point2D;
 
+	dataType solve2dQuadratic(dataType X, dataType Y, dataType W);
+
+	dataType selectX(dataType* distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J);
+
+	dataType selectY(dataType* distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J);
+
 	bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, Point2D* seedPoints);
+
+	//bool bruteForce2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, dataType backGround);
 
 
 
