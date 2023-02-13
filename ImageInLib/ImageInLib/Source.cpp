@@ -34,7 +34,7 @@
 #define thresmin 995
 #define thresmax 1213
 
-#define epsilonFast 0.01
+#define epsilonFast 0.001
 
 
 int main() {
@@ -55,8 +55,9 @@ int main() {
 		image[k] = (short*)malloc(dim2D * sizeof(short));
 	}
 
-	if (imageData == NULL || image == NULL) 
+	if (imageData == NULL || image == NULL) {
 		return false;
+	}
 
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
@@ -83,18 +84,21 @@ int main() {
 	//----------------------------------
 	dataType * OneSliceImage = (dataType*)malloc(Height * Width * sizeof(dataType));
 	dataType * rotatedImage = (dataType*)malloc(Height * Width * sizeof(dataType));
-	dataType* distanceMap = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType * distanceMap = (dataType*)malloc(Height * Width * sizeof(dataType));
 	size_t cst = 238; i = 0;
 	for (k = 0; k < Height; k++) {
 		for (j = 0; j < Width; j++) {
 			x = x_new(cst, j, Length);
 			OneSliceImage[i] = imageData[k][x];
+			distanceMap[i] = 0;
 			i++;
 		}
 	}
-	for (k = 0; k < Height; k++) {
+
+	for (i = 0; i < Height; i++) {
 		for (j = 0; j < Width; j++) {
-			rotatedImage[x_new(k, j, Height)] = OneSliceImage[x_new(Height - k - 1, Width - j - 1, Height)];
+			x = x_new(i, j, Height);
+			rotatedImage[x] = OneSliceImage[x_new(Height - i - 1, Width - j - 1, Height)];
 		}
 	}
 	//---------------------------------
@@ -117,10 +121,22 @@ int main() {
 	//std::string thresOutPut = outputPath + "thresholdedImage.raw";
 	//store2dRawData<dataType>(rotatedImage, Height, Width, thresOutPut.c_str());
 
-	Point2D* startingPoint = (Point2D*)malloc(sizeof(Point2D));
-	startingPoint->x = 247; startingPoint->y = 277;
+	Point2D * startingPoint = (Point2D*)malloc(sizeof(Point2D));
+	startingPoint->x = (size_t)(Width / 2); startingPoint->y = (size_t)(Height / 2);
+	//startingPoint->x = 200; startingPoint->y = 300;
 
+	//Manual rescalling
+	//dataType scale_factor = 1.0 / 4000.0;
+	//for (i = 0; i < Height; i++) {
+	//	for (j = 0; j < Width; j++) {
+	//		x = x_new(i, j, Height);
+	//		rotatedImage[x] = scale_factor * (rotatedImage[x] - 4000) + 1;
+	//	}
+	//}
+	
 	fastMarching2d(rotatedImage, distanceMap, Height, Width, startingPoint);
+
+	//bruteForce2d(rotatedImage, distanceMap, Height, Width, 0);
 
 	std::string outPutDistance = outputPath + "distanceMap.raw";
 	store2dRawData<dataType>(distanceMap, Height, Width, outPutDistance.c_str());

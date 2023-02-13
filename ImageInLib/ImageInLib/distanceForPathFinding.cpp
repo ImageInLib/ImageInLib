@@ -7,17 +7,23 @@
 #include<vector>
 #include "distanceForPathFinding.h"
 
+#define BIG_VALUE INFINITY
+
 using namespace std;
 
+//J.A Sethian, A Fast Marching Level Set method for Monotonically advancing fronts, 1995, page 8 and 10.
+//link to article ---> http://ugweb.cs.ualberta.ca/~vis/courses/CompVis/readings/modelrec/sethian95fastlev.pdf
+
+// aU^2 -2U(X+Y) + (X^2 + Y^2 - W) = 0
 dataType solve2dQuadratic(dataType X, dataType Y, dataType W) {
 
 	dataType sol, a, b, c, delta;
 
 	a = 2.0; 
-	if (X == INFINITY) {
+	if (X == BIG_VALUE) {
 		X = 0; a--;
 	}
-	if (Y == INFINITY) {
+	if (Y == BIG_VALUE) {
 		Y = 0; a--;
 	}
 
@@ -30,49 +36,57 @@ dataType solve2dQuadratic(dataType X, dataType Y, dataType W) {
 	else {
 		sol = min(X, Y) + W;
 	}
-	return sol;
+
+	if (sol < 0) {
+		cout << "The solution is negative " << endl;
+		return 0;
+	}
+	else {
+		return sol;
+	}
+	
 }
 
 dataType selectX(dataType * distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J) {
 
-	dataType jminus, jplus;
+	dataType j_minus, j_plus;
 
 	if (J == 0) {
-		jminus = INFINITY;
+		j_minus = BIG_VALUE;
 	}
 	else {
-		jminus = distanceFuncPtr[x_new(I, J - 1, dimI)];
+		j_minus = distanceFuncPtr[x_new(I, J - 1, dimI)];
 	}
 
 	if (J == dimJ - 1) {
-		jplus = INFINITY;
+		j_plus = BIG_VALUE;
 	}
 	else {
-		jplus = distanceFuncPtr[x_new(I, J + 1, dimI)];
+		j_plus = distanceFuncPtr[x_new(I, J + 1, dimI)];
 	}
 
-	return min(jminus, jplus);
+	return min(j_minus, j_plus);
 }
 
 dataType selectY(dataType * distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J) {
 
-	dataType iminus, iplus;
+	dataType i_minus, i_plus;
 
 	if (I == 0) {
-		iminus = INFINITY;
+		i_minus = BIG_VALUE;
 	}
 	else {
-		iminus = distanceFuncPtr[x_new(I - 1, J, dimI)];
+		i_minus = distanceFuncPtr[x_new(I - 1, J, dimI)];
 	}
 
 	if (I == dimI - 1) {
-		iplus = INFINITY;
+		i_plus = BIG_VALUE;
 	}
 	else {
-		iplus = distanceFuncPtr[x_new(I + 1, J, dimI)];
+		i_plus = distanceFuncPtr[x_new(I + 1, J, dimI)];
 	}
 
-	return min(iminus, iplus);
+	return min(i_minus, i_plus);
 }
 
 bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const size_t height, const size_t width, Point2D * seedPoints)
@@ -93,12 +107,12 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 	vector<dataType> tempTimeFunc;
 	dataType dNorth = 0.0, dSouth = 0.0, dEast = 0.0, dWest = 0.0;
 
-	const dataType BIG_VAL = INFINITY; //500;
+	//cout << "\nNumber of pixels : " << height * width  << endl;
 
 	//STEP 1
 	//In labelAray we have : 1 ---> already processed, 2 ---> in process and 3 ---> not processed
 	for (k = 0; k < dim2D; k++) {
-		distanceFuncPtr[k] = BIG_VAL; //INFINITY;
+		distanceFuncPtr[k] = BIG_VALUE;
 		labelArray[k] = 3;
 	}
 	//--------------------End of STEP 1 -----------------------------------
@@ -109,7 +123,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 	distanceFuncPtr[x_new(i, j, height)] = 0;
 	i_Processed.push_back(i); j_Processed.push_back(j);
 
-	dataType iminus = i - 1, iplus = i + 1, jminus = j - 1, jplus = j + 1;
+	size_t iminus = i - 1, iplus = i + 1, jminus = j - 1, jplus = j + 1;
 	if (i == 0) {
 		if (j == 0) {
 
@@ -301,67 +315,14 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 	}
 
-	dataType val_i_plus_1, val_i_minus_1, val_j_plus_1, val_j_minus_1;
-
 	//Compute the solution for neighbors in the stack
 	h_n = i_inProcess.size(); // h_n = j_inProcess.size();
 	for (k = 0; k < h_n; k++) {
 
-		//if (i_inProcess[k] == 0) {
-		//	val_i_minus_1 = 0;//INFINITY;
-		//}
-		//else {
-		//	val_i_minus_1 = distanceFuncPtr[x_new(i_inProcess[k] - 1, j_inProcess[k], height)];
-		//}
-		//if(i_inProcess[k] == (height - 1)) {
-		//	val_i_plus_1 = 0;//INFINITY;
-		//}
-		//else {
-		//	val_i_plus_1 = distanceFuncPtr[x_new(i_inProcess[k] + 1, j_inProcess[k], height)];
-		//}
-		//y = min(val_i_plus_1, val_i_minus_1);
-		//if (j_inProcess[k] == 0) {
-		//	val_j_minus_1 = 0;//INFINITY;
-		//}
-		//else {
-		//	val_j_minus_1 = distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] - 1, height)];
-		//}
-		//if (j_inProcess[k] == (width - 1)) {
-		//	val_j_plus_1 = 0;//INFINITY;
-		//}
-		//else {
-		//	val_j_plus_1 = distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] + 1, height)];
-		//}
-		//x = min(val_j_plus_1, val_j_minus_1);
-
 		x = selectX(distanceFuncPtr, height, width, i_inProcess[k], j_inProcess[k]);
 		y = selectY(distanceFuncPtr, height, width, i_inProcess[k], j_inProcess[k]);
 
-		coef = pow( (space / speed) , 2);
-
-		//if (j_inProcess[k] == 0 || j_inProcess[k] == (width - 1)) {
-		//	x = 0;
-		//}
-		//else {
-		//	x = min(distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] + 1, height)], distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] - 1, height)]);
-		//}
-
-		//a = 2;
-		//if (x == BIG_VAL) {
-		//	a--; x = 0;
-		//}
-		//if (y == BIG_VAL) {
-		//	a--; y = 0;
-		//}
-		//b = -2 * (x + y);
-		//c = pow(x, 2) + pow(y, 2) - pow(coef, 2);
-		//delta = pow(b, 2) - 4 * a * c;
-		//if (delta >= 0) {
-		//	dist = (dataType)(((-b + sqrt(delta)) / (2 * a)));
-		//}
-		//else {
-		//	dist = (dataType)(min(x, y) + pow(coef, 2));
-		//}
+		coef = pow((space / speed), 2);
 
 		dist = solve2dQuadratic(x, y, coef);
 		tempTimeFunc.push_back(dist);
@@ -371,7 +332,6 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 	labelArray[x_new(i, j, height)] = 1;
 
 	//cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
-	
 	//---------------------End of STEP 2 -------------------------------------
 
 	//STEP 3
@@ -379,68 +339,14 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 
 		h_n = i_inProcess.size();
 		// i_inProcess and j_inProcess have the same size
-		 
-		////Solve the Eikonale equation for all the neighbors in the stack
-		//for (k = 0; k < h_n; k++) {
-		//	if (i_inProcess[k] == 0 || i_inProcess[k] == (height - 1) ) {
-		//		//x = 0;
-		//		y = 0;
-		//	}
-		//	else {
-		//		//x 
-		//		y = min(distanceFuncPtr[x_new(i_inProcess[k] + 1, j_inProcess[k], height)], distanceFuncPtr[x_new(i_inProcess[k] - 1, j_inProcess[k], height)]);
-		//	}
-		//	if (j_inProcess[k] == 0 || j_inProcess[k] == (width - 1) ) {
-		//		//y 
-		//		x = 0;
-		//	}
-		//	else {
-		//		//y 
-		//		x = min(distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] + 1, height)], distanceFuncPtr[x_new(i_inProcess[k], j_inProcess[k] - 1, height)]);
-		//	}
-		//	coef = space / speed; 
-		//	//coef = space / (imageDataPtr[x_new(i_inProcess[k], j_inProcess[k], height)] + 0.001);
-		//	//coef = 0.001 + abs(imageDataPtr[x_new(i_inProcess[k], j_inProcess[k], height)] - imageDataPtr[x_new(i, j, height)]);
-		//	a = 2;
-		//	if (x == BIG_VAL) {
-		//		a--; x = 0;
-		//	}
-		//	if (y == BIG_VAL) {
-		//		a--; y = 0;
-		//	}
-		//	b = -2 * (x + y);
-		//	c = pow(x, 2) + pow(y, 2) - pow(coef, 2);
-		//	delta = pow(b, 2) - 4 * a * c;
-		//	
-		//	//We need to select the largest quadratic solution
-		//	//J.A Sethian, A Fast Marching Level Set method for Monotonically advancing fronts, 1995, page 8.
-		//	//link to article ---> http://ugweb.cs.ualberta.ca/~vis/courses/CompVis/readings/modelrec/sethian95fastlev.pdf 
-		//	if (delta > 0) {
-		//		dist = (dataType)( ( (- b + sqrt(delta)) / (2 * a) ) );
-		//		//cout << "\nT1  : " << (dataType)(( (- b + sqrt(delta)) / (2 * a)) ) << endl;
-		//		//cout << "\nT2  : " << (dataType)(( (- b - sqrt(delta)) / (2 * a)) ) << endl;
-		//	}
-		//	else {
-		//		dist = (dataType)(min(x, y) + pow(coef, 2));
-		//	}
-		//	/*if (sqrt(2) * coef > abs(x - y)) {
-		//		dist = 0.5 * (x + y) + 0.5 * sqrt(pow(x + y, 2) - 2 * (pow(x, 2) + pow(x, 2) - pow(coef, 2)));
-		//	}
-		//	else {
-		//		dist = min(x, y) + pow(coef, 2);
-		//	}*/
-		//	tempTimeFunc.push_back(dist);
-		//	
-		//	//cout << "\ndistance  : " << dist << endl;
-		//}
 
 		//Find the minimal solution
 		minSolution = INFINITY;
 		for (k = 0; k < h_n; k++) {
 			if (minSolution >= tempTimeFunc[k]) {
 				minSolution = tempTimeFunc[k];
-				iSol = k; iNew = i_inProcess[iSol];
-				jSol = k; jNew = j_inProcess[jSol];
+				iSol = k; iNew = i_inProcess[k];
+				jSol = k; jNew = j_inProcess[k];
 			}
 		}
 
@@ -462,121 +368,77 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 			j_inProcess.erase(j_inProcess.begin() + jSol);
 			tempTimeFunc.erase(tempTimeFunc.begin() + jSol);
 		}
-		//tempTimeFunc.clear();
 
 		//Compute solution for the neigbors of the selected point
-		iNew_minus = iNew - 1; iNew_plus = iNew + 1;
-		jNew_minus = jNew - 1; jNew_plus = jNew + 1;
-
-		////East
-		////labelArray[x_new(iNew, jNew + 1, height)];
-		//x = min(distanceFuncPtr[x_new(iNew, jNew_plus + 1, height)], distanceFuncPtr[x_new(iNew, jNew_plus - 1, height)]);
-		//y = min(distanceFuncPtr[x_new(iNew + 1, jNew_plus , height)], distanceFuncPtr[x_new(iNew - 1, jNew_plus, height)]);
-		//coef = pow((space / speed), 2);
-		//dEast = solve2dQuadratic(x, y, coef);
-
-		////West
-		////labelArray[x_new(iNew, jNew - 1, height)];
-		//x = min(distanceFuncPtr[x_new(iNew, jNew_minus + 1, height)], distanceFuncPtr[x_new(iNew, jNew_minus - 1, height)]);
-		//y = min(distanceFuncPtr[x_new(iNew + 1, jNew_minus, height)], distanceFuncPtr[x_new(iNew - 1, jNew_minus, height)]);
-		//coef = pow((space / speed), 2);
-		//dWest = solve2dQuadratic(x, y, coef);
-
-		////North
-		////labelArray[x_new(iNew - 1, jNew, height)];
-		//x = min(distanceFuncPtr[x_new(iNew_minus, jNew + 1, height)], distanceFuncPtr[x_new(iNew_minus, jNew - 1, height)]);
-		//y = min(distanceFuncPtr[x_new(iNew_minus + 1, jNew, height)], distanceFuncPtr[x_new(iNew_minus - 1, jNew, height)]);
-		//coef = pow((space / speed), 2);
-		//dNorth = solve2dQuadratic(x, y, coef);
-
-		////South
-		////labelArray[x_new(iNew + 1, jNew, height)];
-		//x = min(distanceFuncPtr[x_new(iNew_plus, jNew + 1, height)], distanceFuncPtr[x_new(iNew_plus, jNew - 1, height)]);
-		//y = min(distanceFuncPtr[x_new(iNew_plus + 1, jNew, height)], distanceFuncPtr[x_new(iNew_plus + 1, jNew, height)]);
-		//coef = pow((space / speed), 2);
-		//dSouth = solve2dQuadratic(x, y, coef);
+		 
+		//iNew_minus = iNew - 1; 
+		//iNew_plus = iNew + 1;
+		//jNew_minus = jNew - 1; 
+		//jNew_plus = jNew + 1;
 
 		//STEP 4
 		//Find the neighbors of the processed pixel and compute they time function
 		if (iNew == 0) {
 			if (jNew == 0) {
 
+				jNew_plus = jNew + 1; 
+				iNew_plus = iNew + 1;
+
 				//East
 				x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 				y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 				coef = pow((space / speed), 2);
 				dEast = solve2dQuadratic(x, y, coef);
-				//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-				//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-				//	//labelArray[x_new(iNew, jNew + 1, height)] = 2;
-				//}
 
 				//South
 				x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 				y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 				coef = pow((space / speed), 2);
 				dSouth = solve2dQuadratic(x, y, coef);
-				//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-				//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-				//	//labelArray[x_new(iNew + 1, jNew, height)] = 2;
-				//}
 
 			}
 			else {
 				if (jNew == (width - 1) ) {
+
+					iNew_plus = iNew + 1;
+					jNew_minus = jNew - 1;
 
 					//West
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 					coef = pow((space / speed), 2);
 					dWest = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-					//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-					//	//labelArray[x_new(iNew, jNew - 1, height)] = 2;
-					//}
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 					coef = pow((space / speed), 2);
 					dSouth = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-					//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-					//	//labelArray[x_new(iNew + 1, jNew, height)] = 2;
-					//}
 
 				}
 				else {
+
+					iNew_plus = iNew + 1;
+					jNew_plus = jNew + 1;
+					jNew_minus = jNew - 1;
 
 					//West
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 					coef = pow((space / speed), 2);
 					dWest = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-					//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-					//	//labelArray[x_new(iNew, jNew - 1, height)] = 2;
-					//}
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 					coef = pow((space / speed), 2);
 					dEast = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-					//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-					//	//labelArray[x_new(iNew, jNew + 1, height)] = 2;
-					//}
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 					coef = pow((space / speed), 2);
 					dSouth = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-					//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-					//	//labelArray[x_new(iNew + 1, jNew, height)] = 2;
-					//}
 
 				}
 			}
@@ -585,82 +447,64 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 			if (iNew == (height - 1) ) {
 				if (jNew == 0) {
 
+					iNew_minus = iNew - 1;
+					jNew_plus = jNew + 1;
+
 					//North
 					x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 					coef = pow((space / speed), 2);
 					dNorth = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-					//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-					//	//labelArray[x_new(iNew - 1, jNew, height)] = 2;
-					//}
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 					coef = pow((space / speed), 2);
 					dEast = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-					//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-					//	//labelArray[x_new(iNew, jNew + 1, height)] = 2;
-					//}
 
 				}
 				else {
 					if (jNew == (width - 1) ) {
 
+						iNew_minus = iNew - 1;
+						jNew_minus = jNew - 1;
+
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 						coef = pow((space / speed), 2);
 						dNorth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						//	//labelArray[x_new(iNew - 1, jNew, height)] = 2;
-						//}
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 						coef = pow((space / speed), 2);
 						dWest = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						//	//labelArray[x_new(iNew, jNew - 1, height)] = 2;
-						//}
 
 					}
 					else {
 
+						iNew_minus = iNew - 1;
+						jNew_plus = jNew + 1;
+						jNew_minus = jNew - 1;
+
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 						coef = pow((space / speed), 2);
 						dWest = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						//	//labelArray[x_new(iNew, jNew - 1, height)] = 2;
-						//}
 
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 						coef = pow((space / speed), 2);
 						dNorth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						//	//labelArray[x_new(iNew - 1, jNew, height)] = 2;
-						//}
 
 						//East
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 						coef = pow((space / speed), 2);
 						dEast = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-						//	//labelArray[x_new(iNew, jNew + 1, height)] = 2;
-						//}
 
 					}
 				}
@@ -668,112 +512,85 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 			else {
 				if (jNew == 0) {
 
+					iNew_minus = iNew - 1;
+					iNew_plus = iNew + 1;
+					jNew_plus = jNew + 1;
+
 					//North
 					x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 					coef = pow((space / speed), 2);
 					dNorth = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-					//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-					//	//labelArray[x_new(iNew - 1, jNew, height)] = 2;
-					//}
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 					coef = pow((space / speed), 2);
 					dEast = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-					//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-					//	labelArray[x_new(iNew, jNew + 1, height)] = 2;
-					//}
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 					coef = pow((space / speed), 2);
 					dSouth = solve2dQuadratic(x, y, coef);
-					//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-					//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-					//	//labelArray[x_new(iNew + 1, jNew, height)] = 2;
-					//}
 
 				}
 				else {
 					if (jNew == (width - 1) ) {
+
+						iNew_minus = iNew - 1;
+						iNew_plus = iNew + 1;
+						jNew_minus = jNew - 1;
 
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 						coef = pow((space / speed), 2);
 						dNorth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						//	labelArray[x_new(iNew - 1, jNew, height)] = 2;
-						//}
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 						coef = pow((space / speed), 2);
 						dWest = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						//	labelArray[x_new(iNew, jNew - 1, height)] = 2;
-						//}
 
 						//South
 						x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 						coef = pow((space / speed), 2);
 						dSouth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-						//	labelArray[x_new(iNew + 1, jNew, height)] = 2;
-						//}
 
 					}
 					else {
+
+						iNew_minus = iNew - 1;
+						iNew_plus = iNew + 1;
+						jNew_plus = jNew + 1;
+						jNew_minus = jNew - 1;
 
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
 						coef = pow((space / speed), 2);
 						dNorth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew - 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew - 1); j_inProcess.push_back(jNew);
-						//	//labelArray[x_new(iNew - 1, jNew, height)] = 2;
-						//}
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
 						coef = pow((space / speed), 2);
 						dWest = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew - 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew - 1);
-						//	//labelArray[x_new(iNew, jNew - 1, height)] = 2;
-						//}
 
 						//East
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
 						coef = pow((space / speed), 2);
 						dEast = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew, jNew + 1, height)] == 3) {
-						//	i_inProcess.push_back(iNew); j_inProcess.push_back(jNew + 1);
-						//	//labelArray[x_new(iNew, jNew + 1, height)] = 2;
-						//}
 
 						//South
 						x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
 						coef = pow((space / speed), 2);
 						dSouth = solve2dQuadratic(x, y, coef);
-						//if (labelArray[x_new(iNew + 1, jNew, height)] == 3) {
-						//	i_inProcess.push_back(iNew + 1); j_inProcess.push_back(jNew);
-						//	//labelArray[x_new(iNew + 1, jNew, height)] = 2;
-						//}
 					}
 				}
 			}
@@ -789,7 +606,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 		else {
 			if (labelArray[x_new(iNew_minus, jNew, height)] == 2) {
-				if (dNorth <= distanceFuncPtr[x_new(iNew_minus, jNew, height)]) {
+				if (dNorth < distanceFuncPtr[x_new(iNew_minus, jNew, height)]) {
 					distanceFuncPtr[x_new(iNew_minus, jNew, height)] = dNorth;
 				}
 			}
@@ -804,7 +621,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 		else {
 			if (labelArray[x_new(iNew, jNew_minus, height)] == 2) {
-				if (dWest <= distanceFuncPtr[x_new(iNew, jNew_minus, height)]) {
+				if (dWest < distanceFuncPtr[x_new(iNew, jNew_minus, height)]) {
 					distanceFuncPtr[x_new(iNew, jNew_minus, height)] = dWest;
 				}
 			}
@@ -819,7 +636,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 		else {
 			if (labelArray[x_new(iNew, jNew_plus, height)] == 2) {
-				if (dWest <= distanceFuncPtr[x_new(iNew, jNew_plus, height)]) {
+				if (dEast < distanceFuncPtr[x_new(iNew, jNew_plus, height)]) {
 					distanceFuncPtr[x_new(iNew, jNew_plus, height)] = dEast;
 				}
 			}
@@ -834,7 +651,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 		else {
 			if (labelArray[x_new(iNew_plus, jNew, height)] == 2) {
-				if (dNorth <= distanceFuncPtr[x_new(iNew_plus, jNew, height)]) {
+				if (dSouth < distanceFuncPtr[x_new(iNew_plus, jNew, height)]) {
 					distanceFuncPtr[x_new(iNew_plus, jNew, height)] = dSouth;
 				}
 			}
@@ -843,12 +660,12 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 	}
 
 	//for (k = 0; k < dim2D; k++) {
-	//	if (distanceFuncPtr[k] == BIG_VAL) {
+	//	if (distanceFuncPtr[k] < 0) {
 	//		distanceFuncPtr[k] = 0;
 	//		cpt++;
 	//	}
 	//}
-	//cout << "\n" << cpt << " pixels with distance = INFINITY : " << endl;
+	//cout << "\n" << cpt << " pixels with distance < 0 : " << endl;
 	//cout << "\nNumber of processed Point :" << i_Processed.size() << endl;
 
 	//free(labelArray);
