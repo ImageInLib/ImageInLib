@@ -132,7 +132,7 @@ int main() {
 	//std::string thresOutPut = outputPath + "thresholdedImage.raw";
 	//store2dRawData<dataType>(rotatedImage, Height, Width, thresOutPut.c_str());
 
-	Point2D * startingPoint = (Point2D*)malloc(sizeof(Point2D));
+	Point2D * startingPoint = (Point2D*)malloc(2 * sizeof(Point2D));
 	//startingPoint->x = (size_t)(Width / 2); startingPoint->y = (size_t)(Height / 2);
 	startingPoint->x = 246; startingPoint->y = 277;
 	//startingPoint->x = 0; startingPoint->y = 0;
