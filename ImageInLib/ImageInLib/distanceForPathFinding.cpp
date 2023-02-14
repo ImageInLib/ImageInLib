@@ -55,14 +55,14 @@ dataType selectX(dataType * distanceFuncPtr, const size_t dimI, const size_t dim
 		j_minus = BIG_VALUE;
 	}
 	else {
-		j_minus = distanceFuncPtr[x_new(I, J - 1, dimI)];
+		j_minus = distanceFuncPtr[x_new(J - 1, I, dimJ)];
 	}
 
 	if (J == dimJ - 1) {
 		j_plus = BIG_VALUE;
 	}
 	else {
-		j_plus = distanceFuncPtr[x_new(I, J + 1, dimI)];
+		j_plus = distanceFuncPtr[x_new(J + 1, I, dimJ)];
 	}
 
 	return min(j_minus, j_plus);
@@ -76,38 +76,102 @@ dataType selectY(dataType * distanceFuncPtr, const size_t dimI, const size_t dim
 		i_minus = BIG_VALUE;
 	}
 	else {
-		i_minus = distanceFuncPtr[x_new(I - 1, J, dimI)];
+		i_minus = distanceFuncPtr[x_new(J, I - 1, dimJ)];
 	}
 
 	if (I == dimI - 1) {
 		i_plus = BIG_VALUE;
 	}
 	else {
-		i_plus = distanceFuncPtr[x_new(I + 1, J, dimI)];
+		i_plus = distanceFuncPtr[x_new(J, I + 1, dimJ)];
 	}
 
 	return min(i_minus, i_plus);
 }
 
-bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const size_t height, const size_t width, Point2D * seedPoints)
+bool computeImageGradient(dataType * imageDataPtr, dataType * imageGradient, const size_t height, const size_t width, dataType h) {
+	
+	if (imageDataPtr == NULL || imageGradient == NULL) {
+		return false;
+	}
+
+	size_t i, j, i_ext, j_ext, xd, dim2d = height * width, height_ext = height + 2, width_ext = width + 2, dim2d_ext =  height_ext * width_ext;
+	dataType ux = 0.0, uy = 0.0;
+
+	dataType * extendedArray = new dataType[dim2d_ext];
+	if (extendedArray == NULL)
+		return false;
+
+	//Initialization
+	for (i = 0; i < dim2d_ext; i++) {
+		extendedArray[i] = 0;
+	}
+
+	copyDataTo2dExtendedArea(imageDataPtr, extendedArray, height, width);
+	reflection2D(extendedArray, height_ext, width_ext);
+	 
+	//Using central difference to compute the gradient
+	for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+			xd = x_new(i, j, height);
+			ux = (extendedArray[x_new(i_ext, j_ext + 1, height_ext)] - extendedArray[x_new(i_ext, j_ext - 1, height_ext)]) / (2 * h);
+			uy = (extendedArray[x_new(i_ext + 1, j_ext, height_ext)] - extendedArray[x_new(i_ext - 1, j_ext, height_ext)]) / (2 * h);
+			imageGradient[xd] = sqrt(pow(ux, 2) + pow(uy, 2));
+		}
+	}
+
+	delete[] extendedArray;
+
+	return true;
+}
+
+bool computePotential(dataType * imageDataPtr, dataType * potentialFuncPtr, const size_t height, const size_t width, Point2D * seedPoints) {
+
+	if (imageDataPtr == NULL || potentialFuncPtr == NULL || seedPoints == NULL)
+		return false;
+
+	size_t i, j, in = seedPoints->y, jn = seedPoints->x;
+
+	dataType seedVal = imageDataPtr[x_new(jn, in, width)];
+	size_t currentIndx = 0;
+
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			currentIndx = x_new(j, i, width);
+			potentialFuncPtr[currentIndx] = (dataType)(20.0 + abs(seedVal - imageDataPtr[currentIndx]));
+			//potentialFuncPtr[currentIndx] = 0.01  + imageDataPtr[currentIndx];
+			/*if(i > 200)
+				potentialFuncPtr[currentIndx] = (dataType)(0.001 + abs(seedVal - imageDataPtr[currentIndx]));
+			else
+				potentialFuncPtr[currentIndx] = 0.1;*/
+		}
+	}
+
+	return true;
+}
+
+bool fastMarching2d(dataType * imageDataPtr, dataType * distanceFuncPtr, dataType * potentialFuncPtr, const size_t height, const size_t width, Point2D * seedPoints)
 {
 	//short* labelArray = (short*)malloc(height * width * sizeof(short));
 	short * labelArray = new short[height * width];
 
-	if (imageDataPtr == NULL || distanceFuncPtr == NULL || seedPoints == NULL || labelArray == NULL) {
+	if (imageDataPtr == NULL || distanceFuncPtr == NULL || potentialFuncPtr == NULL || seedPoints == NULL || labelArray == NULL) {
 		return false;
 	}
 
 	size_t i = 0, j = 0, k = 0, dim2D = height * width, cpt = 0;
 	vector<size_t> i_Processed, i_inProcess;
 	vector<size_t> j_Processed, j_inProcess;
-	dataType x = 0.0, y = 0.0, speed = 1.0, space = 1.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
+	dataType x = 0.0, y = 0.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
 	size_t nbNeighborsFound = 0;
 	size_t h_n = 0, iSol = 0, jSol = 0, iNew = 0, jNew = 0, iNew_minus = 0, iNew_plus = 0, jNew_minus = 0, jNew_plus = 0;
 	vector<dataType> tempTimeFunc;
 	dataType dNorth = 0.0, dSouth = 0.0, dEast = 0.0, dWest = 0.0;
 
 	//cout << "\nNumber of pixels : " << height * width  << endl;
+
+	//Compute the potential function
+	computePotential(imageDataPtr, potentialFuncPtr, height, width, seedPoints);
 
 	//STEP 1
 	//In labelAray we have : 1 ---> already processed, 2 ---> in process and 3 ---> not processed
@@ -120,7 +184,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 	//STEP 2
 	//Add the neighbors of the seed point in the vector of pixels to be processed
 	i = seedPoints->y; j = seedPoints->x;
-	distanceFuncPtr[x_new(i, j, height)] = 0;
+	distanceFuncPtr[x_new(j, i, width)] = 0;
 	i_Processed.push_back(i); j_Processed.push_back(j);
 
 	size_t iminus = i - 1, iplus = i + 1, jminus = j - 1, jplus = j + 1;
@@ -128,51 +192,51 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		if (j == 0) {
 
 			//East
-			if (labelArray[x_new(i, jplus, height)] == 3) {
+			if (labelArray[x_new(jplus, i, width)] == 3) {
 				i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-				labelArray[x_new(i, jplus, height)] = 2;
+				labelArray[x_new(jplus, i, width)] = 2;
 				nbNeighborsFound++;
 			}
 			//South
-			if (labelArray[x_new(iplus, j, height)] == 3) {
+			if (labelArray[x_new(j, iplus, width)] == 3) {
 				i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-				labelArray[x_new(iplus, j, height)] = 2;
+				labelArray[x_new(j, iplus, width)] = 2;
 				nbNeighborsFound++;
 			}
 		}
 		else {
 			if ( j == (width - 1) ) {
 				//West
-				if (labelArray[x_new(i, jminus, height)] == 3) {
+				if (labelArray[x_new(jminus, i, width)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-					labelArray[x_new(i, jminus, height)] = 2;
+					labelArray[x_new(jminus, i, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(iplus, j, height)] == 3) {
+				if (labelArray[x_new(j, iplus, width)] == 3) {
 					i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-					labelArray[x_new(iplus, j, height)] = 2;
+					labelArray[x_new(j, iplus, width)] = 2;
 					nbNeighborsFound++;
 				}
 			}
 			else {
 
 				//East
-				if (labelArray[x_new(i, jplus, height)] == 3) {
+				if (labelArray[x_new(jplus, i, width)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-					labelArray[x_new(i, jplus, height)] = 2;
+					labelArray[x_new(jplus, i, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//West
-				if (labelArray[x_new(i, jminus, height)] == 3) {
+				if (labelArray[x_new(jminus, i, width)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-					labelArray[x_new(i, jminus, height)] = 2;
+					labelArray[x_new(jminus, i, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(iplus, j, height)] == 3) {
+				if (labelArray[x_new(j, iplus, width)] == 3) {
 					i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-					labelArray[x_new(iplus, j, height)] = 2;
+					labelArray[x_new(j, iplus, width)] = 2;
 					nbNeighborsFound++;
 				}
 
@@ -184,15 +248,15 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 			if (j == 0) {
 
 				//East
-				if (labelArray[x_new(i, jplus, height)] == 3) {
+				if (labelArray[x_new(jplus, i, width)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-					labelArray[x_new(i, jplus, height)] = 2;
+					labelArray[x_new(jplus, i, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//North
-				if (labelArray[x_new(iminus, j, height)] == 3) {
+				if (labelArray[x_new(j, iminus, width)] == 3) {
 					i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-					labelArray[x_new(iminus, j, height)] = 2;
+					labelArray[x_new(j, iminus, width)] = 2;
 					nbNeighborsFound++;
 				}
 				
@@ -201,15 +265,15 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 				if (j == (width - 1)) {
 
 					//North
-					if (labelArray[x_new(iminus, j, height)] == 3) {
+					if (labelArray[x_new(j, iminus, width)] == 3) {
 						i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-						labelArray[x_new(iminus, j, height)] = 2;
+						labelArray[x_new(j, iminus, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, jminus, height)] == 3) {
+					if (labelArray[x_new(jminus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-						labelArray[x_new(i, jminus, height)] = 2;
+						labelArray[x_new(jminus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 
@@ -217,21 +281,21 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 				else {
 
 					//East
-					if (labelArray[x_new(i, jplus, height)] == 3) {
+					if (labelArray[x_new(jplus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-						labelArray[x_new(i, jplus, height)] = 2;
+						labelArray[x_new(jplus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//North
-					if (labelArray[x_new(iminus, j, height)] == 3) {
+					if (labelArray[x_new(j, iminus, width)] == 3) {
 						i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-						labelArray[x_new(iminus, j, height)] = 2;
+						labelArray[x_new(j, iminus, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, jminus, height)] == 3) {
+					if (labelArray[x_new(jminus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-						labelArray[x_new(i, jminus, height)] = 2;
+						labelArray[x_new(jminus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 
@@ -242,74 +306,72 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 			if (j == 0) {
 
 				//East
-				if (labelArray[x_new(i, jplus, height)] == 3) {
+				if (labelArray[x_new(jplus, i, width)] == 3) {
 					i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-					labelArray[x_new(i, jplus, height)] = 2;
+					labelArray[x_new(jplus, i, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//North
-				if (labelArray[x_new(iminus, j, height)] == 3) {
+				if (labelArray[x_new(j, iminus, width)] == 3) {
 					i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-					labelArray[x_new(iminus, j, height)] = 2;
+					labelArray[x_new(j, iminus, width)] = 2;
 					nbNeighborsFound++;
 				}
 				//South
-				if (labelArray[x_new(iplus, j, height)] == 3) {
+				if (labelArray[x_new(j, iplus, width)] == 3) {
 					i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-					labelArray[x_new(iplus, j, height)] = 2;
+					labelArray[x_new(j, iplus, width)] = 2;
 					nbNeighborsFound++;
 				}
-
 			}
 			else {
 				if (j == (width - 1) ) {
 
 					//North
-					if (labelArray[x_new(iminus, j, height)] == 3) {
+					if (labelArray[x_new(j, iminus, width)] == 3) {
 						i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-						labelArray[x_new(iminus, j, height)] = 2;
+						labelArray[x_new(j, iminus, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, jminus, height)] == 3) {
+					if (labelArray[x_new(jminus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-						labelArray[x_new(i, jminus, height)] = 2;
+						labelArray[x_new(jminus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//South
-					if (labelArray[x_new(iplus, j, height)] == 3) {
+					if (labelArray[x_new(j, iplus, width)] == 3) {
 						i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-						labelArray[x_new(iplus, j, height)] = 2;
+						labelArray[x_new(j, iplus, width)] = 2;
 						nbNeighborsFound++;
 					}
 				}
 				else {
 
 					//East
-					if (labelArray[x_new(i, jplus, height)] == 3) {
+					if (labelArray[x_new(jplus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jplus);
-						labelArray[x_new(i, jplus, height)] = 2;
+						labelArray[x_new(jplus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//North
-					if (labelArray[x_new(iminus, j, height)] == 3) {
+					if (labelArray[x_new(j, iminus, width)] == 3) {
 						i_inProcess.push_back(iminus); j_inProcess.push_back(j);
-						labelArray[x_new(iminus, j, height)] = 2;
+						labelArray[x_new(j, iminus, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//West
-					if (labelArray[x_new(i, jminus, height)] == 3) {
+					if (labelArray[x_new(jminus, i, width)] == 3) {
 						i_inProcess.push_back(i); j_inProcess.push_back(jminus);
-						labelArray[x_new(i, jminus, height)] = 2;
+						labelArray[x_new(jminus, i, width)] = 2;
 						nbNeighborsFound++;
 					}
 					//South
-					if (labelArray[x_new(iplus, j, height)] == 3) {
+					if (labelArray[x_new(j, iplus, width)] == 3) {
 						i_inProcess.push_back(iplus); j_inProcess.push_back(j);
-						labelArray[x_new(iplus, j, height)] = 2;
+						labelArray[x_new(j, iplus, width)] = 2;
 						nbNeighborsFound++;
 					}
-
 				}
 			}
 		}
@@ -317,19 +379,19 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 
 	//Compute the solution for neighbors in the stack
 	h_n = i_inProcess.size(); // h_n = j_inProcess.size();
-	for (k = 0; k < h_n; k++) {
 
+	dataType coefSpeed = 1.0;
+
+	for (k = 0; k < h_n; k++) {
 		x = selectX(distanceFuncPtr, height, width, i_inProcess[k], j_inProcess[k]);
 		y = selectY(distanceFuncPtr, height, width, i_inProcess[k], j_inProcess[k]);
-
-		coef = pow((space / speed), 2);
-
+		coef = (dataType)(1.0 / potentialFuncPtr[x_new(j_inProcess[k], i_inProcess[k], width)] );
 		dist = solve2dQuadratic(x, y, coef);
 		tempTimeFunc.push_back(dist);
 	}
 
 	//Update the label of seed point as processed
-	labelArray[x_new(i, j, height)] = 1;
+	labelArray[x_new(j, i, width)] = 1;
 
 	//cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
 	//---------------------End of STEP 2 -------------------------------------
@@ -343,7 +405,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		//Find the minimal solution
 		minSolution = INFINITY;
 		for (k = 0; k < h_n; k++) {
-			if (minSolution >= tempTimeFunc[k]) {
+			if (minSolution > tempTimeFunc[k]) {
 				minSolution = tempTimeFunc[k];
 				iSol = k; iNew = i_inProcess[k];
 				jSol = k; jNew = j_inProcess[k];
@@ -353,8 +415,8 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		//cout << "\ndistance  : " << minSolution << endl;
 		
 		//Set the distance to the processed pixel
-		distanceFuncPtr[x_new(iNew, jNew, height)] = minSolution;
-		labelArray[x_new(iNew, jNew, height)] = 1;
+		distanceFuncPtr[x_new(jNew, iNew, width)] = minSolution;
+		labelArray[x_new(jNew, iNew, width)] = 1;
 		i_Processed.push_back(iNew); j_Processed.push_back(jNew);
 
 		//Remove the processed pixel to the stack
@@ -370,11 +432,6 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 		}
 
 		//Compute solution for the neigbors of the selected point
-		 
-		//iNew_minus = iNew - 1; 
-		//iNew_plus = iNew + 1;
-		//jNew_minus = jNew - 1; 
-		//jNew_plus = jNew + 1;
 
 		//STEP 4
 		//Find the neighbors of the processed pixel and compute they time function
@@ -387,13 +444,13 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 				//East
 				x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 				y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-				coef = pow((space / speed), 2);
+				coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 				dEast = solve2dQuadratic(x, y, coef);
 
 				//South
 				x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 				y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-				coef = pow((space / speed), 2);
+				coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 				dSouth = solve2dQuadratic(x, y, coef);
 
 			}
@@ -406,13 +463,13 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 					//West
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 					dWest = solve2dQuadratic(x, y, coef);
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 					dSouth = solve2dQuadratic(x, y, coef);
 
 				}
@@ -425,19 +482,19 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 					//West
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 					dWest = solve2dQuadratic(x, y, coef);
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 					dEast = solve2dQuadratic(x, y, coef);
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 					dSouth = solve2dQuadratic(x, y, coef);
 
 				}
@@ -453,13 +510,13 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 					//North
 					x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 					dNorth = solve2dQuadratic(x, y, coef);
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 					dEast = solve2dQuadratic(x, y, coef);
 
 				}
@@ -472,13 +529,13 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 						dNorth = solve2dQuadratic(x, y, coef);
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 						dWest = solve2dQuadratic(x, y, coef);
 
 					}
@@ -491,19 +548,19 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 						dWest = solve2dQuadratic(x, y, coef);
 
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 						dNorth = solve2dQuadratic(x, y, coef);
 
 						//East
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 						dEast = solve2dQuadratic(x, y, coef);
 
 					}
@@ -519,19 +576,19 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 					//North
 					x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 					dNorth = solve2dQuadratic(x, y, coef);
 
 					//East
 					x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 					y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 					dEast = solve2dQuadratic(x, y, coef);
 
 					//South
 					x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 					y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-					coef = pow((space / speed), 2);
+					coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 					dSouth = solve2dQuadratic(x, y, coef);
 
 				}
@@ -545,19 +602,19 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 						dNorth = solve2dQuadratic(x, y, coef);
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 						dWest = solve2dQuadratic(x, y, coef);
 
 						//South
 						x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 						dSouth = solve2dQuadratic(x, y, coef);
 
 					}
@@ -571,25 +628,25 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 						//North
 						x = selectX(distanceFuncPtr, height, width, iNew_minus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_minus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_minus, width)]);
 						dNorth = solve2dQuadratic(x, y, coef);
 
 						//West
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_minus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_minus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_minus, iNew, width)]);
 						dWest = solve2dQuadratic(x, y, coef);
 
 						//East
 						x = selectX(distanceFuncPtr, height, width, iNew, jNew_plus);
 						y = selectY(distanceFuncPtr, height, width, iNew, jNew_plus);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew_plus, iNew, width)]);
 						dEast = solve2dQuadratic(x, y, coef);
 
 						//South
 						x = selectX(distanceFuncPtr, height, width, iNew_plus, jNew);
 						y = selectY(distanceFuncPtr, height, width, iNew_plus, jNew);
-						coef = pow((space / speed), 2);
+						coef = (dataType)(1.0 / potentialFuncPtr[x_new(jNew, iNew_plus, width)]);
 						dSouth = solve2dQuadratic(x, y, coef);
 					}
 				}
@@ -598,61 +655,61 @@ bool fastMarching2d(dataType* imageDataPtr, dataType * distanceFuncPtr, const si
 
 		//Test and update of neighbors
 		//North
-		if (labelArray[x_new(iNew_minus, jNew, height)] == 3) {
-			distanceFuncPtr[x_new(iNew_minus, jNew, height)] = dNorth;
+		if (labelArray[x_new(jNew, iNew_minus, width)] == 3) {
+			distanceFuncPtr[x_new(jNew, iNew_minus, width)] = dNorth;
 			i_inProcess.push_back(iNew_minus); j_inProcess.push_back(jNew);
 			tempTimeFunc.push_back(dNorth);
-			labelArray[x_new(iNew_minus, jNew, height)] = 2;
+			labelArray[x_new(jNew, iNew_minus, width)] = 2;
 		}
 		else {
-			if (labelArray[x_new(iNew_minus, jNew, height)] == 2) {
-				if (dNorth < distanceFuncPtr[x_new(iNew_minus, jNew, height)]) {
-					distanceFuncPtr[x_new(iNew_minus, jNew, height)] = dNorth;
+			if (labelArray[x_new(jNew, iNew_minus, width)] == 2) {
+				if (dNorth < distanceFuncPtr[x_new(jNew, iNew_minus, width)]) {
+					distanceFuncPtr[x_new(jNew, iNew_minus, width)] = dNorth;
 				}
 			}
 		}
 
 		//West
-		if (labelArray[x_new(iNew, jNew_minus, height)] == 3) {
-			distanceFuncPtr[x_new(iNew, jNew_minus, height)] = dWest;
+		if (labelArray[x_new(jNew_minus, iNew, width)] == 3) {
+			distanceFuncPtr[x_new(jNew_minus, iNew, width)] = dWest;
 			i_inProcess.push_back(iNew); j_inProcess.push_back(jNew_minus);
 			tempTimeFunc.push_back(dWest);
-			labelArray[x_new(iNew, jNew_minus, height)] = 2;
+			labelArray[x_new(jNew_minus, iNew, width)] = 2;
 		}
 		else {
-			if (labelArray[x_new(iNew, jNew_minus, height)] == 2) {
-				if (dWest < distanceFuncPtr[x_new(iNew, jNew_minus, height)]) {
-					distanceFuncPtr[x_new(iNew, jNew_minus, height)] = dWest;
+			if (labelArray[x_new(jNew_minus, iNew, width)] == 2) {
+				if (dWest < distanceFuncPtr[x_new(jNew_minus, iNew, width)]) {
+					distanceFuncPtr[x_new(jNew_minus, iNew, width)] = dWest;
 				}
 			}
 		}
 
 		//East
-		if (labelArray[x_new(iNew, jNew_plus, height)] == 3) {
-			distanceFuncPtr[x_new(iNew, jNew_plus, height)] = dEast;
+		if (labelArray[x_new(jNew_plus, iNew, width)] == 3) {
+			distanceFuncPtr[x_new(jNew_plus, iNew, width)] = dEast;
 			i_inProcess.push_back(iNew); j_inProcess.push_back(jNew_plus);
 			tempTimeFunc.push_back(dEast);
-			labelArray[x_new(iNew, jNew_plus, height)] = 2;
+			labelArray[x_new(jNew_plus, iNew, width)] = 2;
 		}
 		else {
-			if (labelArray[x_new(iNew, jNew_plus, height)] == 2) {
-				if (dEast < distanceFuncPtr[x_new(iNew, jNew_plus, height)]) {
-					distanceFuncPtr[x_new(iNew, jNew_plus, height)] = dEast;
+			if (labelArray[x_new(jNew_plus, iNew, width)] == 2) {
+				if (dEast < distanceFuncPtr[x_new(jNew_plus, iNew, width)]) {
+					distanceFuncPtr[x_new(jNew_plus, iNew, width)] = dEast;
 				}
 			}
 		}
 
 		//South
-		if (labelArray[x_new(iNew_plus, jNew, height)] == 3) {
-			distanceFuncPtr[x_new(iNew_plus, jNew, height)] = dSouth;
+		if (labelArray[x_new(jNew, iNew_plus, width)] == 3) {
+			distanceFuncPtr[x_new(jNew, iNew_plus, width)] = dSouth;
 			i_inProcess.push_back(iNew_plus); j_inProcess.push_back(jNew);
 			tempTimeFunc.push_back(dSouth);
-			labelArray[x_new(iNew_plus, jNew, height)] = 2;
+			labelArray[x_new(jNew, iNew_plus, width)] = 2;
 		}
 		else {
-			if (labelArray[x_new(iNew_plus, jNew, height)] == 2) {
-				if (dSouth < distanceFuncPtr[x_new(iNew_plus, jNew, height)]) {
-					distanceFuncPtr[x_new(iNew_plus, jNew, height)] = dSouth;
+			if (labelArray[x_new(jNew, iNew_plus, width)] == 2) {
+				if (dSouth < distanceFuncPtr[x_new(jNew, iNew_plus, width)]) {
+					distanceFuncPtr[x_new(jNew, iNew_plus, width)] = dSouth;
 				}
 			}
 		}

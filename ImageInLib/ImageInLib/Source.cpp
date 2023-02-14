@@ -85,6 +85,7 @@ int main() {
 	dataType * OneSliceImage = (dataType*)malloc(Height * Width * sizeof(dataType));
 	dataType * rotatedImage = (dataType*)malloc(Height * Width * sizeof(dataType));
 	dataType * distanceMap = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType * potentialPtr = (dataType*)malloc(Height * Width * sizeof(dataType));
 	size_t cst = 238; i = 0;
 	for (k = 0; k < Height; k++) {
 		for (j = 0; j < Width; j++) {
@@ -99,12 +100,22 @@ int main() {
 		for (j = 0; j < Width; j++) {
 			x = x_new(i, j, Height);
 			rotatedImage[x] = OneSliceImage[x_new(Height - i - 1, Width - j - 1, Height)];
+			potentialPtr[x] = 0;
 		}
 	}
-	//---------------------------------
 
-	//std::string sagitalView = outputPath + "SagitalView.raw";
-	//store2dRawData<dataType>(rotatedImage, Height, Width, sagitalView.c_str());
+	dataType* extendedImage = (dataType*)malloc( (Height + 2) * (Width + 2) * sizeof(dataType));
+
+	for (i = 0; i < (Height + 2) * (Width + 2); i++) {
+		extendedImage[i] = 0;
+	}
+
+	//copyDataTo2dExtendedArea(rotatedImage, extendedImage, Height, Width);
+	//reflection2D(extendedImage, Height + 2, Width + 2);
+	//copyDataTo2dReducedArea(rotatedImage, extendedImage, Height, Width);
+
+	//std::string sagitalView = outputPath + "testImage.raw";
+	//store2dRawData<dataType>(extendedImage, Height + 2, Width + 2, sagitalView.c_str());
 
 	////Manual thresholding
 	//for (k = 0; k < Height; k++) {
@@ -122,24 +133,28 @@ int main() {
 	//store2dRawData<dataType>(rotatedImage, Height, Width, thresOutPut.c_str());
 
 	Point2D * startingPoint = (Point2D*)malloc(sizeof(Point2D));
-	startingPoint->x = (size_t)(Width / 2); startingPoint->y = (size_t)(Height / 2);
-	//startingPoint->x = 200; startingPoint->y = 300;
+	//startingPoint->x = (size_t)(Width / 2); startingPoint->y = (size_t)(Height / 2);
+	startingPoint->x = 246; startingPoint->y = 277;
+	//startingPoint->x = 0; startingPoint->y = 0;
 
-	//Manual rescalling
+	////Manual rescalling
 	//dataType scale_factor = 1.0 / 4000.0;
 	//for (i = 0; i < Height; i++) {
 	//	for (j = 0; j < Width; j++) {
-	//		x = x_new(i, j, Height);
+	//		x = x_new(j, i, Width);
 	//		rotatedImage[x] = scale_factor * (rotatedImage[x] - 4000) + 1;
 	//	}
 	//}
 	
-	fastMarching2d(rotatedImage, distanceMap, Height, Width, startingPoint);
+	fastMarching2d(rotatedImage, distanceMap, potentialPtr, Height, Width, startingPoint);
 
 	//bruteForce2d(rotatedImage, distanceMap, Height, Width, 0);
+	//computeImageGradient(rotatedImage, distanceMap, Height, Width, 1.0);
 
 	std::string outPutDistance = outputPath + "distanceMap.raw";
 	store2dRawData<dataType>(distanceMap, Height, Width, outPutDistance.c_str());
+	outPutDistance = outputPath + "potential.raw";
+	store2dRawData<dataType>(potentialPtr, Height, Width, outPutDistance.c_str());
 
 	//free memory
 	for (k = 0; k < Height; k++) {
@@ -148,6 +163,8 @@ int main() {
 	free(imageData); free(image);
 
 	free(OneSliceImage); free(rotatedImage); free(distanceMap); free(startingPoint);
+	free(potentialPtr); 
+	free(extendedImage);
 
 	return EXIT_SUCCESS;
 }
