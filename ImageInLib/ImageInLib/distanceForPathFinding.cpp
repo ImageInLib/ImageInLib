@@ -6,6 +6,7 @@
 #include <omp.h>
 #include<vector>
 #include "distanceForPathFinding.h"
+#include<template_functions.h>
 
 #define BIG_VALUE INFINITY
 
@@ -95,34 +96,93 @@ bool computeImageGradient(dataType * imageDataPtr, dataType * imageGradient, con
 		return false;
 	}
 
-	size_t i, j, i_ext, j_ext, xd, dim2d = height * width, height_ext = height + 2, width_ext = width + 2, dim2d_ext =  height_ext * width_ext;
-	dataType ux = 0.0, uy = 0.0;
+	size_t i, j, i_ext, j_ext, xd, xd_ext, dim2d = height * width;
+	dataType ux = 0.0, uy = 0.0, diff = 0.0, racine = 0.0;
 
-	dataType * extendedArray = new dataType[dim2d_ext];
-	if (extendedArray == NULL)
-		return false;
+	////Manual reflexion
+	//size_t height_ext = height + 2, width_ext = width + 2, dim2d_ext = height_ext * width_ext;
+	//dataType * extendedImage = new dataType[dim2d_ext];
+	////Set corners
+	//extendedImage[0] = imageDataPtr[0];
+	//extendedImage[x_new(0, height_ext - 1, width_ext)] = imageDataPtr[x_new(0, height - 1, width)];
+	//extendedImage[x_new(width_ext - 1, 0, width_ext)] = imageDataPtr[x_new(width - 1, 0, width)];
+	//extendedImage[x_new(width_ext - 1, height_ext - 1, width_ext)] = imageDataPtr[x_new(width - 1, height - 1, width)];
+	////Set the middle
+	//for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+	//	for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+	//		xd = x_new(j, i, width);
+	//		xd_ext = x_new(j_ext, i_ext, width_ext);
+	//		extendedImage[xd_ext] = imageDataPtr[xd];
+	//	}
+	//}
+	////Set top parts of the extended Image
+	//for (i = 0; i < height; i++) {
+	//	extendedImage[x_new(0, i + 1, width_ext)] = imageDataPtr[x_new(0, i, width)];
+	//	extendedImage[x_new(width_ext - 1, i + 1, width_ext)] = imageDataPtr[x_new(width - 1, i, width)];
+	//}
+	//for (j = 0; j < width; j++) {
+	//	extendedImage[x_new(j + 1, 0, width_ext)] = imageDataPtr[x_new(j, 0, width)];
+	//	extendedImage[x_new(j + 1, height_ext - 1, width_ext)] = imageDataPtr[x_new(j, height - 1, width)];
+	//}
+	////Using central difference to compute the gradient
+	//for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+	//	for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+	//		xd = x_new(j, i, width);
+	//		ux = (extendedImage[x_new(j + 1, i, width_ext)] - extendedImage[x_new(j - 1, i, width_ext)]) / (2 * h);
+	//		uy = (extendedImage[x_new(j, i + 1, width_ext)] - extendedImage[x_new(j, i - 1, width_ext)]) / (2 * h);
+	//		diff = (dataType)(ux * ux + uy * uy);
+	//		racine = sqrt(diff);
+	//		//imageGradient[xd] = (dataType)sqrt(pow(ux, 2) + pow(uy, 2));
+	//		imageGradient[xd] = (dataType)sqrt(diff);
+	//	}
+	//}
 
-	//Initialization
-	for (i = 0; i < dim2d_ext; i++) {
-		extendedArray[i] = 0;
-	}
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			xd = x_new(j, i, width);
+			if (j == 0) {
+				ux = (imageDataPtr[x_new(j + 1, i, width)] - imageDataPtr[x_new(j, i, width)]) / h;
+			}
+			else {
+				if (j == width - 1) {
+					ux = (imageDataPtr[x_new(j, i, width)] - imageDataPtr[x_new(j - 1, i, width)]) / h;
+				}
+				else {
+					ux = (imageDataPtr[x_new(j + 1, i, width)] - imageDataPtr[x_new(j - 1, i, width)]) / (2 * h);
+				}
+			}
 
-	copyDataTo2dExtendedArea(imageDataPtr, extendedArray, height, width);
-	reflection2D(extendedArray, height_ext, width_ext);
-	 
-	//Using central difference to compute the gradient
-	for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
-		for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
-			xd = x_new(i, j, height);
-			ux = (extendedArray[x_new(i_ext, j_ext + 1, height_ext)] - extendedArray[x_new(i_ext, j_ext - 1, height_ext)]) / (2 * h);
-			uy = (extendedArray[x_new(i_ext + 1, j_ext, height_ext)] - extendedArray[x_new(i_ext - 1, j_ext, height_ext)]) / (2 * h);
-			imageGradient[xd] = sqrt(pow(ux, 2) + pow(uy, 2));
+			if (i == 0) {
+				uy = (imageDataPtr[x_new(j, i + 1, width)] - imageDataPtr[x_new(j, i, width)]) / h;
+			}
+			else {
+				if (i == height - 1) {
+					uy = (imageDataPtr[x_new(j, i, width)] - imageDataPtr[x_new(j, i - 1, width)]) / h;
+				}
+				else {
+					uy = (imageDataPtr[x_new(j, i + 1, width)] - imageDataPtr[x_new(j, i - 1, width)]) / (2 * h);
+				}
+			}
+			imageGradient[xd] = sqrt(ux * ux + uy * uy);
 		}
 	}
 
-	delete[] extendedArray;
+	//delete[] extendedImage;
 
 	return true;
+}
+
+dataType computeImageNorm2d(dataType* imageDataPtr, const size_t height, const size_t width) {
+	size_t i, j, xd;
+	dataType norm_array = 0.0;
+
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			xd = x_new(j, i, width);
+			norm_array = norm_array + imageDataPtr[xd] * imageDataPtr[xd];
+		}
+	}
+	return sqrt(norm_array);
 }
 
 bool computePotential(dataType * imageDataPtr, dataType * potentialFuncPtr, const size_t height, const size_t width, Point2D * seedPoints) {
@@ -130,22 +190,44 @@ bool computePotential(dataType * imageDataPtr, dataType * potentialFuncPtr, cons
 	if (imageDataPtr == NULL || potentialFuncPtr == NULL || seedPoints == NULL)
 		return false;
 
+	//dataType* imageGradient = new dataType[height * width];
+	//computeImageGradient(imageDataPtr, imageGradient, height, width, 1.0);
+	//dataType norm_gradient = computeImageNorm2d(imageDataPtr, height, width);
+
 	size_t i, j, in = seedPoints->y, jn = seedPoints->x;
 
 	dataType seedVal = imageDataPtr[x_new(jn, in, width)];
 	size_t currentIndx = 0;
 
+	//Computation of potential function
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			currentIndx = x_new(j, i, width);
-			potentialFuncPtr[currentIndx] = (dataType)(20.0 + abs(seedVal - imageDataPtr[currentIndx]));
-			//potentialFuncPtr[currentIndx] = 0.01  + imageDataPtr[currentIndx];
-			/*if(i > 200)
-				potentialFuncPtr[currentIndx] = (dataType)(0.001 + abs(seedVal - imageDataPtr[currentIndx]));
-			else
-				potentialFuncPtr[currentIndx] = 0.1;*/
+			potentialFuncPtr[currentIndx] = (dataType)(0.01 + abs(seedVal - imageDataPtr[currentIndx]));
+			//potentialFuncPtr[currentIndx] = (dataType)(1 / (1 + 1 * norm_gradient * norm_gradient) );
 		}
 	}
+
+	////find the max potential
+	//dataType max_potential = -1;
+	//for (i = 0; i < height; i++) {
+	//	for (j = 0; j < width; j++) {
+	//		currentIndx = x_new(j, i, width);
+	//		if (potentialFuncPtr[currentIndx] > max_potential) {
+	//			max_potential = potentialFuncPtr[currentIndx];
+	//		}
+	//	}
+	//}
+
+	////Normalization
+	//for (i = 0; i < height; i++) {
+	//	for (j = 0; j < width; j++) {
+	//		currentIndx = x_new(j, i, width);
+	//		potentialFuncPtr[currentIndx] = (dataType)(0.01 + potentialFuncPtr[currentIndx] / max_potential);
+	//	}
+	//}
+
+	//delete[] imageGradient;
 
 	return true;
 }
@@ -728,6 +810,115 @@ bool fastMarching2d(dataType * imageDataPtr, dataType * distanceFuncPtr, dataTyp
 	//free(labelArray);
 	delete[] labelArray;
 
+	return true;
+}
+
+bool shortestPath2d(dataType * distanceFuncPtr, dataType * resultedPath, const size_t height, const size_t width, dataType h, Point2D* seedPoints) {
+
+	if (distanceFuncPtr == NULL || resultedPath == NULL || seedPoints == NULL)
+		return false;
+
+	size_t i, j, xd, dim2d = height * width;
+	dataType norme_of_gradient = 0.0, sum_gradient = 0.0, tau = 0.8, dist_min = INFINITY, tol = 0.01;
+	size_t i_init = seedPoints[0].y, j_init = seedPoints[0].x, i_end = seedPoints[1].y, j_end = seedPoints[1].x;
+	size_t i_current, j_current, iSol, jSol;
+
+	dataType * imageGradient = new dataType[dim2d];
+
+	computeImageGradient(distanceFuncPtr, imageGradient, height, width, h);
+
+	//Compute norm of gradient
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			xd = x_new(j, i, width);
+			sum_gradient = sum_gradient + imageGradient[xd] * imageGradient[xd];
+		}
+	}
+	norme_of_gradient = sqrt(sum_gradient);
+
+	//Compute the normalization
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			xd = x_new(j, i, width);
+			if (norme_of_gradient != 0) {
+				imageGradient[xd] = (dataType(imageGradient[xd] / norme_of_gradient));
+			}
+		}
+	}
+
+	//Find the closest point till the last point
+	size_t cpt = 1;
+	i_current = i_end; j_current = j_end;
+	resultedPath[x_new(j_current, i_current, width)] = 1;
+	do{
+		iSol = (size_t)(i_current - tau * imageGradient[x_new(j_current, i_current, width)]);
+		jSol = (size_t)(j_current - tau * imageGradient[x_new(j_current, i_current, width)]);
+		dist_min = sqrt((iSol - i_init) * (iSol - i_init) + (jSol - j_init) * (jSol - j_init));
+		resultedPath[x_new(jSol, iSol, width)] = 1;
+		i_current = iSol; j_current = jSol;
+		cpt++;
+	}
+	while(dist_min > tol && cpt < 20000);
+
+	delete[] imageGradient;
+
+	return true;
+}
+
+bool findPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t height, const size_t width, Point2D* seedPoints) {
+
+	if (distanceFuncPtr == NULL || resultedPath == NULL || seedPoints == NULL)
+		return false;
+
+	size_t k, hn, coordWest, coordEast, coordNorth, coordSouth, coordCurrent, cpt = 0;
+	size_t i_init = seedPoints[0].y, j_init = seedPoints[0].x, i_end = seedPoints[1].y, j_end = seedPoints[1].x;
+	dataType min_value, pathLenght = sqrt((i_end - i_init) * (i_end - i_init) + (j_end - j_init) * (j_end - j_init)), tol = 0.01;
+	vector<dataType> pointAction;
+	vector<size_t> Indice_i, Indice_j;
+
+	short * labelArray = new short[height * width];
+	for (k = 0; k < height * width; k++)
+		labelArray[k] = 0;
+
+	coordCurrent = x_new(j_init, i_init, width); 
+	labelArray[coordCurrent] = 1;
+
+	while (pathLenght > tol && cpt < 1000000) {
+
+		coordNorth = x_new(j_init, i_init - 1, width);
+		coordSouth = x_new(j_init, i_init + 1, width);
+		coordWest = x_new(j_init - 1, i_init, width);
+		coordEast = x_new(j_init + 1, i_init - 1, width);
+
+		if (labelArray[coordNorth] != 1) {
+			pointAction.push_back(distanceFuncPtr[coordNorth]); Indice_j.push_back(j_init); Indice_i.push_back(i_init - 1);
+		}
+		if (labelArray[coordSouth] != 1) {
+			pointAction.push_back(distanceFuncPtr[coordSouth]); Indice_j.push_back(j_init); Indice_i.push_back(i_init + 1);
+		}
+		if (labelArray[coordWest] != 1) {
+			pointAction.push_back(distanceFuncPtr[coordWest]); Indice_j.push_back(j_init - 1); Indice_i.push_back(i_init);
+		}
+		if (labelArray[coordEast] != 1) {
+			pointAction.push_back(distanceFuncPtr[coordEast]); Indice_j.push_back(j_init + 1); Indice_i.push_back(i_init);
+		}
+		
+		hn = pointAction.size();
+		min_value = INFINITY;
+		for (k = 0; k < hn; k++) {
+			if (pointAction[k] < min_value && pointAction[k]) {
+				min_value = pointAction[k];
+				j_init = Indice_j[k]; i_init = Indice_i[k];
+			}
+		}
+		coordCurrent = x_new(j_init, i_init, width);
+		resultedPath[coordCurrent] = 1;
+		labelArray[coordCurrent] = 1;
+		pathLenght = sqrt((i_end - i_init) * (i_end - i_init) + (j_end - j_init) * (j_end - j_init));
+		cpt++;
+
+		pointAction.clear(); Indice_i.clear(); Indice_j.clear();
+	}
 	return true;
 }
 
