@@ -21,7 +21,7 @@ extern "C" {
 
 	dataType selectY(dataType* distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J);
 
-	bool computeImageGradient(dataType * imageDataPtr, dataType * imageGradient, const size_t height, const size_t width, dataType h);
+	bool computeImageGradient(dataType* imageDataPtr, dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width, dataType h);
 
 	dataType computeImageNorm2d(dataType* imageDataPtr, const size_t height, const size_t width);
 
