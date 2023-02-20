@@ -77,15 +77,26 @@ int main() {
 		}
 	}
 
-	//std::string loadedImagePath = outputPath + "loaded.raw";
-	//store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
+	rescaleNewRange(imageData, Length, Width, Height, 0, 1);
+	//Filtering
+	FilterMethod method =  MEAN_CURVATURE_FILTER; // NONLINEAR_HEATEQUATION_IMPLICIT; //
+	Filter_Parameters filterParm; filterParm = { 1.2, 1.0, 0.1, 1000, 1.5, 0.0004, 0.0001, 0.01, 1, 1, 1000 };
+	Image_Data toBeFiltered;
+	toBeFiltered.imageDataPtr = imageData; toBeFiltered.height = Height; toBeFiltered.length = Length; toBeFiltered.width = Width;
+	filterImage(toBeFiltered, filterParm, method);
+	rescaleNewRange(imageData, Length, Width, Height, 0, 4000);
+	 
+	//std::string filteredImagePath = outputPath + "loaded.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
 
 	//Extract sagital slice
 	//----------------------------------
-	dataType * OneSliceImage = (dataType*)malloc(Height * Width * sizeof(dataType));
-	dataType * rotatedImage = (dataType*)malloc(Height * Width * sizeof(dataType));
-	dataType * distanceMap = (dataType*)malloc(Height * Width * sizeof(dataType));
-	dataType * potentialPtr = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* OneSliceImage = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* rotatedImage = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* distanceMap = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* potentialPtr = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* gradientPtr = (dataType*)malloc(Height * Width * sizeof(dataType));
+	dataType* maskThresh = (dataType*)malloc(Height * Width * sizeof(dataType));
 	size_t cst = 238; i = 0;
 	for (k = 0; k < Height; k++) {
 		for (j = 0; j < Width; j++) {
@@ -101,41 +112,36 @@ int main() {
 			x = x_new(i, j, Height);
 			rotatedImage[x] = OneSliceImage[x_new(Height - i - 1, Width - j - 1, Height)];
 			potentialPtr[x] = 0;
+			gradientPtr[x] = 0;
 		}
 	}
-
-	dataType* extendedImage = (dataType*)malloc( (Height + 2) * (Width + 2) * sizeof(dataType));
-
-	for (i = 0; i < (Height + 2) * (Width + 2); i++) {
-		extendedImage[i] = 0;
-	}
-
-	//copyDataTo2dExtendedArea(rotatedImage, extendedImage, Height, Width);
-	//reflection2D(extendedImage, Height + 2, Width + 2);
-	//copyDataTo2dReducedArea(rotatedImage, extendedImage, Height, Width);
-
-	//std::string sagitalView = outputPath + "testImage.raw";
-	//store2dRawData<dataType>(extendedImage, Height + 2, Width + 2, sagitalView.c_str());
 
 	////Manual thresholding
 	//for (k = 0; k < Height; k++) {
 	//	for (j = 0; j < Width; j++) {
 	//		if (rotatedImage[x_new(k, j, Height)] >= thresmin && rotatedImage[x_new(k, j, Height)] <= thresmax) {
-	//			rotatedImage[x_new(k, j, Height)] = 1;
+	//			maskThresh[x_new(k, j, Height)] = 1;
 	//		}
 	//		else {
-	//			rotatedImage[x_new(k, j, Height)] = 0;
+	//			maskThresh[x_new(k, j, Height)] = 0;
 	//		}
 	//	}
 	//}
 
-	//std::string thresOutPut = outputPath + "thresholdedImage.raw";
+	//std::string thresOutPut = outputPath + "initialImage.raw";
 	//store2dRawData<dataType>(rotatedImage, Height, Width, thresOutPut.c_str());
 
-	Point2D * startingPoint = (Point2D*)malloc(2 * sizeof(Point2D));
-	//startingPoint->x = (size_t)(Width / 2); startingPoint->y = (size_t)(Height / 2);
-	startingPoint->x = 246; startingPoint->y = 277;
-	//startingPoint->x = 0; startingPoint->y = 0;
+	Point2D * startPoint = (Point2D*)malloc(sizeof(Point2D));
+	//startPoint->x = 0; startPoint->y = 0;
+	startPoint->x = 246; startPoint->y = 277; // x = 238
+	//startPoint->x = 209; startPoint->y = 297; // x = 235
+	Point2D* endPoint = (Point2D*)malloc(2 * sizeof(Point2D));
+	endPoint->x = 250; endPoint->y = 135; // x = 238
+	//endPoint->x = 263; endPoint->y = 78;  // x = 235
+
+	Point2D* pointsPath = (Point2D*)malloc(2 * sizeof(Point2D));
+	pointsPath[0].x = 246; pointsPath[0].y = 277;
+	pointsPath[1].x = 250; pointsPath[1].y = 135;
 
 	////Manual rescalling
 	//dataType scale_factor = 1.0 / 4000.0;
@@ -146,15 +152,68 @@ int main() {
 	//	}
 	//}
 	
-	fastMarching2d(rotatedImage, distanceMap, potentialPtr, Height, Width, startingPoint);
+	fastMarching2d(rotatedImage, distanceMap, potentialPtr, Height, Width, pointsPath);
+	//fastMarching2d(maskThresh, distanceMap, potentialPtr, Height, Width, pointsPath);
 
-	//bruteForce2d(rotatedImage, distanceMap, Height, Width, 0);
-	//computeImageGradient(rotatedImage, distanceMap, Height, Width, 1.0);
+	//std::string outPutDistance = outputPath + "distance.raw";
+	//store2dRawData<dataType>(distanceMap, Height, Width, outPutDistance.c_str());
 
-	std::string outPutDistance = outputPath + "distanceMap.raw";
-	store2dRawData<dataType>(distanceMap, Height, Width, outPutDistance.c_str());
-	outPutDistance = outputPath + "potential.raw";
-	store2dRawData<dataType>(potentialPtr, Height, Width, outPutDistance.c_str());
+	//std::string potentialPath = outputPath + "potential.raw";
+	//store2dRawData<dataType>(potentialPtr, Height, Width, potentialPath.c_str());
+
+	shortestPath2d(distanceMap, gradientPtr, Height, Width, 1.0, pointsPath);
+	 
+	//std::string outPath = outputPath + "path.raw";
+	//store2dRawData<dataType>(gradientPtr, Height, Width, outPath.c_str());
+
+
+	////========================Add start and Point =================
+	//distanceMap[x_new(startPoint->x, startPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x, startPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x, startPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x - 1, startPoint->y, Width)] = 0;
+	//distanceMap[x_new(startPoint->x - 1, startPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x - 1, startPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x + 1, startPoint->y, Width)] = 0;
+	//distanceMap[x_new(startPoint->x + 1, startPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(startPoint->x + 1, startPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x, endPoint->y, Width)] = 0;
+	//distanceMap[x_new(endPoint->x, endPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x, endPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x - 1, endPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x - 1, endPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x - 1, endPoint->y, Width)] = 0;
+	//distanceMap[x_new(endPoint->x + 1, endPoint->y - 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x + 1, endPoint->y + 1, Width)] = 0;
+	//distanceMap[x_new(endPoint->x + 1, endPoint->y, Width)] = 0;
+	////=============================================================
+
+	for (i = 0; i < Height; i++) {
+		for (j = 0; j < Width; j++) {
+			x = x_new(j, i, Width);
+			if (gradientPtr[x] == 1) {
+				distanceMap[x] = 0;
+				rotatedImage[x] = 0;
+				maskThresh[x] = 0;
+			}
+		}
+	}
+	//outPutDistance = outputPath + "distance_plus_path_.raw";
+	//store2dRawData<dataType>(distanceMap, Height, Width, outPutDistance.c_str());
+
+	std::string originalImage = outputPath + "Initial_plus_path.raw";
+	store2dRawData<dataType>(rotatedImage, Height, Width, originalImage.c_str());
+	//store2dRawData<dataType>(maskThresh, Height, Width, originalImage.c_str());
+
+	//computeImageGradient(distanceMap, gradientPtr, Height, Width, 1.0);
+	//std::string outPutGradient = outputPath + "gradient.raw";
+	//store2dRawData<dataType>(gradientPtr, Height, Width, outPutGradient.c_str());
+	//outPutDistance = outputPath + "potential.raw";
+	//store2dRawData<dataType>(potentialPtr, Height, Width, outPutDistance.c_str());
+
+	//computeImageGradient(distanceMap, gradientPtr, Height, Width, 1.0);
+	//std::string outPutDistance = outputPath + "gradient_DM.raw";
+	//store2dRawData<dataType>(gradientPtr, Height, Width, outPutDistance.c_str());
 
 	//free memory
 	for (k = 0; k < Height; k++) {
@@ -162,9 +221,10 @@ int main() {
 	}
 	free(imageData); free(image);
 
-	free(OneSliceImage); free(rotatedImage); free(distanceMap); free(startingPoint);
-	free(potentialPtr); 
-	free(extendedImage);
+	free(OneSliceImage); free(rotatedImage); free(distanceMap); 
+	free(potentialPtr);  free(gradientPtr);
+	free(startPoint); free(endPoint);
+	free(pointsPath); free(maskThresh);
 
 	return EXIT_SUCCESS;
 }

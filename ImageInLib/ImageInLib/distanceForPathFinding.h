@@ -35,6 +35,13 @@ extern "C" {
 
 	//bool bruteForce2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, dataType backGround);
 
+	//==============================================================
+	 
+	////3D functions
+	//typedef struct {
+	//	size_t x, y, z;
+	//} Point3D;
+
 
 #ifdef __cplusplus
 }
