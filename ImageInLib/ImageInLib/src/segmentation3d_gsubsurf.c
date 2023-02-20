@@ -149,25 +149,28 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	//compute coefficients from presmoothed image
 	generalizedGFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, edgeGradientPtr, GPtrs, VPtrs, segParameters, explicit_lhe_Parameters);
 
-
-	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	if (vtkInfo == NULL) return false;
-	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
-	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
-	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
-	const char* pathsaveVTK;
+	//Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//if (vtkInfo == NULL) return false;
+	//vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
+	//vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	//vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
+	//vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
+	//const char* pathsaveVTK;
 
 	//Array for name construction
 	unsigned char  name[500];
 	unsigned char  name_ending[200];
 
 	strcpy_s(name, sizeof name, outputPathPtr);
-	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.vtk");
+	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.raw");
 	strcat_s(name, sizeof(name), name_ending);
-	pathsaveVTK = name;
-	vtkInfo->dataPointer = edgeGradientPtr;
-	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+	//pathsaveVTK = name;
+	//vtkInfo->dataPointer = edgeGradientPtr;
+	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+
+	Storage_Flags storageFlags = { false, false };
+	manageFile(edgeGradientPtr, length, width, height, name,
+		STORE_DATA_RAW, BINARY_DATA, storageFlags);
 
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
@@ -202,7 +205,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 			//vtkInfo->dataPointer = imageData.segmentationFuntionPtr;
 			//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 
-			Storage_Flags storageFlags = { false, false };
+			//Storage_Flags storageFlags = { false, false };
 			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, 
 				STORE_DATA_RAW, BINARY_DATA, storageFlags);
 		}
@@ -269,7 +272,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	free(prevSol_extPtr);
 	free(gauss_seidelPtr);
 
-	free(vtkInfo);
+	//free(vtkInfo);
 
 	return true;
 }
@@ -435,29 +438,112 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 				norm_image_smoothed_average = (norm_image_smoothed_e + norm_image_smoothed_w + norm_image_smoothed_n + norm_image_smoothed_s +
 					norm_image_smoothed_t + norm_image_smoothed_b) / 6.0;
 
-				//edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average, segParameters.coef);
-				edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average * norm_image_smoothed_average, segParameters.coef);
+				//norm_image_smoothed_average = (dataType)((GPtrs.GbPtr[k][x] + GPtrs.GePtr[k][x] + GPtrs.GnPtr[k][x] + GPtrs.GsPtr[k][x] + GPtrs.GtPtr[k][x] + GPtrs.GwPtr[k][x]) / 6.0);
+				
+				//edgeGradientPtr[k][x] = gradientFunction(norm_image_smoothed_average * norm_image_smoothed_average, segParameters.coef);
+
+				edgeGradientPtr[k][x] = (dataType)((GPtrs.GbPtr[k][x] + GPtrs.GePtr[k][x] + GPtrs.GnPtr[k][x] + GPtrs.GsPtr[k][x] + GPtrs.GtPtr[k][x] + GPtrs.GwPtr[k][x]) / 6.0);
 
 			}
 		}
 	}
 
-	copyDataToExtendedArea(edgeGradientPtr, gradient_coef_ext, inputImageData.height, inputImageData.length, inputImageData.width);
-	reflection3D(gradient_coef_ext, height_ext, length_ext, width_ext);
+	//copyDataToExtendedArea(edgeGradientPtr, gradient_coef_ext, inputImageData.height, inputImageData.length, inputImageData.width);
+	//reflection3D(gradient_coef_ext, height_ext, length_ext, width_ext);
+
+	dataType gp = 0.0, gt = 0.0, gb = 0.0, gn = 0.0, gs = 0.0, gw = 0.0, ge = 0.0;
 
 	for (k = 0, k_ext = 1; k < inputImageData.height; k++, k_ext++) {
 		for (i = 0, i_ext = 1; i < inputImageData.length; i++, i_ext++) {
 			for (j = 0, j_ext = 1; j < inputImageData.width; j++, j_ext++) {
 
-				x = x_new(i, j, inputImageData.length);
-				x_ext = x_new(i_ext, j_ext, length_ext);
+				x = x_new(i, j, inputImageData.length); 
+				gp = edgeGradientPtr[k][x];
 
-				VPtrs.GePtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext + 1, j_ext, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext - 1, j_ext, length_ext)]) / (2 * segParameters.h);
-				VPtrs.GwPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext - 1, j_ext, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext + 1, j_ext, length_ext)]) / (2 * segParameters.h);
-				VPtrs.GnPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext, j_ext - 1, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext, j_ext + 1, length_ext)]) / (2 * segParameters.h);
-				VPtrs.GsPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext, j_ext + 1, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext, j_ext - 1, length_ext)]) / (2 * segParameters.h);
-				VPtrs.GtPtr[k][x] = (gradient_coef_ext[k_ext - 1][x_ext] - gradient_coef_ext[k_ext + 1][x_ext]) / (2 * segParameters.h);
-				VPtrs.GbPtr[k][x] = (gradient_coef_ext[k_ext + 1][x_ext] - gradient_coef_ext[k_ext - 1][x_ext]) / (2 * segParameters.h);
+				gb = GPtrs.GbPtr[k][x];
+				gt = GPtrs.GtPtr[k][x];
+				ge = GPtrs.GePtr[k][x];
+				gw = GPtrs.GwPtr[k][x];
+				gn = GPtrs.GnPtr[k][x];
+				gs = GPtrs.GsPtr[k][x];
+
+				VPtrs.GbPtr[k][x] = (gb - gt) / (2 * segParameters.h);
+				VPtrs.GtPtr[k][x] = (gt - gb) / (2 * segParameters.h);
+				VPtrs.GePtr[k][x] = (ge - gw) / (2 * segParameters.h);
+				VPtrs.GwPtr[k][x] = (gw - ge) / (2 * segParameters.h);
+				VPtrs.GnPtr[k][x] = (gn - gs) / (2 * segParameters.h);
+				VPtrs.GsPtr[k][x] = (gs - gn) / (2 * segParameters.h);
+
+				//if (k == 0) {
+				//	kplus1 = k + 1; 
+				//	gb = GPtrs.GbPtr[k][x];
+				//	VPtrs.GbPtr[k][x] = (gb - gp) / segParameters.h;
+				//	VPtrs.GtPtr[k][x] = -VPtrs.GbPtr[k][x];
+				//}
+				//else {
+				//	if (k == (inputImageData.height - 1) ) {
+				//		kminus1 = k - 1; 
+				//		gt = edgeGradientPtr[kminus1][x];
+				//		VPtrs.GbPtr[k][x] = (gp - gt) / segParameters.h;
+				//		VPtrs.GtPtr[k][x] = -VPtrs.GbPtr[k][x];
+				//	}
+				//	else {
+				//		kminus1 = k - 1; kplus1 = k + 1;
+				//		gb = edgeGradientPtr[kplus1][x];
+				//		gt = edgeGradientPtr[kminus1][x];
+				//		VPtrs.GbPtr[k][x] = (gb - gt) / (2 * segParameters.h);
+				//		VPtrs.GtPtr[k][x] = -VPtrs.GbPtr[k][x];
+				//	}
+				//}
+				//if (i == 0) {
+				//	iplus1 = i + 1; 
+				//	ge = edgeGradientPtr[k][x_new(iplus1, j, inputImageData.height)];
+				//	VPtrs.GePtr[k][x] = (ge - gp) / segParameters.h;
+				//	VPtrs.GwPtr[k][x] = -VPtrs.GePtr[k][x];
+				//}
+				//else {
+				//	if (i == (inputImageData.length - 1)) {
+				//		iminus1 = i - 1; 
+				//		gw = edgeGradientPtr[k][x_new(iminus1, j, inputImageData.height)];
+				//		VPtrs.GePtr[k][x] = (gp - gw) / segParameters.h;
+				//		VPtrs.GwPtr[k][x] = -VPtrs.GePtr[k][x];
+				//	}
+				//	else {
+				//		iminus1 = i - 1; iplus1 = i + 1;
+				//		ge = edgeGradientPtr[k][x_new(iplus1, j, inputImageData.height)];
+				//		gw = edgeGradientPtr[k][x_new(iminus1, j, inputImageData.height)];
+				//		VPtrs.GePtr[k][x] = (ge - gw) / (2 * segParameters.h);
+				//		VPtrs.GwPtr[k][x] = -VPtrs.GePtr[k][x];
+				//	}
+				//}
+				//if (j == 0) {
+				//	jplus1 = j + 1; 
+				//	gs = edgeGradientPtr[k][x_new(i, jplus1, inputImageData.height)];
+				//	VPtrs.GsPtr[k][x] = (gs - gp) / segParameters.h;
+				//	VPtrs.GnPtr[k][x] = -VPtrs.GsPtr[k][x];
+				//}
+				//else {
+				//	if (j == (inputImageData.width - 1)) {
+				//		jminus1 = j - 1; 
+				//		gn = edgeGradientPtr[k][x_new(i, jminus1, inputImageData.height)];
+				//		VPtrs.GsPtr[k][x] = (gp - gn) / segParameters.h;
+				//		VPtrs.GnPtr[k][x] = -VPtrs.GsPtr[k][x];
+				//	}
+				//	else {
+				//		jminus1 = j - 1; jplus1 = j + 1;
+				//		gs = edgeGradientPtr[k][x_new(i, jplus1, inputImageData.height)];
+				//		gn = edgeGradientPtr[k][x_new(i, jminus1, inputImageData.height)];
+				//		VPtrs.GsPtr[k][x] = (gs - gn) / (2 * segParameters.h);
+				//		VPtrs.GnPtr[k][x] = -VPtrs.GsPtr[k][x];
+				//	}
+				//}
+
+				//VPtrs.GePtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext + 1, j_ext, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext - 1, j_ext, length_ext)]) / (2 * segParameters.h);
+				//VPtrs.GwPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext - 1, j_ext, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext + 1, j_ext, length_ext)]) / (2 * segParameters.h);
+				//VPtrs.GnPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext, j_ext - 1, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext, j_ext + 1, length_ext)]) / (2 * segParameters.h);
+				//VPtrs.GsPtr[k][x] = (gradient_coef_ext[k_ext][x_new(i_ext, j_ext + 1, length_ext)] - gradient_coef_ext[k_ext][x_new(i_ext, j_ext - 1, length_ext)]) / (2 * segParameters.h);
+				//VPtrs.GtPtr[k][x] = (gradient_coef_ext[k_ext - 1][x_ext] - gradient_coef_ext[k_ext + 1][x_ext]) / (2 * segParameters.h);
+				//VPtrs.GbPtr[k][x] = (gradient_coef_ext[k_ext + 1][x_ext] - gradient_coef_ext[k_ext - 1][x_ext]) / (2 * segParameters.h);
 
 			}
 		}
@@ -728,11 +814,6 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	//Copy the current time step to original data array after timeStepsNum
 	copyDataToReducedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
-
-	//Rescale values of segmentation function and current time step to interval (0, 1)
-	 
-	//rescaleToIntervalZeroOne(inputImageData.segmentationFuntionPtr, length, width, height);
-	//rescaleToIntervalZeroOne(gauss_seidelPtr, length_ext, width_ext, height_ext);
 
 	if (no_of_centers == 1)
 	{
