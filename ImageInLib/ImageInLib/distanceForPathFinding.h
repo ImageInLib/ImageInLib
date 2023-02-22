@@ -37,10 +37,20 @@ extern "C" {
 
 	//==============================================================
 	 
-	////3D functions
-	//typedef struct {
-	//	size_t x, y, z;
-	//} Point3D;
+	//3D functions
+	typedef struct {
+		size_t x, y, z;
+	} Point3d;
+
+	dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W);
+
+	dataType select3dX(dataType** distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t dimK, const size_t I, const size_t J, const size_t K);
+
+	dataType select3dY(dataType** distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t dimK, const size_t I, const size_t J, const size_t K);
+
+	dataType select3dZ(dataType** distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t dimK, const size_t I, const size_t J, const size_t K);
+
+	bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
 
 
 #ifdef __cplusplus
