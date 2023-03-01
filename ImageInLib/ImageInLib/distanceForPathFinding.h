@@ -23,7 +23,7 @@ extern "C" {
 
 	bool computeImageGradient(dataType* imageDataPtr, dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width, dataType h);
 
-	dataType computeImageNorm2d(dataType* imageDataPtr, const size_t height, const size_t width);
+	dataType computeGradientNorm2d(dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width);
 
 	bool computePotential(dataType * imageDataPtr, dataType* potentialFuncPtr, const size_t height, const size_t width, Point2D* seedPoints);
 

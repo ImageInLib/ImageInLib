@@ -91,14 +91,14 @@ dataType selectY(dataType* distanceFuncPtr, const size_t dimI, const size_t dimJ
 	return min(i_minus, i_plus);
 }
 
-bool computeImageGradient(dataType* imageDataPtr, dataType* gradientVectorX, dataType* gradientVectorY , const size_t height, const size_t width, dataType h) {
+bool computeImageGradient(dataType* imageDataPtr, dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width, dataType h) {
 	
 	if (imageDataPtr == NULL || gradientVectorX == NULL || gradientVectorY == NULL) {
 		return false;
 	}
 
 	size_t i, j, xd;
-	dataType ux = 0.0, uy = 0.0, norm_gradient = 0.0;
+	dataType ux = 0.0, uy = 0.0;
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
@@ -129,35 +129,23 @@ bool computeImageGradient(dataType* imageDataPtr, dataType* gradientVectorX, dat
 				}
 			}
 
-			norm_gradient = norm_gradient + ux * ux + uy * uy;
-			//norm_gradient = ux * ux + uy * uy + 0.001;
-			gradientVectorX[xd] = ux; // / norm_gradient;
-			gradientVectorY[xd] = uy; // / norm_gradient;
+			gradientVectorX[xd] = ux;
+			gradientVectorY[xd] = uy;
 
-		}
-	}
-
-	norm_gradient = sqrt(norm_gradient);
-
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			xd = x_new(j, i, width);
-			gradientVectorX[xd] = gradientVectorX[xd] / norm_gradient;
-			gradientVectorY[xd] = gradientVectorY[xd] / norm_gradient;
 		}
 	}
 
 	return true;
 }
 
-dataType computeImageNorm2d(dataType* imageDataPtr, const size_t height, const size_t width) {
+dataType computeGradientNorm2d(dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width) {
 	size_t i, j, xd;
 	dataType norm_array = 0.0;
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			xd = x_new(j, i, width);
-			norm_array = norm_array + imageDataPtr[xd] * imageDataPtr[xd];
+			norm_array = norm_array + pow(gradientVectorX[xd], 2) + pow(gradientVectorY[xd], 2);
 		}
 	}
 	return sqrt(norm_array);
@@ -176,47 +164,53 @@ bool computePotential(dataType* imageDataPtr, dataType* potentialFuncPtr, const 
 	dataType seedVal = (imageDataPtr[x_new(j1, i1, width)] + imageDataPtr[x_new(j2, i2, width)]) / 2;
 	//dataType seedVal = imageDataPtr[x_new(j1, i1, width)];
 	size_t currentIndx = 0;
-	dataType epsylon = 0.01;
+	dataType epsylon = 1.0;
 
-	//dataType* gradientVectorX = new dataType[height * width];
-	//dataType* gradientVectorY = new dataType[height * width];
-	//computeImageGradient(imageDataPtr, gradientVectorX, gradientVectorY, height, width, 1.0);
+	dataType* gradientVectorX = new dataType[height * width];
+	dataType* gradientVectorY = new dataType[height * width];
+	computeImageGradient(imageDataPtr, gradientVectorX, gradientVectorY, height, width, 1.0);
 
-	//size_t seedIndice = x_new(j1, i1, width);
-	//dataType ux0 = gradientVectorX[seedIndice], uy0 = gradientVectorY[seedIndice], ux = 0.0, uy = 0.0;
+	size_t seedIndice = x_new(j1, i1, width);
+	dataType ux0 = gradientVectorX[seedIndice], uy0 = gradientVectorY[seedIndice], ux = 0.0, uy = 0.0;
 
 	//Computation of potential function
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			currentIndx = x_new(j, i, width);
-			//potentialFuncPtr[currentIndx] = 1 / ( epsylon + abs(seedVal - imageDataPtr[currentIndx]));
-			//ux = gradientVectorX[currentIndx]; uy = gradientVectorY[currentIndx];
+			//potentialFuncPtr[currentIndx] = (dataType)( 1 / ( epsylon + abs(seedVal - imageDataPtr[currentIndx])) );
+			//potentialFuncPtr[currentIndx] = (dataType)( epsylon + abs(seedVal - imageDataPtr[currentIndx]) );
+			ux = gradientVectorX[currentIndx]; uy = gradientVectorY[currentIndx];
+			potentialFuncPtr[currentIndx] = epsylon + sqrt(ux * ux + uy * uy);
 			//potentialFuncPtr[currentIndx] = epsylon + sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2));
-			potentialFuncPtr[currentIndx] = abs(seedVal - imageDataPtr[currentIndx]); /* + sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2))*/
+			//potentialFuncPtr[currentIndx] = 1 / (epsylon + abs(seedVal - imageDataPtr[currentIndx]) * sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2)));
+			//potentialFuncPtr[currentIndx] = epsylon + abs(seedVal - imageDataPtr[currentIndx]) * sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2));
+			//potentialFuncPtr[currentIndx] = abs(seedVal - imageDataPtr[currentIndx]);
 		}
 	}
 
-	//find the max potential
-	dataType max_potential = -1;
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			currentIndx = x_new(j, i, width);
-			if (potentialFuncPtr[currentIndx] > max_potential) {
-				max_potential = potentialFuncPtr[currentIndx];
-			}
-		}
-	}
+	////find the max potential
+	//dataType max_potential = -1;
+	//for (i = 0; i < height; i++) {
+	//	for (j = 0; j < width; j++) {
+	//		currentIndx = x_new(j, i, width);
+	//		if (potentialFuncPtr[currentIndx] > max_potential) {
+	//			max_potential = potentialFuncPtr[currentIndx];
+	//		}
+	//	}
+	//}
 
-	//Normalization
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			currentIndx = x_new(j, i, width);
-			potentialFuncPtr[currentIndx] = (dataType)(epsylon + potentialFuncPtr[currentIndx] / max_potential);
-		}
-	}
+	////Normalization
+	//dataType weight = 0.0;
+	//for (i = 0; i < height; i++) {
+	//	for (j = 0; j < width; j++) {
+	//		currentIndx = x_new(j, i, width);
+	//		weight = potentialFuncPtr[currentIndx] / max_potential;
+	//		potentialFuncPtr[currentIndx] = (dataType)(epsylon + weight);
+	//	}
+	//}
 
-	//delete[] gradientVectorX;
-	//elete[] gradientVectorY;
+	delete[] gradientVectorX;
+	delete[] gradientVectorY;
 
 	return true;
 }
@@ -1106,7 +1100,17 @@ bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const siz
 	dataType * gradientVectorX = new dataType[dim2d];
 	dataType * gradientVectorY = new dataType[dim2d];
 
+	//Normalization of the gradient
 	computeImageGradient(distanceFuncPtr, gradientVectorX, gradientVectorY, height, width, 1.0);
+	dataType norm_of_gradient = computeGradientNorm2d(gradientVectorX, gradientVectorY, height, width);
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			xd = x_new(j, i, width);
+			gradientVectorX[xd] = gradientVectorX[xd] / norm_of_gradient;
+			gradientVectorY[xd] = gradientVectorY[xd] / norm_of_gradient;
+		}
+	}
+
 
 	//Find the closest point till the last point
 	size_t cpt = 1;

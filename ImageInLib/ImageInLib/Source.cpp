@@ -61,19 +61,23 @@ int main() {
 	}
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
-	std::string inputImagePath = inputPath + "patient2.raw";
-	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
-	{
-		printf("inputImagePath does not exist\n");
-	}
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				x = x_new(i, j, Length);
-				imageData[k][x] = (dataType)image[k][x];
-			}
-		}
-	}
+	//std::string inputImagePath = inputPath + "patient2.raw";
+	std::string inputImagePath = inputPath + "patient2_filtered.raw";
+
+	//if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
+	//{
+	//	printf("inputImagePath does not exist\n");
+	//}
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			x = x_new(i, j, Length);
+	//			imageData[k][x] = (dataType)image[k][x];
+	//		}
+	//	}
+	//}
+
+	load3dArrayRAW<dataType>(imageData, Length, Width, Height, inputImagePath.c_str());
 
 	//----- Fast Marching and Path finding for 3D image ----------------
 	
@@ -146,7 +150,10 @@ int main() {
 	dataType* loadingPtr = (dataType*)malloc(dim2D * sizeof(dataType));
 	dataType* maskThresh = (dataType*)malloc(dim2D * sizeof(dataType));
 
-	size_t cst = 285 /*234*/ /*238*/; i = 0;
+	i = 0;
+	//size_t cst = 238; // test 1 and 2
+	//size_t cst = 234; // test 3
+	size_t cst = 285; // test 4
 	for (k = 0; k < Height; k++) {
 		for (j = 0; j < Width; j++) {
 			x = x_new(cst, j, Length);
@@ -165,8 +172,21 @@ int main() {
 	//store2dRawData<dataType>(real2dImageData, Height, Width, real2dImagePath.c_str());
 
 	Point2D* startAndEnd = (Point2D*)malloc(2 * sizeof(Point2D));
-	startAndEnd[0].x = 224 /*205*/ /*246*/ /*292*/; startAndEnd[0].y = 194 /*296*/ /*277*/ /*336*/;
-	startAndEnd[1].x = 225 /*240*/ /*250*/ /*333*/; startAndEnd[1].y = 130 /*188*/ /*135*/ /*192*/;
+	////test 1
+	//startAndEnd[0].x = 292; startAndEnd[0].y = 336;
+	//startAndEnd[1].x = 333; startAndEnd[1].y = 192;
+
+	////test 2
+	//startAndEnd[0].x = 246; startAndEnd[0].y = 277;
+	//startAndEnd[1].x = 250; startAndEnd[1].y = 135;
+
+	////test 3
+	//startAndEnd[0].x = 205; startAndEnd[0].y = 296;
+	//startAndEnd[1].x = 240; startAndEnd[1].y = 188;
+
+	//test 4
+	startAndEnd[0].x = 224; startAndEnd[0].y = 194;
+	startAndEnd[1].x = 225; startAndEnd[1].y = 130;
 
 	////Manual thresholding
 	//for (k = 0; k < Height; k++) {
@@ -190,37 +210,37 @@ int main() {
 	//dataType* artificial2dImage = (dataType*)malloc(dim2D * sizeof(dataType));
 	//std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
 
-	////Draw snake
-	//for (i = 0; i < Height; i++) {
-	//	for (j = 0; j < Width; j++) {
-	//		artificial2dImage[x_new(j, i, Width)] = 0;
-	//	}
-	//}
-	//size_t i1 = 50, j1 = 100, radius = 50;
-	//for (i = 0; i < 100; i++) {
-	//	for (j = j1; j < ( j1 + radius) ; j++) {
-	//		if (sqrt((i1 - i) * (i1 - i) + (j1 - j) * (j1 - j)) <= radius) {
-	//			artificial2dImage[x_new(j, i, Width)] = 1;
-	//		}
-	//		if (sqrt((i1 - i) * (i1 - i) + (j1 - j) * (j1 - j)) <= 20) {
-	//			artificial2dImage[x_new(j, i, Width)] = 0;
-	//		}
-	//	}
-	//}
-	//size_t i2 = 120;
-	//for (i = 70; i < 170; i++) {
-	//	for (j = 50; j < 100; j++) {
-	//		if (sqrt((i2 - i) * (i2 - i) + (j1 - j) * (j1 - j)) <= radius) {
-	//			artificial2dImage[x_new(j, i, Width)] = 1;
-	//		}
-	//		if (sqrt((i2 - i) * (i2 - i) + (j1 - j) * (j1 - j)) <= 20) {
-	//			artificial2dImage[x_new(j, i, Width)] = 0;
-	//		}
-	//	}
-	//}
-	//Point2D* startAndEnd = (Point2D*)malloc(2 * sizeof(Point2D));
-	//startAndEnd[1].x = 113; startAndEnd[1].y = 18;
-	//startAndEnd[0].x = 79; startAndEnd[0].y = 148;
+	//////Draw snake
+	////for (i = 0; i < Height; i++) {
+	////	for (j = 0; j < Width; j++) {
+	////		artificial2dImage[x_new(j, i, Width)] = 0;
+	////	}
+	////}
+	////size_t i1 = 50, j1 = 100, radius = 50;
+	////for (i = 0; i < 100; i++) {
+	////	for (j = j1; j < ( j1 + radius) ; j++) {
+	////		if (sqrt((i1 - i) * (i1 - i) + (j1 - j) * (j1 - j)) <= radius) {
+	////			artificial2dImage[x_new(j, i, Width)] = 1;
+	////		}
+	////		if (sqrt((i1 - i) * (i1 - i) + (j1 - j) * (j1 - j)) <= 20) {
+	////			artificial2dImage[x_new(j, i, Width)] = 0;
+	////		}
+	////	}
+	////}
+	////size_t i2 = 120;
+	////for (i = 70; i < 170; i++) {
+	////	for (j = 50; j < 100; j++) {
+	////		if (sqrt((i2 - i) * (i2 - i) + (j1 - j) * (j1 - j)) <= radius) {
+	////			artificial2dImage[x_new(j, i, Width)] = 1;
+	////		}
+	////		if (sqrt((i2 - i) * (i2 - i) + (j1 - j) * (j1 - j)) <= 20) {
+	////			artificial2dImage[x_new(j, i, Width)] = 0;
+	////		}
+	////	}
+	////}
+	////Point2D* startAndEnd = (Point2D*)malloc(2 * sizeof(Point2D));
+	////startAndEnd[1].x = 113; startAndEnd[1].y = 18;
+	////startAndEnd[0].x = 79; startAndEnd[0].y = 148;
 
 	////Draw L
 	//for (i = 0; i < Height; i++) {
@@ -244,27 +264,27 @@ int main() {
 	//startAndEnd[1].x = 25; startAndEnd[1].y = 15;
 	//startAndEnd[0].x = 181; startAndEnd[0].y = 175;
 
-	//////Draw a cercle
-	////for (i = 0; i < Height; i++) {
-	////	for (j = 0; j < Width; j++) {
-	////		artificial2dImage[x_new(j, i, Width)] = 0;
-	////	}
-	////}
-	////for (i = 0; i < Height; i++) {
-	////	for (j = 0; j < Width; j++) {
-	////		x = x_new(j, i, Width);
-	////		if (sqrt((i - 100) * (i - 100) + (j - 100) * (j - 100)) <= 70) {
-	////			artificial2dImage[x] = 1;
-	////		}
-	////		if (sqrt((i - 100) * (i - 100) + (j - 100) * (j - 100)) <= 50) {
-	////			artificial2dImage[x] = 0;
-	////		}
-	////	}
-	////}
-	////Point2D* startAndEnd = (Point2D*)malloc(2 * sizeof(Point2D));
-	////startAndEnd[0].x = 40; startAndEnd[0].y = 88;
-	////startAndEnd[1].x = 106 /*155*/ /*144*/; /*106*/ /*155*/ startAndEnd[1].y = 158 /*116*/ /*58*/; /*158*/ /*116*/
-	//
+	////Draw a cercle
+	//for (i = 0; i < Height; i++) {
+	//	for (j = 0; j < Width; j++) {
+	//		artificial2dImage[x_new(j, i, Width)] = 0;
+	//	}
+	//}
+	//for (i = 0; i < Height; i++) {
+	//	for (j = 0; j < Width; j++) {
+	//		x = x_new(j, i, Width);
+	//		if (sqrt((i - 100) * (i - 100) + (j - 100) * (j - 100)) <= 70) {
+	//			artificial2dImage[x] = 1;
+	//		}
+	//		if (sqrt((i - 100) * (i - 100) + (j - 100) * (j - 100)) <= 50) {
+	//			artificial2dImage[x] = 0;
+	//		}
+	//	}
+	//}
+	//Point2D* startAndEnd = (Point2D*)malloc(2 * sizeof(Point2D));
+	//startAndEnd[0].x = 40; startAndEnd[0].y = 88;
+	//startAndEnd[1].x = 155 /*144*/; /*106*/  startAndEnd[1].y = 116 /*58*/; /*158*/
+	
 	//std::string pathArtificialImage = outputPath + "artificial.raw";
 	//store2dRawData<dataType>(artificial2dImage, Height, Width, pathArtificialImage.c_str());
 
@@ -299,8 +319,8 @@ int main() {
 
 	std::string distanceOutPut = outputPath + "distance.raw";
 	store2dRawData<dataType>(distanceMap, Height, Width, distanceOutPut.c_str());
-	distanceOutPut = outputPath + "input.raw";
-	//store2dRawData<dataType>(potentialPtr, Height, Width, distanceOutPut.c_str());
+	distanceOutPut = outputPath + "potential.raw";
+	store2dRawData<dataType>(potentialPtr, Height, Width, distanceOutPut.c_str());
 	//store2dRawData<dataType>(real2dImageData, Height, Width, distanceOutPut.c_str());
 
 	shortestPath2d(distanceMap, pathPtr, Height, Width, 1.0, startAndEnd);
@@ -319,6 +339,9 @@ int main() {
 	std::string outPath = outputPath + "ImagePlusPath.raw";
 	store2dRawData<dataType>(real2dImageData, Height, Width, outPath.c_str());
 	//store2dRawData<dataType>(artificial2dImage, Height, Width, outPath.c_str());
+
+	outPath = outputPath + "DistancePlusPath.raw";
+	store2dRawData<dataType>(distanceMap, Height, Width, outPath.c_str());
 
 	////========================Add start and Point =================
 	//distanceMap[x_new(startPoint->x, startPoint->y - 1, Width)] = 0;
@@ -341,11 +364,11 @@ int main() {
 	//distanceMap[x_new(endPoint->x + 1, endPoint->y, Width)] = 0;
 	////=============================================================
 
-	//free memory
-	for (k = 0; k < Height; k++) {
-		free(imageData[k]); free(image[k]);
-	}
-	free(imageData); free(image);
+	////free memory
+	//for (k = 0; k < Height; k++) {
+	//	free(imageData[k]); free(image[k]);
+	//}
+	//free(imageData); free(image);
 
 	//for (k = 0; k < Height; k++) {
 	//	free(potential3D[k]);
