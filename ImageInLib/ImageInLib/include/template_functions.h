@@ -69,12 +69,12 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	const size_t dataSize = sizeof(T);
 	char* swapBuf = (char *)malloc(dataSize);
 
-	////revert byte
-	//for (k = 0; k < zDim; k++) {
-	//	for (i = 0; i < step; i++) {
-	//		revertBytesEx(&imageDataPtr[k][i], dataSize, swapBuf);
-	//	}
-	//}
+	//revert byte
+	for (k = 0; k < zDim; k++) {
+		for (i = 0; i < step; i++) {
+			revertBytesEx(&imageDataPtr[k][i], dataSize, swapBuf);
+		}
+	}
 
 	free(swapBuf);
 

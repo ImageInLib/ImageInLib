@@ -161,10 +161,37 @@ bool computePotential(dataType* imageDataPtr, dataType* potentialFuncPtr, const 
 	size_t i1 = seedPoints[0].y, j1 = seedPoints[0].x;
 	size_t i2 = seedPoints[1].y, j2 = seedPoints[1].x;
 
+	//dataType Endpoint = (imageDataPtr[x_new(j2 - 1, i2 - 1, width)] + imageDataPtr[x_new(j2, i2 - 1, width)] + imageDataPtr[x_new(j2 + 1, i2 - 1, width)] +
+	//	imageDataPtr[x_new(j2 - 1, i2, width)] + imageDataPtr[x_new(j2, i2, width)] + imageDataPtr[x_new(j2 + 1, i2, width)] + 
+	//	imageDataPtr[x_new(j2 - 1, i2 + 1, width)] + imageDataPtr[x_new(j2, i2 + 1, width)] + imageDataPtr[x_new(j2 + 1, i2 + 1, width)] ) / 9;
+	//cout << "average 9 neighbors : " << Endpoint << endl;
+
+	//dataType Endpoint = (imageDataPtr[x_new(j2 - 2, i2 - 2, width)] + imageDataPtr[x_new(j2 - 1, i2 - 2, width)] + imageDataPtr[x_new(j2, i2 - 2, width)] + imageDataPtr[x_new(j2 + 1, i2 - 2, width)] + imageDataPtr[x_new(j2 + 2, i2 - 2, width)] +
+	//		imageDataPtr[x_new(j2 - 2, i2 - 1, width)] + imageDataPtr[x_new(j2 - 1, i2 - 1, width)] + imageDataPtr[x_new(j2, i2 - 1, width)] + imageDataPtr[x_new(j2 + 1, i2 - 1, width)] + imageDataPtr[x_new(j2 + 2, i2 - 1, width)] +
+	//		imageDataPtr[x_new(j2 - 2, i2, width)] + imageDataPtr[x_new(j2 - 1, i2, width)] + imageDataPtr[x_new(j2, i2, width)] + imageDataPtr[x_new(j2 + 1, i2, width)] + imageDataPtr[x_new(j2 + 2, i2, width)] +
+	//		imageDataPtr[x_new(j2 - 2, i2 + 1, width)] + imageDataPtr[x_new(j2 - 1, i2 + 1, width)] + imageDataPtr[x_new(j2, i2 + 1, width)] + imageDataPtr[x_new(j2 + 1, i2 + 1, width)] + imageDataPtr[x_new(j2 + 2, i2 + 1, width)] +
+	//		imageDataPtr[x_new(j2 - 2, i2 + 2, width)] + imageDataPtr[x_new(j2 - 1, i2 + 2, width)] + imageDataPtr[x_new(j2, i2 + 2, width)] + imageDataPtr[x_new(j2 + 1, i2 + 2, width)] + imageDataPtr[x_new(j2 + 2, i2 + 2, width)]) / 15;
+	//cout << "\naverage 15 neighbors : " << Endpoint << endl;
+
+	//dataType Endpoint = (imageDataPtr[x_new(j2 - 3, i2 - 3, width)] + imageDataPtr[x_new(j2 - 2, i2 - 3, width)] + imageDataPtr[x_new(j2 - 1, i2 - 3, width)] + imageDataPtr[x_new(j2, i2 - 3, width)] + imageDataPtr[x_new(j2 + 1, i2 - 3, width)] + imageDataPtr[x_new(j2 + 2, i2 - 3, width)] + imageDataPtr[x_new(j2 + 3, i2 - 3, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2 - 2, width)] + imageDataPtr[x_new(j2 - 2, i2 - 2, width)] + imageDataPtr[x_new(j2 - 1, i2 - 2, width)] + imageDataPtr[x_new(j2, i2 - 2, width)] + imageDataPtr[x_new(j2 + 1, i2 - 2, width)] + imageDataPtr[x_new(j2 + 2, i2 - 2, width)] + imageDataPtr[x_new(j2 + 3, i2 - 2, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2 - 1, width)] + imageDataPtr[x_new(j2 - 2, i2 - 1, width)] + imageDataPtr[x_new(j2 - 1, i2 - 1, width)] + imageDataPtr[x_new(j2, i2 - 1, width)] + imageDataPtr[x_new(j2 + 1, i2 - 1, width)] + imageDataPtr[x_new(j2 + 2, i2 - 1, width)] + imageDataPtr[x_new(j2 + 3, i2 - 1, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2, width)] + imageDataPtr[x_new(j2 - 2, i2, width)] + imageDataPtr[x_new(j2 - 1, i2, width)] + imageDataPtr[x_new(j2, i2, width)] + imageDataPtr[x_new(j2 + 1, i2, width)] + imageDataPtr[x_new(j2 + 2, i2, width)] + imageDataPtr[x_new(j2 + 3, i2, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2 + 1, width)] + imageDataPtr[x_new(j2 - 2, i2 + 1, width)] + imageDataPtr[x_new(j2 - 1, i2 + 1, width)] + imageDataPtr[x_new(j2, i2 + 1, width)] + imageDataPtr[x_new(j2 + 1, i2 + 1, width)] + imageDataPtr[x_new(j2 + 2, i2 + 1, width)] + imageDataPtr[x_new(j2 + 3, i2 + 1, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2 + 2, width)] + imageDataPtr[x_new(j2 - 2, i2 + 2, width)] + imageDataPtr[x_new(j2 - 1, i2 + 2, width)] + imageDataPtr[x_new(j2, i2 + 2, width)] + imageDataPtr[x_new(j2 + 1, i2 + 2, width)] + imageDataPtr[x_new(j2 + 2, i2 + 2, width)] + imageDataPtr[x_new(j2 + 3, i2 + 2, width)] +
+	//	imageDataPtr[x_new(j2 - 3, i2 + 3, width)] + imageDataPtr[x_new(j2 - 2, i2 + 3, width)] + imageDataPtr[x_new(j2 - 1, i2 + 3, width)] + imageDataPtr[x_new(j2, i2 + 3, width)] + imageDataPtr[x_new(j2 + 1, i2 + 3, width)] + imageDataPtr[x_new(j2 + 2, i2 + 3, width)] + imageDataPtr[x_new(j2 + 3, i2 + 3, width)]) / 49;
+	//cout << "average 49 neighbors : " << Endpoint << endl;
+
+	//dataType Endpoint = imageDataPtr[x_new(213, 133, width)]; // hardcoding the end point
+ 
+	//imageDataPtr[x_new(j2, i2, width)] = Endpoint;
+
+	//dataType seedVal = (imageDataPtr[x_new(j1, i1, width)] + Endpoint) / 2;
 	dataType seedVal = (imageDataPtr[x_new(j1, i1, width)] + imageDataPtr[x_new(j2, i2, width)]) / 2;
 	//dataType seedVal = imageDataPtr[x_new(j1, i1, width)];
 	size_t currentIndx = 0;
-	dataType epsylon = 1.0;
+	dataType epsylon = 0.01;
+	dataType K = 0.00005;
 
 	dataType* gradientVectorX = new dataType[height * width];
 	dataType* gradientVectorY = new dataType[height * width];
@@ -179,35 +206,42 @@ bool computePotential(dataType* imageDataPtr, dataType* potentialFuncPtr, const 
 			currentIndx = x_new(j, i, width);
 			//potentialFuncPtr[currentIndx] = (dataType)( 1 / ( epsylon + abs(seedVal - imageDataPtr[currentIndx])) );
 			//potentialFuncPtr[currentIndx] = (dataType)( epsylon + abs(seedVal - imageDataPtr[currentIndx]) );
-			ux = gradientVectorX[currentIndx]; uy = gradientVectorY[currentIndx];
-			potentialFuncPtr[currentIndx] = epsylon + sqrt(ux * ux + uy * uy);
+			//ux = gradientVectorX[currentIndx]; uy = gradientVectorY[currentIndx];
+			//potentialFuncPtr[currentIndx] = epsylon + sqrt(ux * ux + uy * uy);
+			//potentialFuncPtr[currentIndx] = 1 / (1 + K * (ux * ux + uy * uy) );
 			//potentialFuncPtr[currentIndx] = epsylon + sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2));
 			//potentialFuncPtr[currentIndx] = 1 / (epsylon + abs(seedVal - imageDataPtr[currentIndx]) * sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2)));
 			//potentialFuncPtr[currentIndx] = epsylon + abs(seedVal - imageDataPtr[currentIndx]) * sqrt(pow(ux - ux0, 2) + pow(uy - uy0, 2));
-			//potentialFuncPtr[currentIndx] = abs(seedVal - imageDataPtr[currentIndx]);
+			potentialFuncPtr[currentIndx] = abs(seedVal - imageDataPtr[currentIndx]);
 		}
 	}
 
-	////find the max potential
-	//dataType max_potential = -1;
-	//for (i = 0; i < height; i++) {
-	//	for (j = 0; j < width; j++) {
-	//		currentIndx = x_new(j, i, width);
-	//		if (potentialFuncPtr[currentIndx] > max_potential) {
-	//			max_potential = potentialFuncPtr[currentIndx];
-	//		}
-	//	}
-	//}
+	//find the max potential
+	dataType max_potential = -1;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			currentIndx = x_new(j, i, width);
+			if (potentialFuncPtr[currentIndx] > max_potential) {
+				max_potential = potentialFuncPtr[currentIndx];
+			}
+		}
+	}
 
-	////Normalization
-	//dataType weight = 0.0;
-	//for (i = 0; i < height; i++) {
-	//	for (j = 0; j < width; j++) {
-	//		currentIndx = x_new(j, i, width);
-	//		weight = potentialFuncPtr[currentIndx] / max_potential;
-	//		potentialFuncPtr[currentIndx] = (dataType)(epsylon + weight);
-	//	}
-	//}
+	//Normalization
+	dataType weight = 0.0, edgeValue = 0.0, norm_of_gradient = 0.0;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			currentIndx = x_new(j, i, width);
+			ux = gradientVectorX[currentIndx]; uy = gradientVectorY[currentIndx]; norm_of_gradient = sqrt(ux * ux + uy * uy);
+			//edgeValue = 1 / (1 + K * (ux * ux + uy * uy));
+			edgeValue = 1 + K * (ux * ux + uy * uy);
+			//potentialFuncPtr[currentIndx] = edgeValue;
+			weight = potentialFuncPtr[currentIndx] / max_potential;
+			potentialFuncPtr[currentIndx] = (dataType)(epsylon + weight * edgeValue);
+			//potentialFuncPtr[currentIndx] = epsylon + weight + edgeValue;
+			//potentialFuncPtr[currentIndx] = epsylon + weight + norm_of_gradient;
+		}
+	}
 
 	delete[] gradientVectorX;
 	delete[] gradientVectorY;
