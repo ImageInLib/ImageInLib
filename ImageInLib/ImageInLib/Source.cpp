@@ -94,10 +94,29 @@ int main() {
 		return false;
 
 	dataType k_spacingOld = 2.5, k_spacingNew = 1.171875;
-	linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
+	//linear2dInterpolation(imageData, resampledImage, Length, Width, Height, k_spacingOld, k_spacingNew);
 	//std::string interpolatedImagePath = outputPath + "interpolated.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, interpolatedImagePath.c_str());
 
+	//------------- Filtering -------------------------------------------
+	 
+	//rescaleNewRange(imageData, Length, Width, Height, 0, 1);
+	//FilterMethod method = MEAN_CURVATURE_FILTER; //NONLINEAR_HEATEQUATION_IMPLICIT; // MEAN_CURVATURE_FILTER; // LINEAR_HEATEQUATION_IMPLICIT; // 
+	//Filter_Parameters filterParm; //filterParm = { 1.2, 1.0, 0.1, 1000, 1.5, 0.0004, 0.0001, 0.01, 1, 1, 1000 };
+	//filterParm.timeStepSize = 1.2; filterParm.h = 1.0; filterParm.sigma = 0.1; filterParm.edge_detector_coefficient = 1;
+	//filterParm.omega_c = 1.5; filterParm.tolerance = 0.0004; filterParm.eps2 = 0.0001; filterParm.coef = 0.01;
+	//filterParm.timeStepsNum = 1; filterParm.p = 1; filterParm.maxNumberOfSolverIteration = 1000;
+	//Image_Data toBeFiltered;
+	//toBeFiltered.imageDataPtr = imageData; toBeFiltered.height = Height; toBeFiltered.length = Length; toBeFiltered.width = Width;
+	//filterImage(toBeFiltered, filterParm, method);
+	//rescaleNewRange(imageData, Length, Width, Height, 0, 4000);
+	//thresholding3dFunctionN(imageData, Length, Width, Height, thresmin, thresmax, 0, 1);
+	//erosion3dHeighteenNeigbours(imageData, Length,Width, Height, 1, 0);
+	//erosion3dHeighteenNeigbours(imageData, Length, Width, Height, 1, 0);
+	//erosion3dHeighteenNeigbours(imageData, Length, Width, Height, 1, 0);
+	//std::string filteredImagePath = outputPath + "filteredThresshErod.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
+	 
 	//-----------------------------------------------------------------------------------------------------
 	 
 	////Region growing
@@ -176,8 +195,8 @@ int main() {
 	//------------------------------------------------------------------------------------------------------------
 
 	//Fast sweeping to find the point with the higest distance
-	thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
-	fastSweepingFunction_3D(distanceMap, maskThreshold, lengthNew, widthNew, heightNew, 1, 100000000, 0);
+	//thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
+	//fastSweepingFunction_3D(distanceMap, maskThreshold, lengthNew, widthNew, heightNew, 1, 100000000, 0);
 
 	//finding of the point with the highest distance
 	dataType distanceMax = -1;
@@ -194,8 +213,8 @@ int main() {
 		}
 	}
 	
-	printf("Maximal distance for the cropped volume : %f \n", distanceMax);
-	printf("Coordinates of the highest distance (Cropped Volume) : x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
+	//printf("Maximal distance for the cropped volume : %f \n", distanceMax);
+	//printf("Coordinates of the highest distance (Cropped Volume) : x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
 	//------------------------------------------------------------------------------------------------------------
 	 
@@ -207,23 +226,24 @@ int main() {
 	//centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
 
 	////If we want to start with the segmentatation function originally implemented in the library
-	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
+	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
 
 	std::string segmFolderPath = outputPath + "segmentation/";
-	store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
+	//store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
 
 	Image_Data segment; segment.height = heightNew; segment.length = lengthNew; segment.width = widthNew; segment.imageDataPtr = croppedImage;
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0, 1);
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
 	segmentParameters.h = 1.0; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 300; segmentParameters.mod = 1;
 	segmentParameters.numberOfTimeStep = 300; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 8;
-	Filter_Parameters filterParameters; filterParameters.coef = 1e-6; filterParameters.edge_detector_coefficient = 100; filterParameters.eps2 = 1e-6;
+	
+	Filter_Parameters filterParameters; filterParameters.coef = 1e-2; filterParameters.edge_detector_coefficient = 1; filterParameters.eps2 = 1e-4;
 	filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
-	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
+	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 4*1e-4;
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
 	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 0.2, 10);
+	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 0.2, 10);
 
 	//------------------------------------------------------------------------------------------------
 
