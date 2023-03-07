@@ -1309,7 +1309,8 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 		Z = 0; a--;
 	}
 
-	b = -2 * (X + Y + Z); c = X * X + Y * Y + Z * Z - W;
+	b = -2 * (X + Y + Z); 
+	c = X * X + Y * Y + Z * Z - W;
 	delta = b * b  - 4 * a * c;
 
 	if (delta >= 0) {
@@ -1444,7 +1445,6 @@ bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX,
 					}
 				}
 
-				norm_gradient = norm_gradient + ux * ux + uy * uy + uz * uz;
 				gradientVectorX[k][currentInd] = ux;
 				gradientVectorY[k][currentInd] = uy;
 				gradientVectorZ[k][currentInd] = uz;
@@ -1452,20 +1452,6 @@ bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX,
 			}
 		}
 	}
-
-	norm_gradient = sqrt(norm_gradient);
-
-	for (k = 0; k < height; k++) {
-		for (i = 0; i < lenght; i++) {
-			for (j = 0; j < width; j++) {
-				currentInd = x_new(j, i, width);
-				gradientVectorX[k][currentInd] = gradientVectorX[k][currentInd] / norm_gradient;
-				gradientVectorY[k][currentInd] = gradientVectorY[k][currentInd] / norm_gradient;
-				gradientVectorZ[k][currentInd] = gradientVectorZ[k][currentInd] / norm_gradient;
-			}
-		}
-	}
-
 	return true;
 }
 
@@ -1494,17 +1480,42 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 
 	size_t seedIndice = x_new(j0, i0, width), currentIndx = 0;
 	dataType ux0 = gradientVectorX[k0][seedIndice], uy0 = gradientVectorY[k0][seedIndice], uz0 = gradientVectorZ[k0][seedIndice];
+	dataType seedVal = (imageDataPtr[k0][x_new(j0, i0, width)] + imageDataPtr[k0][x_new(j1, i1, width)]) / 2;
 	dataType ux = 0.0, uy = 0.0, uz = 0.0;
+	dataType epsilon = 0.01, K = 0.00005;
 
 	//Computation of potential function
 	for (k = 0; k < height; k++) {
 		for (i = 0; i < length; i++) {
 			for (j = 0; j < width; j++) {
 				currentIndx = x_new(j, i, width);
-				ux = gradientVectorX[k][currentIndx]; 
-				uy = gradientVectorY[k][currentIndx]; 
+				potentialFuncPtr[k][currentIndx] = abs(seedVal - imageDataPtr[k][currentIndx]);
+			}
+		}
+	}
+
+	//Find max
+	dataType maxP = 0.0;
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				currentIndx = x_new(j, i, width);
+				if (potentialFuncPtr[k][currentIndx] > maxP) {
+					maxP = potentialFuncPtr[k][currentIndx];
+				}
+			}
+		}
+	}
+
+	//Normalization
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				currentIndx = x_new(j, i, width);
+				ux = gradientVectorX[k][currentIndx];
+				uy = gradientVectorY[k][currentIndx];
 				uz = gradientVectorZ[k][currentIndx];
-				potentialFuncPtr[k][currentIndx] = 1 / (0.001 + sqrt( pow(ux - ux0, 2) + pow(uy - uy0, 2) + pow(uz - uz0, 2) ));
+				potentialFuncPtr[k][currentIndx] = epsilon + (potentialFuncPtr[k][currentIndx] / maxP) * (1 + K * (ux*ux + uy*uy + uz*uz)) ;
 			}
 		}
 	}
@@ -1514,7 +1525,9 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 		free(gradientVectorY[k]);
 		free(gradientVectorZ[k]);
 	}
-	free(gradientVectorX); free(gradientVectorY); free(gradientVectorZ);
+	free(gradientVectorX); 
+	free(gradientVectorY); 
+	free(gradientVectorZ);
 
 	return true;
 }
@@ -2815,7 +2828,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 		x = select3dX(distanceFuncPtr, length, width, height, i, j, k);
 		y = select3dY(distanceFuncPtr, length, width, height, i, j, k);
 		z = select3dZ(distanceFuncPtr, length, width, height, i, j, k);
-		coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][x_new(j, i, width)]);
+		coefSpeed = potentialFuncPtr[k][x_new(j, i, width)];
 		dist = solve3dQuadratic(x, y, z, coefSpeed);
 		tempTimeFunc.push_back(dist);
 	}
