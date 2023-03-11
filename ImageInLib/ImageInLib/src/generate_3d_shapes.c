@@ -162,7 +162,8 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	}
 	else
 	{
-		initialize3dArrayD(dataArray3D, length, width, height, 255.);
+		//initialize3dArrayD(dataArray3D, length, width, height, 255.);
+		initialize3dArrayD(dataArray3D, length, width, height, 1.0);
 	}
 
 	double step = M_PI / 1000.0;
@@ -181,7 +182,7 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 
 	// Store generated object to file
 	Storage_Flags flags = { true, true };
-	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
+	//store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
 }

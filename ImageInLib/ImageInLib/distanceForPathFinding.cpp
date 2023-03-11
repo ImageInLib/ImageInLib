@@ -1293,33 +1293,38 @@ bool findPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t 
 //}
 
 //Functions for 3D images
-// aU^2 - 2U(X+Y+Z) + (X^2 + Y^2 + Z^2 - W) = 0
+// 3U^2 - 2U(X+Y+Z) + (X^2 + Y^2 + Z^2 - W) = 0 ---> aU + 2bU + c = 0
 dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 
 	dataType sol = 0.0, a, b, c, delta;
 
 	a = 3;
 	if (X == BIG_VALUE) {
-		X = 0; a--;
+		a--; X = 0;
 	}
 	if (Y == BIG_VALUE) {
-		Y = 0; a--;
+		a--; Y = 0;
 	}
 	if (Z == BIG_VALUE) {
-		Z = 0; a--;
+		a--; Z = 0;
 	}
 
 	b = -2 * (X + Y + Z); 
-	c = X * X + Y * Y + Z * Z - W;
+	c = pow(X, 2) + pow(Y, 2) + pow(Z, 2) - W;
 	delta = b * b  - 4 * a * c;
 
-	if (delta >= 0) {
-		sol = (-b + sqrt(delta)) / (2 * a);
+	if (a == 0) {
+		sol = 0;
 	}
 	else {
-		sol = min(X, min(Y, Z)) + W;
+		if (delta >= 0) {
+			sol = (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			sol = min(X, min(Y, Z)) + W;
+		}
 	}
-
+	
 	if (sol < 0) {
 		cout << "The solution is negative " << endl; //If everything is OK, it never happen
 		return 0;
@@ -1394,6 +1399,23 @@ dataType select3dZ(dataType** distanceFuncPtr, const size_t dimI, const size_t d
 	return min(k_minus, k_plus);
 }
 
+dataType computeGradientNorm3d(dataType** gradientVectorX, dataType** gradientVectorY, dataType** gradientVectorZ, const size_t length, const size_t width, const size_t height) {
+	
+	size_t i, j, k, xd;
+	dataType norm_array = 0.0;
+
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				xd = x_new(j, i, width);
+				norm_array = norm_array + pow(gradientVectorX[k][xd], 2) + pow(gradientVectorY[k][xd], 2) + pow(gradientVectorZ[k][xd], 2);
+			}
+		}
+	}
+	
+	return sqrt(norm_array);
+}
+
 bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX, dataType** gradientVectorY, dataType** gradientVectorZ, const size_t lenght, const size_t width, const size_t height, dataType h) {
 
 	if (imageDataPtr == NULL || gradientVectorX == NULL || gradientVectorY == NULL || gradientVectorZ == NULL) {
@@ -1401,7 +1423,7 @@ bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX,
 	}
 
 	size_t i, j, k, currentInd;
-	dataType ux = 0.0, uy = 0.0, uz = 0.0, norm_gradient = 0.0;
+	dataType ux = 0.0, uy = 0.0, uz = 0.0;
 
 	for (k = 0; k < height; k++) {
 		for (i = 0; i < lenght; i++) {
@@ -1445,9 +1467,9 @@ bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX,
 					}
 				}
 
-				gradientVectorX[k][currentInd] = ux;
-				gradientVectorY[k][currentInd] = uy;
-				gradientVectorZ[k][currentInd] = uz;
+				gradientVectorX[k][currentInd] = ux; // j
+				gradientVectorY[k][currentInd] = uy; // i
+				gradientVectorZ[k][currentInd] = uz; // k
 
 			}
 		}
@@ -1465,13 +1487,13 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 	size_t i0 = seedPoints[0].y, j0 = seedPoints[0].x, k0 = seedPoints[0].z;
 	size_t i1 = seedPoints[1].y, j1 = seedPoints[1].x, k1 = seedPoints[1].z;
 
-	dataType** gradientVectorX = (dataType**)malloc(height * sizeof(dataType*));
-	dataType** gradientVectorY = (dataType**)malloc(height * sizeof(dataType*));
-	dataType** gradientVectorZ = (dataType**)malloc(height * sizeof(dataType*));
+	dataType** gradientVectorX = new dataType* [height];
+	dataType** gradientVectorY = new dataType* [height];
+	dataType** gradientVectorZ = new dataType* [height];
 	for (k = 0; k < height; k++) {
-		gradientVectorX[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		gradientVectorY[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		gradientVectorZ[k] = (dataType*)malloc(dim2D * sizeof(dataType));
+		gradientVectorX[k] = new dataType [dim2D];
+		gradientVectorY[k] = new dataType [dim2D];
+		gradientVectorZ[k] = new dataType [dim2D];
 	}
 	if (gradientVectorX == NULL || gradientVectorY == NULL || gradientVectorZ == NULL)
 		return false;
@@ -1479,8 +1501,8 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 	compute3dImageGradient(imageDataPtr, gradientVectorX, gradientVectorY, gradientVectorZ, length, width, height, 1.0);
 
 	size_t seedIndice = x_new(j0, i0, width), currentIndx = 0;
-	dataType ux0 = gradientVectorX[k0][seedIndice], uy0 = gradientVectorY[k0][seedIndice], uz0 = gradientVectorZ[k0][seedIndice];
-	dataType seedVal = (imageDataPtr[k0][x_new(j0, i0, width)] + imageDataPtr[k0][x_new(j1, i1, width)]) / 2;
+	//dataType ux0 = gradientVectorX[k0][seedIndice], uy0 = gradientVectorY[k0][seedIndice], uz0 = gradientVectorZ[k0][seedIndice];
+	dataType seedVal = (imageDataPtr[k0][x_new(j0, i0, width)] + imageDataPtr[k1][x_new(j1, i1, width)]) / 2;
 	dataType ux = 0.0, uy = 0.0, uz = 0.0;
 	dataType epsilon = 0.01, K = 0.00005;
 
@@ -1495,13 +1517,13 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 	}
 
 	//Find max
-	dataType maxP = 0.0;
+	dataType max_potential = -1;
 	for (k = 0; k < height; k++) {
 		for (i = 0; i < length; i++) {
 			for (j = 0; j < width; j++) {
 				currentIndx = x_new(j, i, width);
-				if (potentialFuncPtr[k][currentIndx] > maxP) {
-					maxP = potentialFuncPtr[k][currentIndx];
+				if (potentialFuncPtr[k][currentIndx] > max_potential) {
+					max_potential = potentialFuncPtr[k][currentIndx];
 				}
 			}
 		}
@@ -1515,22 +1537,2178 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 				ux = gradientVectorX[k][currentIndx];
 				uy = gradientVectorY[k][currentIndx];
 				uz = gradientVectorZ[k][currentIndx];
-				potentialFuncPtr[k][currentIndx] = epsilon + (potentialFuncPtr[k][currentIndx] / maxP) * (1 + K * (ux*ux + uy*uy + uz*uz)) ;
+				potentialFuncPtr[k][currentIndx] = epsilon + (potentialFuncPtr[k][currentIndx] / max_potential);//*(1 + K * (ux * ux + uy * uy + uz * uz));
+				//potentialFuncPtr[k][currentIndx] = 1 / (1 + K * (ux * ux + uy * uy + uz * uz));
 			}
 		}
 	}
 
 	for (k = 0; k < height; k++) {
-		free(gradientVectorX[k]);
-		free(gradientVectorY[k]);
-		free(gradientVectorZ[k]);
+		delete[] gradientVectorX[k];
+		delete[] gradientVectorY[k];
+		delete[] gradientVectorZ[k];
 	}
-	free(gradientVectorX); 
-	free(gradientVectorY); 
-	free(gradientVectorZ);
+	delete[] gradientVectorX; 
+	delete[] gradientVectorY; 
+	delete[] gradientVectorZ;
 
 	return true;
 }
+
+//bool find3dNeighbors(dataType** imageDataPtr, dataType** labelArray, vector<size_t> vectorI, vector<size_t> vectorJ, vector<size_t> vectorK, Point3d * currentPoint, const size_t length, const size_t width, const size_t height) {
+//
+//	if (imageDataPtr == NULL || labelArray == NULL)
+//		return false;
+//
+//	size_t i = currentPoint->y, j = currentPoint->x, k = currentPoint->z;
+//	size_t iminus = 0, iplus = 0, jminus = 0, jplus = 0, kminus = 0, kplus = 0;
+//	size_t indxEast = 0, indxWest = 0, indxSouth = 0, indxNorth = 0, indxTop, indxBottom = 0;
+//
+//	size_t currentIndx = x_new(j, i, width);
+//	size_t height_minus = height - 1, length_minus = length - 1, width_minus = width - 1;
+//
+//	/* //case 1
+//	if (k == 0 && i == 0 && j == 0) {
+//
+//		kplus = k + 1;
+//		jplus = j + 1;
+//		iplus = i + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 2
+//	if (k == 0 && i == 0 && j == width_minus) {
+//		kplus = k + 1;
+//		jminus = j - 1;
+//		iplus = i + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//	}
+//
+//	//case 3
+//	if (k == 0 && i == 0 && (j != 0 && j != width_minus) ) {
+//
+//		kplus = k + 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//		iplus = i + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	////////////////////////////////////////////////////////////////////////
+//
+//	//case 4
+//	if (k == 0 && i == length_minus && j == 0) {
+//
+//		kplus = k + 1;
+//		jplus = j + 1;
+//		iminus = i - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 5
+//	if (k == 0 && i == length_minus && j == width_minus) {
+//
+//		kplus = k + 1;
+//		jminus = j - 1;
+//		iminus = i - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 6
+//	if (k == 0 && i == length_minus && (j != 0 && j != width_minus)) {
+//
+//		kplus = k + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//
+//	}
+//
+//	/////////////////////////////////////////////////////////////////////////
+//
+//	//case 7
+//	if (k == 0 && (i != 0 && i != length_minus) && j == 0) {
+//
+//		kplus = k + 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 8
+//	if (k == 0 && (i != 0 && i != length_minus) && j == width_minus) {
+//
+//		kplus = k + 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 9
+//	if (k == 0 && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+//
+//		kplus = k + 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	///////////////////////////////////////////////////////////////////////////
+//
+//	//case 10
+//	if ( k == height_minus && i == 0 && j == 0) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jplus = j + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 11
+//	if (k == height_minus && i == 0 && j == width_minus) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 12
+//	if (k == height_minus && i == 0 && (j != 0 && j != width_minus) ) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	///////////////////////////////////////////////////////////////////////////
+//
+//	//case 13
+//	if (k == height_minus && i == length_minus && j == 0) {
+//
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 14
+//	if (k == height_minus && i == length_minus && j == width_minus) {
+//
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jminus = j - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 15
+//	if (k == height_minus && i == length_minus && (j != 0 && j != width_minus)) {
+//
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	/////////////////////////////////////////////////////////////////////////////
+//
+//	//case 16
+//	if (k == height_minus && (i != 0 && i != length_minus) && j == 0) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 17
+//	if (k == height_minus && (i != 0 && i != length_minus) && j == width_minus) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 18
+//	if (k == height_minus && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+//
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	/////////////////////////////////////////////////////////////////////////////
+//
+//	//case 19
+//	if ((k != 0 && k != height_minus) && i == 0  && j == 0) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jplus = j + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 20
+//	if ((k != 0 && k != height_minus) && i == 0 && j == width_minus) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 21
+//	if ((k != 0 && k != height_minus) && i == 0 && (j != 0 && j != width_minus)) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//////////////////////////////////////////////////////////////////////////////
+//
+//	//case 22
+//	if ((k != 0 && k != height_minus) && i == length_minus && j == 0 ) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 23
+//	if ((k != 0 && k != height_minus) && i == length_minus && j == width_minus) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jminus = j - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 24
+//	if ((k != 0 && k != height_minus) && i == length_minus && (j != 0 && j != width_minus)) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//		jminus = j - 1;
+//
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	///////////////////////////////////////////////////////////////////////////////
+//
+//	//case 25
+//	if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && j == 0) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jplus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	}
+//
+//	//case 26
+//	if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && j == width_minus) {
+//
+//		kplus = k + 1;
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(iminus);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		pointNeighbor.indZ.push_back(k);
+//		pointNeighbor.indX.push_back(jminus);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kplus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		pointNeighbor.indZ.push_back(kminus);
+//		pointNeighbor.indX.push_back(j);
+//		pointNeighbor.indY.push_back(i);
+//
+//	} */
+//
+//	//case 27
+//	if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+//
+//		kplus = k + 1; 
+//		kminus = k - 1;
+//		iplus = i + 1;
+//		iminus = i - 1;
+//		jplus = j + 1; 
+//		jminus = j - 1;
+//
+//		indxEast = x_new(j, iplus, width);
+//		indxWest = x_new(j, iminus, width);
+//		indxSouth = x_new(jplus, i, width);
+//		indxNorth = x_new(jminus, i, width);
+//
+//		//East
+//		labelArray[k][indxEast] = 2;
+//		vectorK.push_back(k);
+//		vectorJ.push_back(j);
+//		vectorI.push_back(iplus);
+//
+//		//West
+//		labelArray[k][indxWest] = 2;
+//		vectorK.push_back(k);
+//		vectorJ.push_back(j);
+//		vectorI.push_back(iminus);
+//
+//		//South
+//		labelArray[k][indxSouth] = 2;
+//		vectorK.push_back(k);
+//		vectorJ.push_back(jplus);
+//		vectorI.push_back(i);
+//
+//		//North
+//		labelArray[k][indxNorth] = 2;
+//		vectorK.push_back(k);
+//		vectorJ.push_back(jminus);
+//		vectorI.push_back(i);
+//
+//		//Bottom
+//		labelArray[kplus][currentIndx] = 2;
+//		vectorK.push_back(kplus);
+//		vectorJ.push_back(j);
+//		vectorI.push_back(i);
+//
+//		//Top
+//		labelArray[kminus][currentIndx] = 2;
+//		vectorK.push_back(kminus);
+//		vectorJ.push_back(j);
+//		vectorI.push_back(i);
+//
+//	}
+//
+//	/*if (k == 0) {
+//		if (i == 0) {
+//			if (j == 0) {
+//
+//				kplus = k + 1;
+//				jplus = j + 1;
+//				iplus = i + 1;
+//
+//				indxEast = x_new(j, iplus, width);
+//				indxSouth = x_new(jplus, i, width);
+//
+//				//East
+//				labelArray[k][indxEast] = 2;
+//				pointNeighbor.indZ.push_back(k);
+//				pointNeighbor.indX.push_back(j);
+//				pointNeighbor.indY.push_back(iplus);
+//				//k_inProcess.push_back(k); 
+//				//j_inProcess.push_back(j);
+//				//i_inProcess.push_back(iplus);
+//
+//				//South
+//				labelArray[k][indxSouth] = 2;
+//				pointNeighbor.indZ.push_back(k);
+//				pointNeighbor.indX.push_back(jplus);
+//				pointNeighbor.indY.push_back(i);
+//				//k_inProcess.push_back(k);
+//				//j_inProcess.push_back(jplus);
+//				//i_inProcess.push_back(i);
+//
+//				//Bottom
+//				labelArray[kplus][currentIndx] = 2;
+//				pointNeighbor.indZ.push_back(kplus);
+//				pointNeighbor.indX.push_back(j);
+//				pointNeighbor.indY.push_back(i);
+//				//k_inProcess.push_back(kplus);
+//				//j_inProcess.push_back(j);
+//				//i_inProcess.push_back(i);
+//
+//			}
+//			else {
+//				if (j == (width - 1)) {
+//
+//					kplus = k + 1;
+//					jminus = j - 1;
+//					iplus = i + 1;
+//
+//					indxEast = x_new(j, iplus, width);
+//					indxNorth = x_new(jminus, i, width);
+//
+//					//East
+//					labelArray[k][indxEast] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(iplus);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(iplus);
+//
+//					//North
+//					labelArray[k][indxNorth] = 2;
+//					k_inProcess.push_back(k);
+//					j_inProcess.push_back(jminus);
+//					i_inProcess.push_back(i);
+//
+//					//Bottom
+//					labelArray[kplus][currentIndx] = 2;
+//					pointNeighbor.indZ.push_back(kplus);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(kplus);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(i);
+//
+//				}
+//				else {
+//
+//					kplus = k + 1;
+//					jplus = j + 1; jminus = j - 1;
+//					iplus = i + 1;
+//
+//					indxEast = x_new(j, iplus, width);
+//					indxSouth = x_new(jplus, i, width);
+//					indxNorth = x_new(jminus, i, width);
+//
+//					//East
+//					labelArray[k][indxEast] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(iplus);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(iplus);
+//
+//					//South
+//					labelArray[k][indxSouth] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(jplus);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(jplus);
+//					//i_inProcess.push_back(i);
+//
+//					//North
+//					labelArray[k][indxNorth] = 2;
+//					k_inProcess.push_back(k);
+//					j_inProcess.push_back(jminus);
+//					i_inProcess.push_back(i);
+//
+//					//Bottom
+//					labelArray[kplus][currentIndx] = 2;
+//					pointNeighbor.indZ.push_back(kplus);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(kplus);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(i);
+//
+//				}
+//			}
+//		}
+//		else {
+//			if (i == (length - 1)) {
+//				if (j == 0) {
+//
+//					kplus = k + 1;
+//					jplus = j + 1;
+//					iminus = i - 1;
+//
+//					indxWest = x_new(j, iminus, width);
+//					indxSouth = x_new(jplus, i, width);
+//
+//					//West
+//					labelArray[k][indxWest] = 2;
+//					k_inProcess.push_back(k);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(iminus);
+//
+//					//South
+//					labelArray[k][indxSouth] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(jplus);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(jplus);
+//					//i_inProcess.push_back(i);
+//
+//					//Bottom
+//					labelArray[kplus][currentIndx] = 2;
+//					k_inProcess.push_back(kplus);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(i);
+//
+//				}
+//				else {
+//					if (j == (width - 1)) {
+//
+//						kplus = k + 1;
+//						jminus = j - 1;
+//						iminus = i - 1;
+//
+//						indxWest = x_new(j, iminus, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//
+//						kplus = k + 1;
+//						jplus = j + 1; jminus = j - 1;
+//						iminus = i - 1;
+//
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//				}
+//			}
+//			else {
+//				if (j == 0) {
+//
+//					kplus = k + 1;
+//					jplus = j + 1;
+//					iplus = i + 1; iminus = i - 1;
+//
+//					indxEast = x_new(j, iplus, width);
+//					indxWest = x_new(j, iminus, width);
+//					indxSouth = x_new(jplus, i, width);
+//
+//					//East
+//					labelArray[k][indxEast] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(iplus);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(iplus);
+//
+//					//West
+//					labelArray[k][indxWest] = 2;
+//					k_inProcess.push_back(k);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(iminus);
+//
+//					//South
+//					labelArray[k][indxSouth] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(jplus);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(jplus);
+//					//i_inProcess.push_back(i);
+//
+//					//Bottom
+//					labelArray[kplus][currentIndx] = 2;
+//					k_inProcess.push_back(kplus);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(i);
+//
+//				}
+//				else {
+//					if (j == (width - 1)) {
+//
+//						kplus = k + 1;
+//						jminus = j - 1;
+//						iplus = i + 1; iminus = i - 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxWest = x_new(j, iminus, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//
+//						kplus = k + 1;
+//						jplus = j + 1; jminus = j - 1;
+//						iplus = i + 1; iminus = i - 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//				}
+//			}
+//		}
+//	}
+//	else {
+//		if (k == (height - 1)) {
+//			if (i == 0) {
+//				if (j == 0) {
+//
+//					kminus = k - 1;
+//					jplus = j + 1;
+//					iplus = i + 1;
+//
+//					indxEast = x_new(j, iplus, width);
+//					indxSouth = x_new(jplus, i, width);
+//
+//					//East
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(iplus);
+//					labelArray[k][indxEast] = 2;
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(iplus);
+//
+//					//South
+//					labelArray[k][indxSouth] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(jplus);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(jplus);
+//					//i_inProcess.push_back(i);
+//
+//					//Top
+//					labelArray[kminus][currentIndx] = 2;
+//					k_inProcess.push_back(kminus);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(i);
+//
+//				}
+//				else {
+//					if (j == (width - 1)) {
+//
+//						kminus = k - 1;
+//						jminus = j - 1;
+//						iplus = i + 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//
+//						kminus = k - 1;
+//						jplus = j + 1; jminus = j - 1;
+//						iplus = i + 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxSouth = x_new(jplus, i, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//				}
+//			}
+//			else {
+//				if (i == (length - 1)) {
+//					if (j == 0) {
+//
+//						kminus = k - 1;
+//						jplus = j + 1;
+//						iminus = i - 1;
+//
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//						if (j == (width - 1)) {
+//
+//							kminus = k - 1;
+//							jminus = j - 1;
+//							iminus = i - 1;
+//
+//							indxWest = x_new(j, iminus, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//						else {
+//
+//							kminus = k - 1;
+//							jplus = j + 1; jminus = j - 1;
+//							iminus = i - 1;
+//
+//							indxWest = x_new(j, iminus, width);
+//							indxSouth = x_new(jplus, i, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//South
+//							labelArray[k][indxSouth] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(jplus);
+//							pointNeighbor.indY.push_back(i);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(jplus);
+//							//i_inProcess.push_back(i);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//					}
+//				}
+//				else {
+//					if (j == 0) {
+//
+//						kminus = k - 1;
+//						jplus = j + 1;
+//						iplus = i + 1; iminus = i - 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//						if (j == (width - 1)) {
+//
+//							kminus = k - 1;
+//							jminus = j - 1;
+//							iplus = i + 1; iminus = i - 1;
+//
+//							indxEast = x_new(j, iplus, width);
+//							indxWest = x_new(j, iminus, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//East
+//							labelArray[k][indxEast] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(j);
+//							pointNeighbor.indY.push_back(iplus);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(j);
+//							//i_inProcess.push_back(iplus);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//						else {
+//
+//							kminus = k - 1;
+//							jplus = j + 1; jminus = j - 1;
+//							iplus = i + 1; iminus = i - 1;
+//
+//							indxEast = x_new(j, iplus, width);
+//							indxWest = x_new(j, iminus, width);
+//							indxSouth = x_new(jplus, i, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//East
+//							labelArray[k][indxEast] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(j);
+//							pointNeighbor.indY.push_back(iplus);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(j);
+//							//i_inProcess.push_back(iplus);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//South
+//							labelArray[k][indxSouth] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(jplus);
+//							pointNeighbor.indY.push_back(i);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(jplus);
+//							//i_inProcess.push_back(i);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//					}
+//				}
+//			}
+//		}
+//		else {
+//			if (i == 0) {
+//				if (j == 0) {
+//
+//					kplus = k + 1; kminus = k - 1;
+//					jplus = j + 1;
+//					iplus = i + 1;
+//
+//					indxEast = x_new(j, iplus, width);
+//					indxSouth = x_new(jplus, i, width);
+//
+//					//East
+//					labelArray[k][indxEast] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(j);
+//					pointNeighbor.indY.push_back(iplus);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(j);
+//					//i_inProcess.push_back(iplus);
+//
+//					//South
+//					labelArray[k][indxSouth] = 2;
+//					pointNeighbor.indZ.push_back(k);
+//					pointNeighbor.indX.push_back(jplus);
+//					pointNeighbor.indY.push_back(i);
+//					//k_inProcess.push_back(k);
+//					//j_inProcess.push_back(jplus);
+//					//i_inProcess.push_back(i);
+//
+//					//Bottom
+//					labelArray[kplus][currentIndx] = 2;
+//					k_inProcess.push_back(kplus);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(i);
+//
+//					//Top
+//					labelArray[kminus][currentIndx] = 2;
+//					k_inProcess.push_back(kminus);
+//					j_inProcess.push_back(j);
+//					i_inProcess.push_back(i);
+//
+//				}
+//				else {
+//					if (j == (width - 1)) {
+//
+//						kplus = k + 1; kminus = k - 1;
+//						jminus = j - 1;
+//						iplus = i + 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//
+//						kplus = k + 1; kminus = k - 1;
+//						jplus = j + 1; jminus = j - 1;
+//						iplus = i + 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxSouth = x_new(jplus, i, width);
+//						indxNorth = x_new(jminus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//North
+//						labelArray[k][indxNorth] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(jminus);
+//						i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//				}
+//			}
+//			else {
+//				if (i == (length - 1)) {
+//					if (j == 0) {
+//
+//						kplus = k + 1; kminus = k - 1;
+//						jplus = j + 1;
+//						iminus = i - 1;
+//
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//						if (j == (width - 1)) {
+//
+//							kplus = k + 1; kminus = k - 1;
+//							jminus = j - 1;
+//							iminus = i - 1;
+//
+//							indxWest = x_new(j, iminus, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Bottom
+//							labelArray[kplus][currentIndx] = 2;
+//							k_inProcess.push_back(kplus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//						else {
+//
+//							kplus = k + 1; kminus = k - 1;
+//							jplus = j + 1; jminus = j - 1;
+//							iminus = i - 1;
+//
+//							indxWest = x_new(j, iminus, width);
+//							indxSouth = x_new(jplus, i, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//South
+//							labelArray[k][indxSouth] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(jplus);
+//							pointNeighbor.indY.push_back(i);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(jplus);
+//							//i_inProcess.push_back(i);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Bottom
+//							labelArray[kplus][currentIndx] = 2;
+//							k_inProcess.push_back(kplus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//					}
+//				}
+//				else {
+//					if (j == 0) {
+//
+//						kplus = k + 1; kminus = k - 1;
+//						jplus = j + 1;
+//						iplus = i + 1; iminus = i - 1;
+//
+//						indxEast = x_new(j, iplus, width);
+//						indxWest = x_new(j, iminus, width);
+//						indxSouth = x_new(jplus, i, width);
+//
+//						//East
+//						labelArray[k][indxEast] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(j);
+//						pointNeighbor.indY.push_back(iplus);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(j);
+//						//i_inProcess.push_back(iplus);
+//
+//						//West
+//						labelArray[k][indxWest] = 2;
+//						k_inProcess.push_back(k);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(iminus);
+//
+//						//South
+//						labelArray[k][indxSouth] = 2;
+//						pointNeighbor.indZ.push_back(k);
+//						pointNeighbor.indX.push_back(jplus);
+//						pointNeighbor.indY.push_back(i);
+//						//k_inProcess.push_back(k);
+//						//j_inProcess.push_back(jplus);
+//						//i_inProcess.push_back(i);
+//
+//						//Bottom
+//						labelArray[kplus][currentIndx] = 2;
+//						k_inProcess.push_back(kplus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//						//Top
+//						labelArray[kminus][currentIndx] = 2;
+//						k_inProcess.push_back(kminus);
+//						j_inProcess.push_back(j);
+//						i_inProcess.push_back(i);
+//
+//					}
+//					else {
+//						if (j == (width - 1)) {
+//
+//							kplus = k + 1; kminus = k - 1;
+//							jminus = j - 1;
+//							iplus = i + 1; iminus = i - 1;
+//
+//							indxEast = x_new(j, iplus, width);
+//							indxWest = x_new(j, iminus, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//East
+//							labelArray[k][indxEast] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(j);
+//							pointNeighbor.indY.push_back(iplus);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(j);
+//							//i_inProcess.push_back(iplus);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Bottom
+//							labelArray[kplus][currentIndx] = 2;
+//							k_inProcess.push_back(kplus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//						else {
+//
+//							kplus = k + 1; kminus = k - 1;
+//							jplus = j + 1; jminus = j - 1;
+//							iplus = i + 1; iminus = i - 1;
+//
+//							indxEast = x_new(j, iplus, width);
+//							indxWest = x_new(j, iminus, width);
+//							indxSouth = x_new(jplus, i, width);
+//							indxNorth = x_new(jminus, i, width);
+//
+//							//East
+//							labelArray[k][indxEast] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(j);
+//							pointNeighbor.indY.push_back(iplus);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(j);
+//							//i_inProcess.push_back(iplus);
+//
+//							//West
+//							labelArray[k][indxWest] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(iminus);
+//
+//							//South
+//							labelArray[k][indxSouth] = 2;
+//							pointNeighbor.indZ.push_back(k);
+//							pointNeighbor.indX.push_back(jplus);
+//							pointNeighbor.indY.push_back(i);
+//							//k_inProcess.push_back(k);
+//							//j_inProcess.push_back(jplus);
+//							//i_inProcess.push_back(i);
+//
+//							//North
+//							labelArray[k][indxNorth] = 2;
+//							k_inProcess.push_back(k);
+//							j_inProcess.push_back(jminus);
+//							i_inProcess.push_back(i);
+//
+//							//Bottom
+//							labelArray[kplus][currentIndx] = 2;
+//							k_inProcess.push_back(kplus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//							//Top
+//							labelArray[kminus][currentIndx] = 2;
+//							k_inProcess.push_back(kminus);
+//							j_inProcess.push_back(j);
+//							i_inProcess.push_back(i);
+//
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}*/
+//
+//	return true;
+//}
 
 bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints)
 {
@@ -1544,14 +3722,13 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 	vector<size_t> j_Processed, j_inProcess;
 	vector<size_t> k_Processed, k_inProcess;
 	dataType x = 0.0, y = 0.0, z = 0.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
-	size_t nbNeighborsFound = 0;
 	size_t lenghtSol = 0, indxSol = 0;
 	vector<dataType> tempTimeFunc;
 	dataType dNorth = 0.0, dSouth = 0.0, dEast = 0.0, dWest = 0.0, dTop = 0.0, dBottom = 0.0;
 
-	short** labelArray = (short**)malloc(height * sizeof(short*));
+	short** labelArray = new short* [height];
 	for (k = 0; k < height; k++) {
-		labelArray[k] = (short*)malloc(dim2D * sizeof(short));
+		labelArray[k] = new short[dim2D];
 	}
 	if (labelArray == NULL)
 		return false;
@@ -1577,13 +3754,15 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 	i = seedPoints[0].y; 
 	j = seedPoints[0].x; 
 	k = seedPoints[0].z;
-	distanceFuncPtr[k][x_new(j, i, width)] = 0;
+	size_t currentIndx = x_new(j, i, width);
+	distanceFuncPtr[k][currentIndx] = 0;
 	i_Processed.push_back(i); 
 	j_Processed.push_back(j); 
 	k_Processed.push_back(k);
 	
-	size_t kplus, kminus, iplus, iminus, jplus, jminus, currentIndx;
-	size_t indxWest, indxEast, indxNorth, indxSouth, indxBottom, indxTop;
+	size_t kplus = 0, kminus = 0, iplus = 0, iminus = 0, jplus = 0, jminus = 0;
+	size_t indxWest = 0, indxEast = 0, indxNorth = 0, indxSouth = 0;
+	const size_t height_minus = height - 1, length_minus = length - 1, width_minus = width - 1;
 
 	//STEP 3
 	//Find the neigbors of the starting point
@@ -1595,33 +3774,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 				jplus = j + 1;
 				iplus = i + 1;
 
-				currentIndx = x_new(j, i, width);
+				//currentIndx = x_new(j, i, width);
 				indxEast = x_new(j, iplus, width);
 				indxSouth = x_new(jplus, i, width);
 
 				//East
-				if (labelArray[k][indxEast] == 3) {
-					labelArray[k][indxEast] = 2;
-					k_inProcess.push_back(k);
-					j_inProcess.push_back(j);
-					i_inProcess.push_back(iplus);
-				}
+				labelArray[k][indxEast] = 2;
+				k_inProcess.push_back(k);
+				j_inProcess.push_back(j);
+				i_inProcess.push_back(iplus);
 
 				//South
-				if (labelArray[k][indxSouth] == 3) {
-					labelArray[k][indxSouth] = 2;
-					k_inProcess.push_back(k);
-					j_inProcess.push_back(jplus);
-					i_inProcess.push_back(i);
-				}
+				labelArray[k][indxSouth] = 2;
+				k_inProcess.push_back(k);
+				j_inProcess.push_back(jplus);
+				i_inProcess.push_back(i);
 
 				//Bottom
-				if (labelArray[kplus][currentIndx] == 3) {
-					labelArray[kplus][currentIndx] = 2;
-					k_inProcess.push_back(kplus);
-					j_inProcess.push_back(j);
-					i_inProcess.push_back(i);
-				}
+				labelArray[kplus][currentIndx] = 2;
+				k_inProcess.push_back(kplus);
+				j_inProcess.push_back(j);
+				i_inProcess.push_back(i);
 
 			}
 			else {
@@ -1631,33 +3804,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jminus = j - 1;
 					iplus = i + 1; 
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxNorth = x_new(jminus, i, width);
 
 					//East
-					if (labelArray[k][indxEast] == 3) {
-						labelArray[k][indxEast] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iplus);
-					}
+					labelArray[k][indxEast] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iplus);
 
 					//North
-					if (labelArray[k][indxNorth] == 3) {
-						labelArray[k][indxNorth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jminus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxNorth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jminus);
+					i_inProcess.push_back(i);
 
 					//Bottom
-					if (labelArray[kplus][currentIndx] == 3) {
-						labelArray[kplus][currentIndx] = 2;
-						k_inProcess.push_back(kplus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kplus][currentIndx] = 2;
+					k_inProcess.push_back(kplus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 				else {
@@ -1666,42 +3833,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1; jminus = j - 1;
 					iplus = i + 1; 
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxSouth = x_new(jplus, i, width);
 					indxNorth = x_new(jminus, i, width);
 
 					//East
-					if (labelArray[k][indxEast] == 3) {
-						labelArray[k][indxEast] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iplus);
-					}
+					labelArray[k][indxEast] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iplus);
 
 					//South
-					if (labelArray[k][indxSouth] == 3) {
-						labelArray[k][indxSouth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jplus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxSouth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jplus);
+					i_inProcess.push_back(i);
 
 					//North
-					if (labelArray[k][indxNorth] == 3) {
-						labelArray[k][indxNorth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jminus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxNorth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jminus);
+					i_inProcess.push_back(i);
 
 					//Bottom
-					if (labelArray[kplus][currentIndx] == 3) {
-						labelArray[kplus][currentIndx] = 2;
-						k_inProcess.push_back(kplus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kplus][currentIndx] = 2;
+					k_inProcess.push_back(kplus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 			}
@@ -1714,33 +3873,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1; 
 					iminus = i - 1;
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxWest = x_new(j, iminus, width);
 					indxSouth = x_new(jplus, i, width);
 
 					//West
-					if (labelArray[k][indxWest] == 3) {
-						labelArray[k][indxWest] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iminus);
-					}
+					labelArray[k][indxWest] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iminus);
 
 					//South
-					if (labelArray[k][indxSouth] == 3) {
-						labelArray[k][indxSouth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jplus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxSouth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jplus);
+					i_inProcess.push_back(i);
 
 					//Bottom
-					if (labelArray[kplus][currentIndx] == 3) {
-						labelArray[kplus][currentIndx] = 2;
-						k_inProcess.push_back(kplus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kplus][currentIndx] = 2;
+					k_inProcess.push_back(kplus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 				else {
@@ -1750,33 +3903,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jminus = j - 1;
 						iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxWest = x_new(j, iminus, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -1785,42 +3932,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1; jminus = j - 1;
 						iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 				}
@@ -1832,42 +3971,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1;
 					iplus = i + 1; iminus = i - 1;
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxWest = x_new(j, iminus, width);
 					indxSouth = x_new(jplus, i, width);
 
 					//East
-					if (labelArray[k][indxEast] == 3) {
-						labelArray[k][indxEast] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iplus);
-					}
+					labelArray[k][indxEast] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iplus);
 
 					//West
-					if (labelArray[k][indxWest] == 3) {
-						labelArray[k][indxWest] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iminus);
-					}
+					labelArray[k][indxWest] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iminus);
 
 					//South
-					if (labelArray[k][indxSouth] == 3) {
-						labelArray[k][indxSouth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jplus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxSouth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jplus);
+					i_inProcess.push_back(i);
 
 					//Bottom
-					if (labelArray[kplus][currentIndx] == 3) {
-						labelArray[kplus][currentIndx] = 2;
-						k_inProcess.push_back(kplus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kplus][currentIndx] = 2;
+					k_inProcess.push_back(kplus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 				else {
@@ -1877,42 +4008,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jminus = j - 1;
 						iplus = i + 1; iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxWest = x_new(j, iminus, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -1921,51 +4044,41 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1; jminus = j - 1;
 						iplus = i + 1; iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 				}
@@ -1981,69 +4094,57 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1;
 					iplus = i + 1;
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxSouth = x_new(jplus, i, width);
 
 					//East
-					if (labelArray[k][indxEast] == 3) {
-						labelArray[k][indxEast] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iplus);
-					}
+					labelArray[k][indxEast] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iplus);
 
 					//South
-					if (labelArray[k][indxSouth] == 3) {
-						labelArray[k][indxSouth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jplus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxSouth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jplus);
+					i_inProcess.push_back(i);
 
 					//Top
-					if (labelArray[kminus][currentIndx] == 3) {
-						labelArray[kminus][currentIndx] = 2;
-						k_inProcess.push_back(kminus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kminus][currentIndx] = 2;
+					k_inProcess.push_back(kminus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 				else {
 					if (j == (width - 1)) {
 
-						kplus = k + 1;
+						kminus = k - 1;
 						jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
-						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						//Top
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2052,42 +4153,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1; jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxSouth = x_new(jplus, i, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 				}
@@ -2100,33 +4193,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2136,33 +4223,27 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 						else {
@@ -2171,42 +4252,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//South
-							if (labelArray[k][indxSouth] == 3) {
-								labelArray[k][indxSouth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jplus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxSouth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jplus);
+							i_inProcess.push_back(i);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 					}
@@ -2218,42 +4291,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iplus = i + 1; iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2263,42 +4328,34 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//East
-							if (labelArray[k][indxEast] == 3) {
-								labelArray[k][indxEast] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iplus);
-							}
+							labelArray[k][indxEast] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iplus);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 						else {
@@ -2307,51 +4364,41 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//East
-							if (labelArray[k][indxEast] == 3) {
-								labelArray[k][indxEast] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iplus);
-							}
+							labelArray[k][indxEast] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iplus);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//South
-							if (labelArray[k][indxSouth] == 3) {
-								labelArray[k][indxSouth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jplus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxSouth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jplus);
+							i_inProcess.push_back(i);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 					}
@@ -2366,41 +4413,33 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1;
 					iplus = i + 1;
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxSouth = x_new(jplus, i, width);
 
 					//East
-					if (labelArray[k][indxEast] == 3) {
-						labelArray[k][indxEast] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(iplus);
-					}
+					labelArray[k][indxEast] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(iplus);
 
 					//South
-					if (labelArray[k][indxSouth] == 3) {
-						labelArray[k][indxSouth] = 2;
-						k_inProcess.push_back(k);
-						j_inProcess.push_back(jplus);
-						i_inProcess.push_back(i);
-					}
+					labelArray[k][indxSouth] = 2;
+					k_inProcess.push_back(k);
+					j_inProcess.push_back(jplus);
+					i_inProcess.push_back(i);
 
 					//Bottom
-					if (labelArray[kplus][currentIndx] == 3) {
-						labelArray[kplus][currentIndx] = 2;
-						k_inProcess.push_back(kplus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kplus][currentIndx] = 2;
+					k_inProcess.push_back(kplus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 					//Top
-					if (labelArray[kminus][currentIndx] == 3) {
-						labelArray[kminus][currentIndx] = 2;
-						k_inProcess.push_back(kminus);
-						j_inProcess.push_back(j);
-						i_inProcess.push_back(i);
-					}
+					labelArray[kminus][currentIndx] = 2;
+					k_inProcess.push_back(kminus);
+					j_inProcess.push_back(j);
+					i_inProcess.push_back(i);
 
 				}
 				else {
@@ -2410,41 +4449,33 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2453,50 +4484,40 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1; jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxSouth = x_new(jplus, i, width);
 						indxNorth = x_new(jminus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//North
-						if (labelArray[k][indxNorth] == 3) {
-							labelArray[k][indxNorth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jminus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxNorth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jminus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 				}
@@ -2509,41 +4530,33 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2553,41 +4566,33 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
-							indxEast = x_new(j, iplus, width);
-							indxSouth = x_new(jplus, i, width);
+							//currentIndx = x_new(j, i, width);
+							indxWest = x_new(j, iminus, width);
+							indxNorth = x_new(jminus, i, width);
 
-							//East
-							if (labelArray[k][indxEast] == 3) {
-								labelArray[k][indxEast] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iplus);
-							}
+							//West
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
-							//South
-							if (labelArray[k][indxSouth] == 3) {
-								labelArray[k][indxSouth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jplus);
-								i_inProcess.push_back(i);
-							}
+							//North
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Bottom
-							if (labelArray[kplus][currentIndx] == 3) {
-								labelArray[kplus][currentIndx] = 2;
-								k_inProcess.push_back(kplus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kplus][currentIndx] = 2;
+							k_inProcess.push_back(kplus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 						else {
@@ -2596,50 +4601,40 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//South
-							if (labelArray[k][indxSouth] == 3) {
-								labelArray[k][indxSouth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jplus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxSouth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jplus);
+							i_inProcess.push_back(i);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Bottom
-							if (labelArray[kplus][currentIndx] == 3) {
-								labelArray[kplus][currentIndx] = 2;
-								k_inProcess.push_back(kplus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kplus][currentIndx] = 2;
+							k_inProcess.push_back(kplus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 					}
@@ -2651,50 +4646,40 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iplus = i + 1; iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 
 						//East
-						if (labelArray[k][indxEast] == 3) {
-							labelArray[k][indxEast] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iplus);
-						}
+						labelArray[k][indxEast] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iplus);
 
 						//West
-						if (labelArray[k][indxWest] == 3) {
-							labelArray[k][indxWest] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(iminus);
-						}
+						labelArray[k][indxWest] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(iminus);
 
 						//South
-						if (labelArray[k][indxSouth] == 3) {
-							labelArray[k][indxSouth] = 2;
-							k_inProcess.push_back(k);
-							j_inProcess.push_back(jplus);
-							i_inProcess.push_back(i);
-						}
+						labelArray[k][indxSouth] = 2;
+						k_inProcess.push_back(k);
+						j_inProcess.push_back(jplus);
+						i_inProcess.push_back(i);
 
 						//Bottom
-						if (labelArray[kplus][currentIndx] == 3) {
-							labelArray[kplus][currentIndx] = 2;
-							k_inProcess.push_back(kplus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kplus][currentIndx] = 2;
+						k_inProcess.push_back(kplus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 						//Top
-						if (labelArray[kminus][currentIndx] == 3) {
-							labelArray[kminus][currentIndx] = 2;
-							k_inProcess.push_back(kminus);
-							j_inProcess.push_back(j);
-							i_inProcess.push_back(i);
-						}
+						labelArray[kminus][currentIndx] = 2;
+						k_inProcess.push_back(kminus);
+						j_inProcess.push_back(j);
+						i_inProcess.push_back(i);
 
 					}
 					else {
@@ -2704,50 +4689,40 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//East
-							if (labelArray[k][indxEast] == 3) {
-								labelArray[k][indxEast] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iplus);
-							}
+							labelArray[k][indxEast] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iplus);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Bottom
-							if (labelArray[kplus][currentIndx] == 3) {
-								labelArray[kplus][currentIndx] = 2;
-								k_inProcess.push_back(kplus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kplus][currentIndx] = 2;
+							k_inProcess.push_back(kplus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 						else {
@@ -2756,59 +4731,47 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
 
 							//East
-							if (labelArray[k][indxEast] == 3) {
-								labelArray[k][indxEast] = 2;
-								k_inProcess.push_back(k); 
-								j_inProcess.push_back(j); 
-								i_inProcess.push_back(iplus);
-							}
+							labelArray[k][indxEast] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iplus);
 
 							//West
-							if (labelArray[k][indxWest] == 3) {
-								labelArray[k][indxWest] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(iminus);
-							}
+							labelArray[k][indxWest] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(iminus);
 
 							//South
-							if (labelArray[k][indxSouth] == 3) {
-								labelArray[k][indxSouth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jplus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxSouth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jplus);
+							i_inProcess.push_back(i);
 
 							//North
-							if (labelArray[k][indxNorth] == 3) {
-								labelArray[k][indxNorth] = 2;
-								k_inProcess.push_back(k);
-								j_inProcess.push_back(jminus);
-								i_inProcess.push_back(i);
-							}
+							labelArray[k][indxNorth] = 2;
+							k_inProcess.push_back(k);
+							j_inProcess.push_back(jminus);
+							i_inProcess.push_back(i);
 
 							//Bottom
-							if (labelArray[kplus][currentIndx] == 3) {
-								labelArray[kplus][currentIndx] = 2;
-								k_inProcess.push_back(kplus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kplus][currentIndx] = 2;
+							k_inProcess.push_back(kplus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 							//Top
-							if (labelArray[kminus][currentIndx] == 3) {
-								labelArray[kminus][currentIndx] = 2;
-								k_inProcess.push_back(kminus);
-								j_inProcess.push_back(j);
-								i_inProcess.push_back(i);
-							}
+							labelArray[kminus][currentIndx] = 2;
+							k_inProcess.push_back(kminus);
+							j_inProcess.push_back(j);
+							i_inProcess.push_back(i);
 
 						}
 					}
@@ -2839,6 +4802,9 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 	while (tempTimeFunc.size() != 0) {
 
 		lenghtSol = tempTimeFunc.size();
+		kplus = 0, kminus = 0, iplus = 0, iminus = 0, jplus = 0, jminus = 0;
+		indxWest = 0, indxEast = 0, indxNorth = 0, indxSouth = 0;
+		dNorth = 0.0, dSouth = 0.0, dEast = 0.0, dWest = 0.0, dTop = 0.0, dBottom = 0.0;
 
 		//Find the minimal solution
 		minSolution = INFINITY;
@@ -2846,14 +4812,15 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 			if (minSolution > tempTimeFunc[n]) {
 				minSolution = tempTimeFunc[n];
 				indxSol = n;
-				i = i_inProcess[n];
-				j = j_inProcess[n];
-				k = k_inProcess[n];
 			}
 		}
 
-		//Set the distance to the processed pixel
+		i = i_inProcess[indxSol];
+		j = j_inProcess[indxSol];
+		k = k_inProcess[indxSol];
 		currentIndx = x_new(j, i, width);
+
+		//Set the distance to the processed pixel
 		distanceFuncPtr[k][currentIndx] = minSolution;
 		labelArray[k][currentIndx] = 1;
 		i_Processed.push_back(i); 
@@ -2876,9 +4843,9 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 
 
 		//STEP 4
-		//Find the neighbors of the processed pixel and compute they time function
+		//Find the neighbors of the processed pixel and compute they time
 
-		if (k == 0) {
+		/*if (k == 0) {
 			if (i == 0) {
 				if (j == 0) {
 
@@ -2886,7 +4853,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					jplus = j + 1;
 					iplus = i + 1;
 
-					currentIndx = x_new(j, i, width);
+					//currentIndx = x_new(j, i, width);
 					indxEast = x_new(j, iplus, width);
 					indxSouth = x_new(jplus, i, width);
 
@@ -2894,7 +4861,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 					y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 					z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-					coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+					coefSpeed = potentialFuncPtr[k][indxEast];
 					dEast = solve3dQuadratic(x, y, z, coefSpeed);
 					if (labelArray[k][indxEast] == 3) {
 						distanceFuncPtr[k][indxEast] = dEast;
@@ -2916,7 +4883,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 					y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 					z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-					coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+					coefSpeed = potentialFuncPtr[k][indxSouth];
 					dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 					if (labelArray[k][indxSouth] == 3) {
 						distanceFuncPtr[k][indxSouth] = dSouth;
@@ -2938,7 +4905,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 					x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 					y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 					z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-					coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+					coefSpeed = potentialFuncPtr[kplus][currentIndx];
 					dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 					if (labelArray[kplus][currentIndx] == 3) {
 						distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -2964,7 +4931,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxNorth = x_new(jminus, i, width);
 
@@ -2972,7 +4939,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+						coefSpeed = potentialFuncPtr[k][indxEast];
 						dEast = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxEast] == 3) {
 							distanceFuncPtr[k][indxEast] = dEast;
@@ -2994,7 +4961,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+						coefSpeed = potentialFuncPtr[k][indxNorth];
 						dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxNorth] == 3) {
 							distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3016,7 +4983,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kplus][currentIndx];
 						dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kplus][currentIndx] == 3) {
 							distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3041,7 +5008,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1; jminus = j - 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxSouth = x_new(jplus, i, width);
 						indxNorth = x_new(jminus, i, width);
@@ -3050,7 +5017,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+						coefSpeed = potentialFuncPtr[k][indxEast];
 						dEast = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxEast] == 3) {
 							distanceFuncPtr[k][indxEast] = dEast;
@@ -3072,7 +5039,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+						coefSpeed = potentialFuncPtr[k][indxSouth];
 						dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxSouth] == 3) {
 							distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3094,7 +5061,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+						coefSpeed = potentialFuncPtr[k][indxNorth];
 						dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxNorth] == 3) {
 							distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3116,7 +5083,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kplus][currentIndx];
 						dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kplus][currentIndx] == 3) {
 							distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3145,7 +5112,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
 
@@ -3153,7 +5120,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+						coefSpeed = potentialFuncPtr[k][indxWest];
 						dWest = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxWest] == 3) {
 							distanceFuncPtr[k][indxWest] = dWest;
@@ -3175,7 +5142,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+						coefSpeed = potentialFuncPtr[k][indxSouth];
 						dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxSouth] == 3) {
 							distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3197,7 +5164,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kplus][currentIndx];
 						dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kplus][currentIndx] == 3) {
 							distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3231,7 +5198,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -3253,7 +5220,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3275,7 +5242,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3300,7 +5267,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
@@ -3309,7 +5276,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -3331,7 +5298,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3353,7 +5320,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3375,7 +5342,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3403,7 +5370,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iplus = i + 1; iminus = i - 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxWest = x_new(j, iminus, width);
 						indxSouth = x_new(jplus, i, width);
@@ -3412,7 +5379,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+						coefSpeed = potentialFuncPtr[k][indxEast];
 						dEast = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxEast] == 3) {
 							distanceFuncPtr[k][indxEast] = dEast;
@@ -3434,7 +5401,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+						coefSpeed = potentialFuncPtr[k][indxWest];
 						dWest = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxWest] == 3) {
 							distanceFuncPtr[k][indxWest] = dWest;
@@ -3456,7 +5423,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+						coefSpeed = potentialFuncPtr[k][indxSouth];
 						dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxSouth] == 3) {
 							distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3478,7 +5445,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kplus][currentIndx];
 						dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kplus][currentIndx] == 3) {
 							distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3504,7 +5471,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxNorth = x_new(jminus, i, width);
@@ -3513,7 +5480,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -3535,7 +5502,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -3557,7 +5524,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3579,7 +5546,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3604,7 +5571,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
@@ -3614,7 +5581,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -3636,7 +5603,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -3658,7 +5625,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3680,7 +5647,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3702,7 +5669,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -3734,7 +5701,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxSouth = x_new(jplus, i, width);
 
@@ -3742,7 +5709,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+						coefSpeed = potentialFuncPtr[k][indxEast];
 						dEast = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxEast] == 3) {
 							distanceFuncPtr[k][indxEast] = dEast;
@@ -3764,7 +5731,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+						coefSpeed = potentialFuncPtr[k][indxSouth];
 						dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxSouth] == 3) {
 							distanceFuncPtr[k][indxSouth] = dSouth;
@@ -3786,7 +5753,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kminus][currentIndx];
 						dTop = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kminus][currentIndx] == 3) {
 							distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -3812,7 +5779,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jminus = j - 1;
 							iplus = i + 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxNorth = x_new(jminus, i, width);
 
@@ -3820,7 +5787,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -3842,107 +5809,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
-							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
-							if (labelArray[k][indxNorth] == 3) {
-								distanceFuncPtr[k][indxNorth] = dNorth;
-								i_inProcess.push_back(i);
-								j_inProcess.push_back(jminus);
-								k_inProcess.push_back(k);
-								tempTimeFunc.push_back(dNorth);
-								labelArray[k][indxNorth] = 2;
-							}
-							else {
-								if (labelArray[k][indxNorth] == 2) {
-									if (dNorth < distanceFuncPtr[k][indxNorth]) {
-										distanceFuncPtr[k][indxNorth] = dNorth;
-									}
-								}
-							}
-
-							//Bottom
-							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
-							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
-							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
-							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
-							if (labelArray[kplus][currentIndx] == 3) {
-								distanceFuncPtr[kplus][currentIndx] = dBottom;
-								i_inProcess.push_back(i);
-								j_inProcess.push_back(j);
-								k_inProcess.push_back(kplus);
-								tempTimeFunc.push_back(dBottom);
-								labelArray[kplus][currentIndx] = 2;
-							}
-							else {
-								if (labelArray[kplus][currentIndx] == 2) {
-									if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
-										distanceFuncPtr[kplus][currentIndx] = dBottom;
-									}
-								}
-							}
-
-						}
-						else {
-
-							kminus = k - 1;
-							jplus = j + 1; jminus = j - 1;
-							iplus = i + 1;
-
-							currentIndx = x_new(j, i, width);
-							indxEast = x_new(j, iplus, width);
-							indxSouth = x_new(jplus, i, width);
-							indxNorth = x_new(jminus, i, width);
-
-							//East
-							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
-							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
-							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
-							dEast = solve3dQuadratic(x, y, z, coefSpeed);
-							if (labelArray[k][indxEast] == 3) {
-								distanceFuncPtr[k][indxEast] = dEast;
-								i_inProcess.push_back(iplus);
-								j_inProcess.push_back(j);
-								k_inProcess.push_back(k);
-								tempTimeFunc.push_back(dEast);
-								labelArray[k][indxEast] = 2;
-							}
-							else {
-								if (labelArray[k][indxEast] == 2) {
-									if (dEast < distanceFuncPtr[k][indxEast]) {
-										distanceFuncPtr[k][indxEast] = dEast;
-									}
-								}
-							}
-
-							//South
-							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
-							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
-							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
-							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
-							if (labelArray[k][indxSouth] == 3) {
-								distanceFuncPtr[k][indxSouth] = dSouth;
-								i_inProcess.push_back(i);
-								j_inProcess.push_back(jplus);
-								k_inProcess.push_back(k);
-								tempTimeFunc.push_back(dSouth);
-								labelArray[k][indxSouth] = 2;
-							}
-							else {
-								if (labelArray[k][indxSouth] == 2) {
-									if (dSouth < distanceFuncPtr[k][indxSouth]) {
-										distanceFuncPtr[k][indxSouth] = dSouth;
-									}
-								}
-							}
-
-							//North
-							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
-							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
-							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -3964,7 +5831,107 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
+							dTop = solve3dQuadratic(x, y, z, coefSpeed);
+							if (labelArray[kminus][currentIndx] == 3) {
+								distanceFuncPtr[kminus][currentIndx] = dTop;
+								i_inProcess.push_back(i);
+								j_inProcess.push_back(j);
+								k_inProcess.push_back(kminus);
+								tempTimeFunc.push_back(dTop);
+								labelArray[kminus][currentIndx] = 2;
+							}
+							else {
+								if (labelArray[kminus][currentIndx] == 2) {
+									if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+										distanceFuncPtr[kminus][currentIndx] = dTop;
+									}
+								}
+							}
+
+						}
+						else {
+
+							kminus = k - 1;
+							jplus = j + 1; jminus = j - 1;
+							iplus = i + 1;
+
+							//currentIndx = x_new(j, i, width);
+							indxEast = x_new(j, iplus, width);
+							indxSouth = x_new(jplus, i, width);
+							indxNorth = x_new(jminus, i, width);
+
+							//East
+							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+							coefSpeed = potentialFuncPtr[k][indxEast];
+							dEast = solve3dQuadratic(x, y, z, coefSpeed);
+							if (labelArray[k][indxEast] == 3) {
+								distanceFuncPtr[k][indxEast] = dEast;
+								i_inProcess.push_back(iplus);
+								j_inProcess.push_back(j);
+								k_inProcess.push_back(k);
+								tempTimeFunc.push_back(dEast);
+								labelArray[k][indxEast] = 2;
+							}
+							else {
+								if (labelArray[k][indxEast] == 2) {
+									if (dEast < distanceFuncPtr[k][indxEast]) {
+										distanceFuncPtr[k][indxEast] = dEast;
+									}
+								}
+							}
+
+							//South
+							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
+							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+							if (labelArray[k][indxSouth] == 3) {
+								distanceFuncPtr[k][indxSouth] = dSouth;
+								i_inProcess.push_back(i);
+								j_inProcess.push_back(jplus);
+								k_inProcess.push_back(k);
+								tempTimeFunc.push_back(dSouth);
+								labelArray[k][indxSouth] = 2;
+							}
+							else {
+								if (labelArray[k][indxSouth] == 2) {
+									if (dSouth < distanceFuncPtr[k][indxSouth]) {
+										distanceFuncPtr[k][indxSouth] = dSouth;
+									}
+								}
+							}
+
+							//North
+							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
+							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+							if (labelArray[k][indxNorth] == 3) {
+								distanceFuncPtr[k][indxNorth] = dNorth;
+								i_inProcess.push_back(i);
+								j_inProcess.push_back(jminus);
+								k_inProcess.push_back(k);
+								tempTimeFunc.push_back(dNorth);
+								labelArray[k][indxNorth] = 2;
+							}
+							else {
+								if (labelArray[k][indxNorth] == 2) {
+									if (dNorth < distanceFuncPtr[k][indxNorth]) {
+										distanceFuncPtr[k][indxNorth] = dNorth;
+									}
+								}
+							}
+
+							//Top
+							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -3993,7 +5960,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 
@@ -4001,7 +5968,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -4023,7 +5990,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4045,7 +6012,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4071,7 +6038,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jminus = j - 1;
 								iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxWest = x_new(j, iminus, width);
 								indxNorth = x_new(jminus, i, width);
 
@@ -4079,7 +6046,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -4101,7 +6068,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4123,7 +6090,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4148,7 +6115,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jplus = j + 1; jminus = j - 1;
 								iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxWest = x_new(j, iminus, width);
 								indxSouth = x_new(jplus, i, width);
 								indxNorth = x_new(jminus, i, width);
@@ -4157,7 +6124,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -4179,7 +6146,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+								coefSpeed = potentialFuncPtr[k][indxSouth];
 								dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxSouth] == 3) {
 									distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4201,7 +6168,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4223,7 +6190,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4251,7 +6218,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
@@ -4260,7 +6227,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -4282,7 +6249,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -4304,7 +6271,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4326,7 +6293,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4352,7 +6319,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jminus = j - 1;
 								iplus = i + 1; iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxEast = x_new(j, iplus, width);
 								indxWest = x_new(j, iminus, width);
 								indxNorth = x_new(jminus, i, width);
@@ -4361,7 +6328,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+								coefSpeed = potentialFuncPtr[k][indxEast];
 								dEast = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxEast] == 3) {
 									distanceFuncPtr[k][indxEast] = dEast;
@@ -4383,7 +6350,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -4405,7 +6372,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4427,7 +6394,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4452,7 +6419,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jplus = j + 1; jminus = j - 1;
 								iplus = i + 1; iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxEast = x_new(j, iplus, width);
 								indxWest = x_new(j, iminus, width);
 								indxSouth = x_new(jplus, i, width);
@@ -4462,7 +6429,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+								coefSpeed = potentialFuncPtr[k][indxEast];
 								dEast = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxEast] == 3) {
 									distanceFuncPtr[k][indxEast] = dEast;
@@ -4484,7 +6451,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -4506,7 +6473,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+								coefSpeed = potentialFuncPtr[k][indxSouth];
 								dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxSouth] == 3) {
 									distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4528,7 +6495,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4550,7 +6517,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4581,7 +6548,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						jplus = j + 1;
 						iplus = i + 1;
 
-						currentIndx = x_new(j, i, width);
+						//currentIndx = x_new(j, i, width);
 						indxEast = x_new(j, iplus, width);
 						indxSouth = x_new(jplus, i, width);
 
@@ -4589,7 +6556,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 						y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+						coefSpeed = potentialFuncPtr[k][indxEast];
 						dEast = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxEast] == 3) {
 							distanceFuncPtr[k][indxEast] = dEast;
@@ -4611,7 +6578,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 						y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+						coefSpeed = potentialFuncPtr[k][indxSouth];
 						dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[k][indxSouth] == 3) {
 							distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4633,7 +6600,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kplus][currentIndx];
 						dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kplus][currentIndx] == 3) {
 							distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -4655,7 +6622,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 						y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 						z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-						coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+						coefSpeed = potentialFuncPtr[kminus][currentIndx];
 						dTop = solve3dQuadratic(x, y, z, coefSpeed);
 						if (labelArray[kminus][currentIndx] == 3) {
 							distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4689,7 +6656,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -4711,7 +6678,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4733,7 +6700,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -4755,7 +6722,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4780,7 +6747,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1; jminus = j - 1;
 							iplus = i + 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxSouth = x_new(jplus, i, width);
 							indxNorth = x_new(jminus, i, width);
@@ -4789,7 +6756,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -4811,7 +6778,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4833,7 +6800,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+							coefSpeed = potentialFuncPtr[k][indxNorth];
 							dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxNorth] == 3) {
 								distanceFuncPtr[k][indxNorth] = dNorth;
@@ -4855,7 +6822,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -4877,7 +6844,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -4906,7 +6873,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1;
 							iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
 
@@ -4914,7 +6881,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -4936,7 +6903,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -4958,7 +6925,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -4980,7 +6947,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5006,50 +6973,50 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jminus = j - 1;
 								iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
-								indxEast = x_new(j, iplus, width);
-								indxSouth = x_new(jplus, i, width);
+								//currentIndx = x_new(j, i, width);
+								indxWest = x_new(j, iminus, width);
+								indxNorth = x_new(jminus, i, width);
 
-								//East
-								x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
-								y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
-								z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
-								dEast = solve3dQuadratic(x, y, z, coefSpeed);
-								if (labelArray[k][indxEast] == 3) {
-									distanceFuncPtr[k][indxEast] = dEast;
-									i_inProcess.push_back(iplus);
+								//West
+								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+								coefSpeed = potentialFuncPtr[k][indxWest];
+								dWest = solve3dQuadratic(x, y, z, coefSpeed);
+								if (labelArray[k][indxWest] == 3) {
+									distanceFuncPtr[k][indxWest] = dWest;
+									i_inProcess.push_back(iminus);
 									j_inProcess.push_back(j);
 									k_inProcess.push_back(k);
-									tempTimeFunc.push_back(dEast);
-									labelArray[k][indxEast] = 2;
+									tempTimeFunc.push_back(dWest);
+									labelArray[k][indxWest] = 2;
 								}
 								else {
-									if (labelArray[k][indxEast] == 2) {
-										if (dEast < distanceFuncPtr[k][indxEast]) {
-											distanceFuncPtr[k][indxEast] = dEast;
+									if (labelArray[k][indxWest] == 2) {
+										if (dWest < distanceFuncPtr[k][indxWest]) {
+											distanceFuncPtr[k][indxWest] = dWest;
 										}
 									}
 								}
 
-								//South
-								x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
-								y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
-								z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
-								dSouth = solve3dQuadratic(x, y, z, coefSpeed);
-								if (labelArray[k][indxSouth] == 3) {
-									distanceFuncPtr[k][indxSouth] = dSouth;
+								//North
+								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
+								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+								if (labelArray[k][indxNorth] == 3) {
+									distanceFuncPtr[k][indxNorth] = dNorth;
 									i_inProcess.push_back(i);
-									j_inProcess.push_back(jplus);
+									j_inProcess.push_back(jminus);
 									k_inProcess.push_back(k);
-									tempTimeFunc.push_back(dSouth);
-									labelArray[k][indxSouth] = 2;
+									tempTimeFunc.push_back(dNorth);
+									labelArray[k][indxNorth] = 2;
 								}
 								else {
-									if (labelArray[k][indxSouth] == 2) {
-										if (dSouth < distanceFuncPtr[k][indxSouth]) {
-											distanceFuncPtr[k][indxSouth] = dSouth;
+									if (labelArray[k][indxNorth] == 2) {
+										if (dNorth < distanceFuncPtr[k][indxNorth]) {
+											distanceFuncPtr[k][indxNorth] = dNorth;
 										}
 									}
 								}
@@ -5058,7 +7025,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kplus][currentIndx];
 								dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kplus][currentIndx] == 3) {
 									distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -5080,7 +7047,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5105,7 +7072,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jplus = j + 1; jminus = j - 1;
 								iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxWest = x_new(j, iminus, width);
 								indxSouth = x_new(jplus, i, width);
 								indxNorth = x_new(jminus, i, width);
@@ -5114,7 +7081,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -5136,7 +7103,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+								coefSpeed = potentialFuncPtr[k][indxSouth];
 								dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxSouth] == 3) {
 									distanceFuncPtr[k][indxSouth] = dSouth;
@@ -5158,7 +7125,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -5180,7 +7147,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kplus][currentIndx];
 								dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kplus][currentIndx] == 3) {
 									distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -5202,7 +7169,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5230,7 +7197,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							jplus = j + 1;
 							iplus = i + 1; iminus = i - 1;
 
-							currentIndx = x_new(j, i, width);
+							//currentIndx = x_new(j, i, width);
 							indxEast = x_new(j, iplus, width);
 							indxWest = x_new(j, iminus, width);
 							indxSouth = x_new(jplus, i, width);
@@ -5239,7 +7206,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+							coefSpeed = potentialFuncPtr[k][indxEast];
 							dEast = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxEast] == 3) {
 								distanceFuncPtr[k][indxEast] = dEast;
@@ -5261,7 +7228,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 							y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+							coefSpeed = potentialFuncPtr[k][indxWest];
 							dWest = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxWest] == 3) {
 								distanceFuncPtr[k][indxWest] = dWest;
@@ -5283,7 +7250,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 							y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+							coefSpeed = potentialFuncPtr[k][indxSouth];
 							dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[k][indxSouth] == 3) {
 								distanceFuncPtr[k][indxSouth] = dSouth;
@@ -5305,7 +7272,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kplus][currentIndx];
 							dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kplus][currentIndx] == 3) {
 								distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -5327,7 +7294,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 							x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 							y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 							z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-							coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+							coefSpeed = potentialFuncPtr[kminus][currentIndx];
 							dTop = solve3dQuadratic(x, y, z, coefSpeed);
 							if (labelArray[kminus][currentIndx] == 3) {
 								distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5353,7 +7320,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jminus = j - 1;
 								iplus = i + 1; iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxEast = x_new(j, iplus, width);
 								indxWest = x_new(j, iminus, width);
 								indxNorth = x_new(jminus, i, width);
@@ -5362,7 +7329,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+								coefSpeed = potentialFuncPtr[k][indxEast];
 								dEast = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxEast] == 3) {
 									distanceFuncPtr[k][indxEast] = dEast;
@@ -5384,7 +7351,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -5406,7 +7373,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -5428,7 +7395,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kplus][currentIndx];
 								dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kplus][currentIndx] == 3) {
 									distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -5450,7 +7417,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5475,7 +7442,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								jplus = j + 1; jminus = j - 1;
 								iplus = i + 1; iminus = i - 1;
 
-								currentIndx = x_new(j, i, width);
+								//currentIndx = x_new(j, i, width);
 								indxEast = x_new(j, iplus, width);
 								indxWest = x_new(j, iminus, width);
 								indxSouth = x_new(jplus, i, width);
@@ -5485,7 +7452,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxEast]);
+								coefSpeed = potentialFuncPtr[k][indxEast];
 								dEast = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxEast] == 3) {
 									distanceFuncPtr[k][indxEast] = dEast;
@@ -5507,7 +7474,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 								y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxWest]);
+								coefSpeed = potentialFuncPtr[k][indxWest];
 								dWest = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxWest] == 3) {
 									distanceFuncPtr[k][indxWest] = dWest;
@@ -5529,7 +7496,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxSouth]);
+								coefSpeed = potentialFuncPtr[k][indxSouth];
 								dSouth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxSouth] == 3) {
 									distanceFuncPtr[k][indxSouth] = dSouth;
@@ -5551,7 +7518,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 								y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[k][indxNorth]);
+								coefSpeed = potentialFuncPtr[k][indxNorth];
 								dNorth = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[k][indxNorth] == 3) {
 									distanceFuncPtr[k][indxNorth] = dNorth;
@@ -5573,7 +7540,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kplus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kplus][currentIndx];
 								dBottom = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kplus][currentIndx] == 3) {
 									distanceFuncPtr[kplus][currentIndx] = dBottom;
@@ -5595,7 +7562,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 								x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 								y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
 								z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
-								coefSpeed = (dataType)(1.0 / potentialFuncPtr[kminus][currentIndx]);
+								coefSpeed = potentialFuncPtr[kminus][currentIndx];
 								dTop = solve3dQuadratic(x, y, z, coefSpeed);
 								if (labelArray[kminus][currentIndx] == 3) {
 									distanceFuncPtr[kminus][currentIndx] = dTop;
@@ -5617,8 +7584,2978 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 						}
 					}
 				}
+			} 
+		} */
+
+		//------------------------------------------------
+
+		//case 1
+		if (k == 0 && i == 0 && j == 0) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
 			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
 		}
+
+		//case 2
+		if (k == 0 && i == 0 && j == width_minus) {
+
+			kplus = k + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 3
+		if (k == 0 && i == 0 && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 4
+		if (k == 0 && i == length_minus && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 5
+		if (k == 0 && i == length_minus && j == width_minus) {
+
+			kplus = k + 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 6
+		if (k == 0 && i == length_minus && j == 0) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 7
+		if (k == 0 && (i != 0 && i != length_minus) && j == 0) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 8
+		if (k == 0 && (i != 0 && i != length_minus) && j == width_minus) {
+
+			kplus = k + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 9
+		if (k == 0 && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+		}
+
+		//-------------------------------------------------
+
+		//case 10
+		if (k == height_minus && i == 0 && j == 0) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 11
+		if (k == height_minus && i == 0 && j == width_minus) {
+
+			kminus = k - 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 12
+		if (k == height_minus && i == 0 && (j != 0 && j != width_minus)) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 13
+		if (k == height_minus && i == length_minus && (j != 0 && j != width_minus)) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 14
+		if (k == height_minus && i == length_minus && j == width_minus) {
+
+			kminus = k - 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 15
+		if (k == height_minus && i == length_minus && j == 0) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 16
+		if (k == height_minus && (i != 0 && i != length_minus) && j == 0) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 17
+		if (k == height_minus && (i != 0 && i != length_minus) && j == width_minus) {
+
+			kminus = k - 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 18
+		if (k == height_minus && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//-----------------------------------------------------
+		 
+		//case 19
+		if ((k != 0 && k != height_minus) && i == 0 && j == 0) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 20
+		if ((k != 0 && k != height_minus) && i == 0 && j == width_minus) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 21
+		if ((k != 0 && k != height_minus) && i == 0 && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 22
+		if ((k != 0 && k != height_minus) && i == length_minus && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 23
+		if ((k != 0 && k != height_minus) && i == length_minus && j == width_minus){
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jminus = j - 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 24
+		if ((k != 0 && k != height_minus) && i == length_minus && j == 0) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			iminus = i - 1;
+
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 25
+		if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && j == 0 ) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+		
+		//case 26
+		if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && j == width_minus) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//case 27
+		if ((k != 0 && k != height_minus) && (i != 0 && i != length_minus) && (j != 0 && j != width_minus)) {
+
+			kplus = k + 1;
+			kminus = k - 1;
+			jplus = j + 1;
+			jminus = j - 1;
+			iplus = i + 1;
+			iminus = i - 1;
+
+			indxEast = x_new(j, iplus, width);
+			indxWest = x_new(j, iminus, width);
+			indxSouth = x_new(jplus, i, width);
+			indxNorth = x_new(jminus, i, width);
+
+			//East
+			if (labelArray[k][indxEast] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxEast] == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					i_inProcess.push_back(iplus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dEast);
+					labelArray[k][indxEast] = 2;
+				}
+				else {
+					if (labelArray[k][indxEast] == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+
+			//West
+			if (labelArray[k][indxWest] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxWest] == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					i_inProcess.push_back(iminus);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dWest);
+					labelArray[k][indxWest] = 2;
+				}
+				else {
+					if (labelArray[k][indxWest] == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+
+			//South
+			if (labelArray[k][indxSouth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxSouth] == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jplus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dSouth);
+					labelArray[k][indxSouth] = 2;
+				}
+				else {
+					if (labelArray[k][indxSouth] == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+
+			//North
+			if (labelArray[k][indxNorth] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[k][indxNorth] == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(jminus);
+					k_inProcess.push_back(k);
+					tempTimeFunc.push_back(dNorth);
+					labelArray[k][indxNorth] = 2;
+				}
+				else {
+					if (labelArray[k][indxNorth] == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+
+			//Bottom
+			if (labelArray[kplus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kplus][currentIndx] == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kplus);
+					tempTimeFunc.push_back(dBottom);
+					labelArray[kplus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kplus][currentIndx] == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+
+			//Top
+			if (labelArray[kminus][currentIndx] != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (labelArray[kminus][currentIndx] == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					i_inProcess.push_back(i);
+					j_inProcess.push_back(j);
+					k_inProcess.push_back(kminus);
+					tempTimeFunc.push_back(dTop);
+					labelArray[kminus][currentIndx] = 2;
+				}
+				else {
+					if (labelArray[kminus][currentIndx] == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+
+		}
+
+		//-----------------------------------------------------
+
 	}
 
 
@@ -5639,9 +10576,92 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 	}
 
 	for (k = 0; k < height; k++) {
-		free(labelArray[k]);
+		delete[] labelArray[k];
 	}
-	free(labelArray);
+	delete[] labelArray;
+
+	return true;
+}
+
+bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const size_t length, const size_t width, const size_t height, dataType h, Point3d* seedPoints) {
+
+	if (distanceFuncPtr == NULL || resultedPath == NULL || seedPoints == NULL)
+		return false;
+
+	size_t i, j, k, xd, dim2d = length * width;
+	dataType tau = 0.8, tol = 1.0;
+	size_t i_init = seedPoints[0].y, j_init = seedPoints[0].x, k_init = seedPoints[0].z;
+	size_t i_end = seedPoints[1].y, j_end = seedPoints[1].x, k_end = seedPoints[1].z;
+
+	dataType** gradientVectorX = new dataType * [height];
+	dataType** gradientVectorY = new dataType * [height];
+	dataType** gradientVectorZ = new dataType * [height];
+	for (k = 0; k < height; k++) {
+		gradientVectorX[k] = new dataType [dim2d];
+		gradientVectorY[k] = new dataType [dim2d];
+		gradientVectorZ[k] = new dataType [dim2d];
+	}
+	if (gradientVectorX == NULL || gradientVectorY == NULL || gradientVectorZ == NULL)
+		return false;
+
+	//Normalization of the gradient
+	compute3dImageGradient(distanceFuncPtr, gradientVectorX, gradientVectorY, gradientVectorZ, length, width, height, 1.0);
+	dataType norm_of_gradient = computeGradientNorm3d(gradientVectorX, gradientVectorY, gradientVectorZ, length, width, height);
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				xd = x_new(j, i, width);
+				gradientVectorX[k][xd] = gradientVectorX[k][xd] / norm_of_gradient;
+				gradientVectorY[k][xd] = gradientVectorY[k][xd] / norm_of_gradient;
+				gradientVectorZ[k][xd] = gradientVectorZ[k][xd] / norm_of_gradient;
+			}
+		}
+	}
+	
+	//Find the closest point till the last point
+	size_t cpt = 0;
+	size_t i_current = i_end;
+	size_t j_current = j_end;
+	size_t k_current = k_end;
+	size_t currentIndx = x_new(j_current, i_current, width);
+	resultedPath[k_current][currentIndx] = 1;
+
+	dataType iNew = i_current;
+	dataType jNew = j_current;
+	dataType kNew = k_current;
+	dataType currentDist = 0.0;
+	dataType dist_min = 0.0;
+
+	do {
+
+		currentIndx = x_new(j_current, i_current, width);
+		iNew = iNew - tau * gradientVectorY[k_current][currentIndx];
+		jNew = jNew - tau * gradientVectorX[k_current][currentIndx];
+		kNew = kNew - tau * gradientVectorZ[k_current][currentIndx];
+
+		dist_min = sqrt((iNew - i_init) * (iNew - i_init) + (jNew - j_init) * (jNew - j_init) + (kNew - k_init) * (kNew - k_init));
+
+		i_current = round(iNew); 
+		j_current = round(jNew);
+		k_current = round(kNew);
+		resultedPath[k_current][x_new(j_current, i_current, width)] = 1;
+
+		currentDist = distanceFuncPtr[k_current][x_new(j_current, i_current, width)];
+		cpt++;
+
+	} while (dist_min > tol && cpt < 10000000000);
+
+	cout << "\nDistance to the end point : " << dist_min << endl;
+	cout << "\nNumber of iterations : " << cpt << endl;
+
+	for (k = 0; k < height; k++) {
+		delete[] gradientVectorX[k];
+		delete[] gradientVectorY[k];
+		delete[] gradientVectorZ[k];
+	}
+	delete[] gradientVectorX;
+	delete[] gradientVectorY;
+	delete[] gradientVectorZ;
 
 	return true;
 }
