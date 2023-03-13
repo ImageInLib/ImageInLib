@@ -120,15 +120,20 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 	//==============================================================================
 }
 //==============================================================================
-void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType objPixel)
+void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType objPixel, Point3D* seedPoints)
 {
 	size_t k, i, j, x;
+
+	size_t i0 = seedPoints[0].x, j0 = seedPoints[0].y, k0 = seedPoints[0].z;
+	size_t i1 = seedPoints[1].x, j1 = seedPoints[1].y, k1 = seedPoints[1].z;
+	size_t seedIndix = x_new(i0, j0, imageLength);
+
 	struct Node * band = NULL; // Holds all the Objects
 							   // Sets the structure size, to hold all the calculated arrival times
-	Obj_Structure ** objectNthD = (Obj_Structure **)malloc(sizeof(Obj_Structure*)*imageHeight);
+	Obj_Structure ** objectNthD = (Obj_Structure **)malloc(sizeof(Obj_Structure*) * imageHeight);
 	for (i = 0; i < imageHeight; i++)
 	{
-		objectNthD[i] = (Obj_Structure *)malloc(sizeof(Obj_Structure) * (imageLength*imageWidth));
+		objectNthD[i] = (Obj_Structure *)malloc(sizeof(Obj_Structure) * (imageLength * imageWidth));
 	}
 	// Initialize Object2D
 	for (k = 0; k < imageHeight; k++)
@@ -148,9 +153,10 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			}
 		}
 	}
-	Point3D *shapePoints = (Point3D *)malloc(sizeof(Point3D)*(imageHeight*imageLength*imageWidth));
+	Point3D *shapePoints = (Point3D *)malloc(sizeof(Point3D)*(imageHeight * imageLength * imageWidth));
 	int loop = 0;
 	// Derive the points
+
 	for (k = 0; k < imageHeight; k++)
 	{
 		for (i = 0; i < imageLength; i++)
@@ -159,25 +165,73 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			{
 				// 1D representation
 				x = x_new(i, j, imageLength);
-				if (dataSourcePtr[k][x] == objPixel) // Fill value for block
+				if (dataSourcePtr[k][x] == dataSourcePtr[k0][seedIndix]) // Fill value for block
 				{
-					// Save the dimension with those values
-					shapePoints[loop].x = (dataType)i;
-					shapePoints[loop].y = (dataType)j;
-					shapePoints[loop].z = (dataType)k;
+					//// Save the dimension with those values
+					//shapePoints[loop].x = (dataType)i;
+					//shapePoints[loop].y = (dataType)j;
+					//shapePoints[loop].z = (dataType)k;
+					shapePoints[loop].x = (dataType)seedPoints[0].x;
+					shapePoints[loop].y = (dataType)seedPoints[0].y;
+					shapePoints[loop].z = (dataType)seedPoints[0].z;
 					loop++;
 				}
 			}
 		}
 	}
+
+	//shapePoints[loop].x = (dataType)seedPoints[0].x;
+	//shapePoints[loop].y = (dataType)seedPoints[0].y;
+	//shapePoints[loop].z = (dataType)seedPoints[0].z;
+	//loop = 1;
+
 	// Arrival times
 	Arrival_Time *shapeArrival = (Arrival_Time *)malloc(sizeof(Arrival_Time)*loop);
 	for (i = 0; i < loop; i++)
 	{
 		shapeArrival[i].T = 0.0;
 	}
+
+	//Compute potential
+	dataType** potentialPtr = (dataType**)malloc(sizeof(dataType*) * imageHeight);
+	for (k = 0; k < imageHeight; k++) {
+		potentialPtr[k] = (dataType*)malloc(sizeof(dataType) * imageLength * imageWidth);
+	}
+
+	dataType seedVal = (dataSourcePtr[k0][x_new(i0, j0, imageLength)] + dataSourcePtr[k1][x_new(i1, j1, imageLength)]) / 2;
+	dataType epsilon = 0.01;
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+				x = x_new(i, j, imageLength);
+				potentialPtr[k][x] = abs(seedVal - dataSourcePtr[k][x]);
+			}
+		}
+	}
+	//Find max(seed - imagePixel)
+	dataType maxPotential = -1 * INFINITY;
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+				x = x_new(i, j, imageLength);
+				if (potentialPtr[k][x] > maxPotential) {
+					maxPotential = potentialPtr[k][x];
+				}
+			}
+		}
+	}
+	//Normalzation
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+				x = x_new(i, j, imageLength);
+				potentialPtr[k][x] = epsilon + potentialPtr[k][x] / maxPotential;
+			}
+		}
+	}
+
 	// Calls Fm3D
-	fastMarching3D(band, objectNthD, shapePoints, shapeArrival, imageHeight, imageLength, imageWidth, loop);
+	fastMarching3D(potentialPtr, band, objectNthD, shapePoints, shapeArrival, imageHeight, imageLength, imageWidth, loop);
 	// Copy Fast marching modified to distancePtr
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -191,8 +245,10 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 	for (i = 0; i < imageHeight; i++)
 	{
 		free(objectNthD[i]);
+		free(potentialPtr[i]);
 	}
 	//deleteList(band);
+	free(potentialPtr);
 }
 //==============================================================================
 // Prototypes
