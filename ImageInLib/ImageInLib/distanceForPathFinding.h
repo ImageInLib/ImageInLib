@@ -34,10 +34,6 @@ using namespace std;
 
 	bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t height, const size_t width, dataType h, Point2D* seedPoints);
 
-	bool findPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t height, const size_t width, Point2D* seedPoints);
-
-	//bool bruteForce2d(dataType* imageDataPtr, dataType* distanceFuncPtr, const size_t height, const size_t width, dataType backGround);
-
 	//==============================================================
 	 
 	//3D functions
@@ -58,8 +54,6 @@ using namespace std;
 	bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX, dataType** gradientVectorY, dataType** gradientVectorZ, const size_t lenght, const size_t width, const size_t height, dataType h);
 
 	bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
-
-	/*bool find3dNeighbors(dataType** imageDataPtr, dataType** labelArray, vector<size_t> vectorI, vector<size_t> vectorJ, vector<size_t> vectorK, Point3d* currentPoint, const size_t length, const size_t width, const size_t height);*/
 
 	bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
 
