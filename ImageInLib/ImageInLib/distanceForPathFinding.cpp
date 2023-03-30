@@ -5,6 +5,7 @@
 #include<cmath>
 #include <omp.h>
 #include<vector>
+#include<tuple>
 #include "distanceForPathFinding.h"
 #include<template_functions.h>
 
@@ -317,7 +318,9 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, dataType*
 	//Update the label of seed point as processed
 	labelArray[x_new(j, i, width)] = 1;
 
-	//cout << "Number of Neigbors found : " << nbNeighborsFound << endl;
+	//int L = tempTimeFunc.size();
+	//heapSortMaxMin(tempTimeFunc, L);
+
 	//---------------------End of STEP 2 -------------------------------------
 
 	//STEP 3
@@ -471,7 +474,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, dataType*
 		}
 	}
 	if (cpt == 0) {
-		cout << "\nAll the pixels have been visited" << endl;
+		cout << "All the pixels have been visited" << endl;
 	}
 	else {
 		cout << "\n" << cpt << " pixels haven't been visited" << endl;
@@ -629,7 +632,7 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 		}
 	}
 
-	if (X == BIG_VALUE && Y == BIG_VALUE && Z != INFINITY) {
+	if (X == INFINITY && Y == INFINITY && Z != INFINITY) {
 		a = 1;
 		b = -2 * Z;
 		c = pow(Z, 2) - W;
@@ -642,7 +645,7 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 		}
 	}
 
-	if (X == BIG_VALUE && Z == BIG_VALUE && Y != INFINITY) {
+	if (X == INFINITY && Z == INFINITY && Y != INFINITY) {
 		a = 1;
 		b = -2 * Y;
 		c = pow(Y, 2) - W;
@@ -655,7 +658,7 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 		}
 	}
 
-	if (Y == BIG_VALUE && Z == BIG_VALUE && X != INFINITY) {
+	if (Y == INFINITY && Z == INFINITY && X != INFINITY) {
 		a = 1;
 		b = -2 * X;
 		c = pow(X, 2) - W;
@@ -959,8 +962,6 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 		}
 	}
 
-	//size_t h = height / 2, w = width / 2, l = length / 2;
-
 	//Normalization
 	for (k = 0; k < height; k++) {
 		for (i = 0; i < length; i++) {
@@ -1001,9 +1002,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 	}
 
 	size_t i = 0, j = 0, k = 0, n = 0, xd = 0, dim2D = length * width, cpt = 0;
-	vector<size_t> i_Processed, i_inProcess;
-	vector<size_t> j_Processed, j_inProcess;
-	vector<size_t> k_Processed, k_inProcess;
+	vector<size_t> i_inProcess, j_inProcess, k_inProcess;
 	dataType x = 0.0, y = 0.0, z = 0.0, minSolution = 0.0, coef = 0.0, dist = 0.0;
 	size_t lenghtSol = 0, indxSol = 0;
 	vector<dataType> tempTimeFunc;
@@ -1040,10 +1039,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 
 	size_t currentIndx = x_new(j, i, width);
 
-	distanceFuncPtr[k][currentIndx] = 0;
-	i_Processed.push_back(i); 
-	j_Processed.push_back(j); 
-	k_Processed.push_back(k);
+	distanceFuncPtr[k][currentIndx] = 0.0;
 	
 	size_t kplus = 0, kminus = 0, iplus = 0, iminus = 0, jplus = 0, jminus = 0;
 	size_t indxWest = 0, indxEast = 0, indxNorth = 0, indxSouth = 0;
@@ -1146,11 +1142,19 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 		currentIndx = x_new(j, i, width);
 
 		//Set the distance to the processed pixel
+
+		//if (distanceFuncPtr[k][currentIndx] > minSolution) {
+		//	distanceFuncPtr[k][currentIndx] = minSolution;
+		//}
+
+		//cout << "min distance = " << minSolution << endl;
+		 
 		distanceFuncPtr[k][currentIndx] = minSolution;
 		labelArray[k][currentIndx] = 1;
-		i_Processed.push_back(i); 
-		j_Processed.push_back(j);
-		k_Processed.push_back(k);
+
+		//i_Processed.push_back(i); 
+		//j_Processed.push_back(j);
+		//k_Processed.push_back(k);
 
 		//Remove the processed pixel from inProcess
 		if (indxSol == 0 ) {
@@ -1353,7 +1357,6 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 
 	}
 
-
 	for (k = 0; k < height; k++) {
 		for (i = 0; i < length; i++) {
 			for (j = 0; j < width; j++) {
@@ -1461,3 +1464,504 @@ bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const s
 
 	return true;
 }
+
+//------------------------------------------------------------------
+
+void swapNeighbor(neighborPoint* a, neighborPoint* b) {
+	neighborPoint temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+void heapify(vector<neighborPoint>& in_Process, int length_InProcess, int i) {
+
+	int current = i;
+	int left_child = 2 * i + 1;
+	int right_child = 2 * i + 2;
+
+	dataType val_current = 0.0, val_left = 0.0, val_right = 0.0;
+
+	if (current >= 0 && current < length_InProcess) {
+		val_current = in_Process[current].arrival;
+	}
+	
+	if (left_child < length_InProcess) {
+		val_left = in_Process[left_child].arrival;
+		if (val_left < val_current) {
+			current = left_child;
+			val_current = in_Process[current].arrival;
+		}
+	}
+
+	if (right_child < length_InProcess) {
+		val_right = in_Process[right_child].arrival;
+		if (val_right < val_current) {
+			current = right_child;
+		}
+	}
+
+	if (current != i) {
+		swapNeighbor(&in_Process[i], &in_Process[current]);
+		heapify(in_Process, length_InProcess, current);
+	}
+
+}
+
+void createMinHeapStructure(vector<neighborPoint>& in_Process, int length_InProcess){
+	int ind, start = length_InProcess / 2 - 1; 
+	for (ind = start; ind >= 0; ind--) {
+		heapify(in_Process, length_InProcess, ind);
+	}
+}
+
+void heapifyBottomToUp(vector<neighborPoint>& in_Process, int i) {
+
+	//int l = in_Process.size();
+	int current = i;
+
+	//if (i > 0 && i % 2 == 0) {
+	//	int parent = (i - 1) / 2;
+	//	int brother = i - 1;
+	//	dataType val_current = in_Process[current].arrival;
+	//	dataType val_parent = in_Process[parent].arrival;
+	//	dataType val_brother = in_Process[brother].arrival;
+	//	if (val_current < val_parent) {
+	//		current = parent;
+	//		val_current = in_Process[current].arrival;
+	//	}
+	//	if (val_brother < val_parent) {
+	//		current = brother;
+	//	}
+	//}
+	//else {
+	//	int parent = (i - 1) / 2;
+	//	dataType val_current = in_Process[current].arrival;
+	//	dataType val_parent = in_Process[parent].arrival;
+	//	if (val_current < val_parent) {
+	//		current = parent;
+	//	}
+	//}
+
+	if (i > 0) {
+		int parent = (i - 1) / 2;
+		dataType val_current = in_Process[current].arrival;
+		dataType val_parent = in_Process[parent].arrival;
+		if (val_current < val_parent) {
+			current = parent;
+		}
+	}
+
+	if (current != i) {
+		swapNeighbor(&in_Process[current], &in_Process[i]);
+		heapifyBottomToUp(in_Process, current);
+	}
+	
+}
+
+bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints) {
+
+	if (imageDataPtr == NULL || distanceFuncPtr == NULL || potentialFuncPtr == NULL || seedPoints == NULL) {
+		return false;
+	}
+
+	vector <neighborPoint> inProcess;
+	size_t i = 0, j = 0, k = 0;
+
+	size_t ** labelArray = new size_t*[height];
+	for (k = 0; k < height; k++) {
+		labelArray[k] = new size_t[width * length];
+	}
+	if (labelArray == NULL)
+		return false;
+	
+	dataType x = 0.0, y = 0.0, z = 0.0;
+	size_t currentIndx = 0;
+	
+
+	//Initialization
+	//All the points are notProcessed ---> label = 3
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				currentIndx = x_new(j, i, width);
+				distanceFuncPtr[k][currentIndx] = INFINITY;
+				labelArray[k][currentIndx] = 3;
+			}
+		}
+	}
+
+	compute3dPotential(imageDataPtr, potentialFuncPtr, length, width, height, seedPoints);
+
+	//Processed the initial point
+	neighborPoint current;
+	j = seedPoints[0].x;
+	i = seedPoints[0].y;
+	k = seedPoints[0].z;
+	currentIndx = x_new(j, i, width);
+	//current.label = 1;
+	//current.arrival = 0.0;
+	//current = {j, i, k, 1, poxy, 0.0};
+	distanceFuncPtr[k][currentIndx] = 0.0;
+	labelArray[k][currentIndx] = 1;
+
+	//find the neighbours of the initial point add add them to inProcess
+	size_t height_minus = height - 1, length_minus = length - 1, width_minus = width - 1;
+	size_t kminus = 0, kplus = 0, iminus = 0, iplus = 0, jminus = 0, jplus = 0;
+	size_t indxNorth = 0, indxSouth = 0, indxWest = 0, indxEast = 0;
+	dataType dTop = 0.0, dBottom = 0.0, dNorth = 0.0, dSouth = 0.0, dWest = 0.0, dEast = 0.0, coefSpeed = 0.0;
+
+	//Top
+	if (k > 0 && j >= 0 && j < width && i >= 0 && i < length) {
+		kminus = k - 1;
+		x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+		y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+		z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+		coefSpeed = potentialFuncPtr[kminus][currentIndx];
+		dTop = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint TopNeighbor = { j, i, kminus, dTop };
+		distanceFuncPtr[kminus][currentIndx] = dTop;
+		inProcess.push_back(TopNeighbor);
+		labelArray[kminus][currentIndx] = 2;
+	}
+
+	//Bottom
+	if (k < height_minus && j >= 0 && j < width && i >= 0 && i < length) {
+		kplus = k + 1;
+		x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+		y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+		z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+		coefSpeed = potentialFuncPtr[kplus][currentIndx];
+		dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint BottomNeighbor = { j, i, kplus, dBottom };
+		distanceFuncPtr[kplus][currentIndx] = dBottom;
+		inProcess.push_back(BottomNeighbor);
+		labelArray[kplus][currentIndx] = 2;
+	}
+
+	//North
+	if (k >= 0 && k < height && j > 0 && i >= 0 && i < length) {
+		jminus = j - 1;
+		indxNorth = x_new(jminus, i, width);
+		x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+		y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+		z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+		coefSpeed = potentialFuncPtr[k][indxNorth];
+		dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint NorthNeighbor = { jminus, i, k, dNorth };
+		distanceFuncPtr[k][indxNorth] = dNorth;
+		inProcess.push_back(NorthNeighbor);
+		labelArray[k][indxNorth] = 2;
+	}
+
+	//South
+	if (k >= 0 && k < height && j < width_minus && i >= 0 && i < length) {
+		jplus = j + 1;
+		indxSouth = x_new(jplus, i, width);
+		x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+		y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+		z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+		coefSpeed = potentialFuncPtr[k][indxSouth];
+		dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint SouthNeighbor = { jplus, i, k, dSouth };
+		distanceFuncPtr[k][indxSouth] = dSouth;
+		inProcess.push_back(SouthNeighbor);
+		labelArray[k][indxSouth] = 2;
+	}
+
+	//East
+	if (k >= 0 && k < height && j >= 0 && j < width && i < length_minus) {
+		iplus = i + 1;
+		indxEast = x_new(j, iplus, width);
+		x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+		y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+		z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+		coefSpeed = potentialFuncPtr[k][indxEast];
+		dEast = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint EastNeighbor = { j, iplus, k, dEast };
+		distanceFuncPtr[k][indxEast] = dEast;
+		inProcess.push_back(EastNeighbor);
+		labelArray[k][indxEast] = 2;
+	}
+
+	//West
+	if (k >= 0 && k < height && j >= 0 && j < width && i > 0) {
+		iminus = i - 1;
+		indxWest = x_new(j, iminus, width);
+		x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+		y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+		z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+		coefSpeed = potentialFuncPtr[k][indxWest];
+		dWest = solve3dQuadratic(x, y, z, coefSpeed);
+		neighborPoint WestNeighbor = {j, iminus, k, dWest};
+		distanceFuncPtr[k][indxWest] = dWest;
+		inProcess.push_back(WestNeighbor);
+		labelArray[k][indxWest] = 2;
+	}
+
+	int n = inProcess.size();
+
+	createMinHeapStructure(inProcess, n);
+	size_t label = 0;
+
+	int l = 0, m = 0;
+	 
+	while (inProcess.size() != 0) {
+
+		//processed the minimum
+		current = inProcess[0]; // index 0 exist because, if not we will be out of the while loop
+
+		//cout << "min distance find by heap =  " << current.arrival << endl;
+
+		//dataType minS = INFINITY;
+		//for (size_t t = 0; t < inProcess.size(); t++) {
+		//	if (minS > inProcess[t].arrival) {
+		//		minS = inProcess[t].arrival;
+		//	}
+		//}
+
+		//cout << "min distance find by classical min search =  " << minS << endl;
+
+		j = current.x;
+		i = current.y;
+		k = current.z;
+		currentIndx = x_new(j, i, width);
+		labelArray[k][currentIndx] = 1;
+		distanceFuncPtr[k][currentIndx] = current.arrival;
+
+		//if (distanceFuncPtr[k][poxy] > current.arrival) {
+		//	distanceFuncPtr[k][poxy] = current.arrival;
+		//}
+
+		l = inProcess.size();
+		//if (l > 1) {
+		//	swapNeighbor(&inProcess[0], &inProcess[l - 1]);
+		//}
+
+		//dataType minSol = INFINITY;
+		//for (int t = 0; i < inProcess.size(); t++) {
+		//	if (minSol > inProcess[t].arrival) {
+		//		minSol = inProcess[t].arrival;
+		//	}
+		//}
+
+		swapNeighbor(&inProcess[0], &inProcess[l - 1]);
+		inProcess.pop_back();
+		m = inProcess.size();
+		heapify(inProcess, m, 0);
+		
+		//Treat neighbors of the minimum in the narrow band
+		//Bottom
+		if (k < height_minus && i >= 0 && i < length && j >= 0 && j < width) {
+
+			kplus = k + 1;
+			label = labelArray[kplus][currentIndx];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kplus);
+				coefSpeed = potentialFuncPtr[kplus][currentIndx];
+				dBottom = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[kplus][currentIndx] = dBottom;
+					labelArray[kplus][currentIndx] = 2;
+					neighborPoint BottomNeighbor = { j, i, kplus, dBottom };
+					inProcess.push_back(BottomNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dBottom < distanceFuncPtr[kplus][currentIndx]) {
+							distanceFuncPtr[kplus][currentIndx] = dBottom;
+						}
+					}
+				}
+			}
+		}
+
+		//Top
+		if (k > 0 && j >= 0 && j < width && i >= 0 && i < length) {
+			
+			kminus = k - 1;
+			label = labelArray[kminus][currentIndx];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
+				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, j, kminus);
+				coefSpeed = potentialFuncPtr[kminus][currentIndx];
+				dTop = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[kminus][currentIndx] = dTop;
+					labelArray[kminus][currentIndx] = 2;
+					neighborPoint TopNeighbor = { j, i, kminus, dTop };
+					inProcess.push_back(TopNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dTop < distanceFuncPtr[kminus][currentIndx]) {
+							distanceFuncPtr[kminus][currentIndx] = dTop;
+						}
+					}
+				}
+			}
+		}
+
+		//East
+		if (i < length_minus && j >= 0 && j < width && k >= 0 && k < height) {
+
+			iplus = i + 1;
+			indxEast = x_new(j, iplus, width);
+			label = labelArray[k][indxEast];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iplus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxEast];
+				dEast = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[k][indxEast] = dEast;
+					labelArray[k][indxEast] = 2;
+					neighborPoint EastNeighbor = { j, iplus, k, dEast };
+					inProcess.push_back(EastNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dEast < distanceFuncPtr[k][indxEast]) {
+							distanceFuncPtr[k][indxEast] = dEast;
+						}
+					}
+				}
+			}
+		}
+
+		//West
+		if (i > 0 && j >= 0 && j < width && k >= 0 && k < height) {
+
+			iminus = i - 1;
+			indxWest = x_new(j, iminus, width);
+			label = labelArray[k][indxWest];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
+				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, iminus, j, k);
+				coefSpeed = potentialFuncPtr[k][indxWest];
+				dWest = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[k][indxWest] = dWest;
+					labelArray[k][indxWest] = 2;
+					neighborPoint WestNeighbor = { j, iminus, k, dWest };
+					inProcess.push_back(WestNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dWest < distanceFuncPtr[k][indxWest]) {
+							distanceFuncPtr[k][indxWest] = dWest;
+						}
+					}
+				}
+			}
+		}
+
+		//North
+		if (j > 0 && i >= 0 && i < length && k >= 0 && k < height) {
+
+			jminus = j - 1;
+			indxNorth = x_new(jminus, i, width);
+			label = labelArray[k][indxNorth];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jminus, k);
+				coefSpeed = potentialFuncPtr[k][indxNorth];
+				dNorth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[k][indxNorth] = dNorth;
+					labelArray[k][indxNorth] = 2;
+					neighborPoint NorthNeighbor = { jminus, i, k, dNorth };
+					inProcess.push_back(NorthNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dNorth < distanceFuncPtr[k][indxNorth]) {
+							distanceFuncPtr[k][indxNorth] = dNorth;
+						}
+					}
+				}
+			}
+		}
+
+		//South
+		if (j < width_minus && i >= 0 && i < length && k >= 0 && k < height) {
+
+			jplus = j + 1;
+			indxSouth = x_new(jplus, i, width);
+			label = labelArray[k][indxSouth];
+
+			if (label != 1) {
+				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
+				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
+				z = select3dZ(distanceFuncPtr, length, width, height, i, jplus, k);
+				coefSpeed = potentialFuncPtr[k][indxSouth];
+				dSouth = solve3dQuadratic(x, y, z, coefSpeed);
+				if (label == 3) {
+					distanceFuncPtr[k][indxSouth] = dSouth;
+					labelArray[k][indxSouth] = 2;
+					neighborPoint SouthNeighbor = { jplus, i, k, dSouth };
+					inProcess.push_back(SouthNeighbor);
+					l = inProcess.size();
+					heapifyBottomToUp(inProcess, l - 1);
+				}
+				else {
+					if (label == 2) {
+						if (dSouth < distanceFuncPtr[k][indxSouth]) {
+							distanceFuncPtr[k][indxSouth] = dSouth;
+						}
+					}
+				}
+			}
+		}
+
+	}
+
+	size_t cpt1 = 0, cpt2 = 0,cpt3 = 0 ;
+	for (k = 0; k < height; k++) {
+		for (i = 0; i < length; i++) {
+			for (j = 0; j < width; j++) {
+				currentIndx = x_new(j, i, width);
+				if (distanceFuncPtr[k][currentIndx] == INFINITY) {
+					cpt1++;
+				}
+				if (labelArray[k][currentIndx] == 2) {
+					cpt2++;
+				}
+				if (labelArray[k][currentIndx] == 3) {
+					cpt3++;
+				}
+			}
+		}
+	}
+	cout << cpt1 << " point(s) with distance = INFINITY" << endl;;
+	cout << cpt2 << " point(s) with label = 2" << endl;
+	cout << cpt3 << " point(s) with label = 3" << endl;
+
+	for (k = 0; k < height; k++) {
+		delete[] labelArray[k];
+	}
+	delete[] labelArray;
+	return true;
+}
+
+

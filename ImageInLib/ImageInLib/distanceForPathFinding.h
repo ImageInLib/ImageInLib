@@ -18,6 +18,52 @@ using namespace std;
 		size_t x, y;
 	} Point2D;
 
+	typedef struct {
+		size_t x, y, z;
+		dataType arrival;
+	}neighborPoint;
+
+	//class neighborPoint {
+	//private:
+	//	size_t x, y, z;
+	//	dataType arrival;
+	//	size_t label;
+	//	size_t position;
+	//public:
+	//	neighborPoint(size_t i, size_t j, size_t k, size_t dimI, size_t  dimJ) {
+	//		x = j;
+	//		y = i;
+	//		z = k;
+	//		arrival = INFINITY;
+	//		label = 3;
+	//		position = x_flat(j, i, k, dimJ, dimJ);
+	//	}
+	//	size_t getJ() {
+	//		return x;
+	//	}
+	//	size_t getI() {
+	//		return y;
+	//	}
+	//	size_t getZ() {
+	//		return z;
+	//	}
+	//	size_t getLabel() {
+	//		return label;
+	//	}
+	//	size_t getPosition() {
+	//		return position;
+	//	}
+	//	dataType getArrival() {
+	//		return arrival;
+	//	}
+	//	void setArrival(dataType a) {
+	//		arrival = a;
+	//	}
+	//	void setLabel(size_t l) {
+	//		label = l;
+	//	}
+	//};
+
 	dataType solve2dQuadratic(dataType X, dataType Y, dataType W);
 
 	dataType selectX(dataType* distanceFuncPtr, const size_t dimI, const size_t dimJ, const size_t I, const size_t J);
@@ -58,6 +104,16 @@ using namespace std;
 	bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
 
 	bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const size_t length, const size_t width, const size_t height, dataType h, Point3d* seedPoints);
+
+	bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
+
+	void swapNeighbor(neighborPoint* a, neighborPoint* b);
+
+	void heapify(vector<neighborPoint> &in_Process, int length_InProcess, int i);
+
+	void createMinHeapStructure(vector<neighborPoint> &in_Process, int length_InProcess);
+
+	void heapifyBottomToUp(vector<neighborPoint> &in_Process, int i);
 
 #ifdef __cplusplus
 }
