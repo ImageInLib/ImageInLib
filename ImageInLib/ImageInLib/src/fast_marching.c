@@ -9,6 +9,8 @@
 // Local Prototypes
 // Solves the Eikonal Equation 3D
 dataType eikonalSolve3D(/*dataType uniform_speed, dataType grid_spacex, dataType grid_spacey*/ dataType T1, dataType T2, dataType T3, dataType speed);
+//Solve 3D quadratic for fast marching
+dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W);
 // Solves the Quadratic Equation
 double quadraticSolve(double a, double b, double c);
 // Swaps two pointers values
@@ -18,6 +20,103 @@ void smallSort(dataType *a, dataType *b, dataType *c);
 // Sorts 2 pointer values
 void smallSort2D(dataType *a, dataType *b);
 //==============================================================================
+dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W) {
+
+	dataType sol = 0.0, a = 0.0, b = 0.0, c = 0.0, delta = 0.0;
+
+	if (X == INFINITY && Y != INFINITY && Z != INFINITY) {
+		a = 2;
+		b = -2 * (Y + Z);
+		c = pow(Y, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(Y, Z) + W;
+		}
+	}
+
+	if (Y == INFINITY && X != INFINITY && Z != INFINITY) {
+		a = 2;
+		b = -2 * (X + Z);
+		c = pow(X, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, Z) + W;
+		}
+	}
+
+	if (Z == INFINITY && X != INFINITY && Y != INFINITY) {
+		a = 2;
+		b = -2 * (X + Y);
+		c = pow(X, 2) + pow(Y, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, Y) + W;
+		}
+	}
+
+	if (X == INFINITY && Y == INFINITY && Z != INFINITY) {
+		a = 1;
+		b = -2 * Z;
+		c = pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return Z + W;
+		}
+	}
+
+	if (X == INFINITY && Z == INFINITY && Y != INFINITY) {
+		a = 1;
+		b = -2 * Y;
+		c = pow(Y, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return Y + W;
+		}
+	}
+
+	if (Y == INFINITY && Z == INFINITY && X != INFINITY) {
+		a = 1;
+		b = -2 * X;
+		c = pow(X, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return X + W;
+		}
+	}
+
+	if (X != INFINITY && Y != INFINITY && Z != INFINITY) {
+		a = 3;
+		b = -2 * (X + Y + Z);
+		c = pow(X, 2) + pow(Y, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, min(Y, Z)) + W;
+		}
+	}
+
+}
+//-----------------------------------------------------------------------------=
 // Fast Marching Method
 void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints, Point3D* seedPoints)
 {
@@ -185,7 +284,9 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 				T03 = min(objTop.arrival, objBottom.arrival);
 				valSpeed = speedSourcePtr[posz][x_new(posx, posy, imageLength)];
 
-				neighbours->arrival = eikonalSolve3D(T01, T02, T03, valSpeed);
+				//neighbours->arrival = eikonalSolve3D(T01, T02, T03, valSpeed);
+				neighbours->arrival = solve3dQuadraticForFastMatching(T01, T02, T03, valSpeed);
+
 				if (neighbours->state == NARROWBAND)
 				{
 					// Update Band
@@ -351,7 +452,8 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 				T13 = min(neibourTop.arrival, neibourBottom.arrival);
 				valSpeed = speedSourcePtr[poz][x_new(pox, poy, imageLength)];
 
-				dataType tmp = eikonalSolve3D(T11, T12, T13, valSpeed);
+				//dataType tmp = eikonalSolve3D(T11, T12, T13, valSpeed);
+				dataType tmp = solve3dQuadraticForFastMatching(T11, T12, T13, valSpeed);
 
 				if (neighbourx->arrival == INFINITY)
 				{
