@@ -157,33 +157,33 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 	int loop = 0;
 	// Derive the points
 
-	for (k = 0; k < imageHeight; k++)
-	{
-		for (i = 0; i < imageLength; i++)
-		{
-			for (j = 0; j < imageWidth; j++)
-			{
-				// 1D representation
-				x = x_new(i, j, imageLength);
-				if (dataSourcePtr[k][x] == dataSourcePtr[k0][seedIndix]) // Fill value for block
-				{
-					//// Save the dimension with those values
-					//shapePoints[loop].x = (dataType)i;
-					//shapePoints[loop].y = (dataType)j;
-					//shapePoints[loop].z = (dataType)k;
-					shapePoints[loop].x = (dataType)seedPoints[0].x;
-					shapePoints[loop].y = (dataType)seedPoints[0].y;
-					shapePoints[loop].z = (dataType)seedPoints[0].z;
-					loop++;
-				}
-			}
-		}
-	}
+	//for (k = 0; k < imageHeight; k++)
+	//{
+	//	for (i = 0; i < imageLength; i++)
+	//	{
+	//		for (j = 0; j < imageWidth; j++)
+	//		{
+	//			// 1D representation
+	//			x = x_new(i, j, imageLength);
+	//			if (dataSourcePtr[k][x] == dataSourcePtr[k0][seedIndix]) // Fill value for block
+	//			{
+	//				//// Save the dimension with those values
+	//				//shapePoints[loop].x = (dataType)i;
+	//				//shapePoints[loop].y = (dataType)j;
+	//				//shapePoints[loop].z = (dataType)k;
+	//				shapePoints[loop].x = (dataType)seedPoints[0].x;
+	//				shapePoints[loop].y = (dataType)seedPoints[0].y;
+	//				shapePoints[loop].z = (dataType)seedPoints[0].z;
+	//				loop++;
+	//			}
+	//		}
+	//	}
+	//}
 
-	//shapePoints[loop].x = (dataType)seedPoints[0].x;
-	//shapePoints[loop].y = (dataType)seedPoints[0].y;
-	//shapePoints[loop].z = (dataType)seedPoints[0].z;
-	//loop = 1;
+	shapePoints[loop].x = (dataType)seedPoints[0].x;
+	shapePoints[loop].y = (dataType)seedPoints[0].y;
+	shapePoints[loop].z = (dataType)seedPoints[0].z;
+	loop = 1;
 
 	// Arrival times
 	Arrival_Time *shapeArrival = (Arrival_Time *)malloc(sizeof(Arrival_Time)*loop);
