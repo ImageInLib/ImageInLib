@@ -45,7 +45,7 @@ int main() {
 	//image Dimensions
 	const size_t Width = 512;
 	const size_t Length = 512;
-	const size_t Height = 406;
+	const size_t Height = 406 /*607*/; /*508*/;
 	const size_t dim2D = Width * Length;
 
 	//-------------Real 3D image -------------------------
@@ -62,13 +62,20 @@ int main() {
 	}
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
+
 	//std::string inputImagePath = inputPath + "patient2.raw";
 	//std::string inputImagePath = inputPath + "Slices304.raw";
 	////std::string inputImagePath = inputPath + "patient2_filtered.raw";
 	////std::string inputImagePath = inputPath + "filteredK100.raw";
 	////std::string inputImagePath = inputPath + "filteredK1.raw"; filteredHeatEQ
 	//std::string inputImagePath = inputPath + "filteredHeatEQ.raw";
+	 
 	std::string inputImagePath = inputPath + "filteredMC.raw";
+
+	//std::string inputImagePath = inputPath + "patient1b.raw";
+	//std::string inputImagePath = "C:/Users/Konan Allaly/Documents/Tests/output/filteredP1bMC.raw";
+
+	//std::string inputImagePath = inputPath + "patient7.raw";
 
 	//if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
 	//{
@@ -91,51 +98,51 @@ int main() {
 
 	load3dArrayRAW<dataType>(imageData, Length, Width, Height, inputImagePath.c_str());
 	
-	//std::string loaded3D = outputPath + "loaded.raw";
+	//std::string loaded3D = outputPath + "loadedP1b.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, loaded3D.c_str());
 
 	//---------- 3D cropping -------------------------------------------
 
-	//const size_t LengthNew = 130, WidthNew = 130, HeightNew = 220;
-	//dataType** cropped = new dataType* [HeightNew];
-	//dataType** distanceMap3D = new dataType* [HeightNew];
-	//dataType** potential = new dataType * [HeightNew];
-	//dataType** path3D = new dataType * [HeightNew];
-	//bool** status = new bool * [HeightNew];
-	//for (k = 0; k < HeightNew; k++) {
-	//	cropped[k] = new dataType [LengthNew * WidthNew];
-	//	distanceMap3D[k] = new dataType[LengthNew * WidthNew];
-	//	potential[k] = new dataType[LengthNew * WidthNew];
-	//	path3D[k] = new dataType[LengthNew * WidthNew];
-	//	status[k] = new bool[LengthNew * WidthNew];
-	//}
-	//if (cropped == NULL || distanceMap3D == NULL || potential == NULL || path3D == NULL || status == NULL)
-	//	return false;
+	const size_t LengthNew = 130, WidthNew = 130, HeightNew = 220;
+	dataType** cropped = new dataType* [HeightNew];
+	dataType** distanceMap3D = new dataType* [HeightNew];
+	dataType** potential = new dataType * [HeightNew];
+	dataType** path3D = new dataType * [HeightNew];
+	bool** status = new bool * [HeightNew];
+	for (k = 0; k < HeightNew; k++) {
+		cropped[k] = new dataType [LengthNew * WidthNew];
+		distanceMap3D[k] = new dataType[LengthNew * WidthNew];
+		potential[k] = new dataType[LengthNew * WidthNew];
+		path3D[k] = new dataType[LengthNew * WidthNew];
+		status[k] = new bool[LengthNew * WidthNew];
+	}
+	if (cropped == NULL || distanceMap3D == NULL || potential == NULL || path3D == NULL || status == NULL)
+		return false;
 
-	//for (k = 0; k < HeightNew; k++) {
-	//	for (i = 0; i < LengthNew; i++) {
-	//		for (j = 0; j < WidthNew; j++) {
-	//			x = x_new(i, j, LengthNew);
-	//			//cropped[k][x] = imageData[k + 150][x_new(i + 160, j + 200, Length)];
-	//			//cropped[k][x] = 0; //imageData[k + 144][x_new(i + 160, j + 200, Length)];
-	//			//cropped[k][x] = imageData[k][x_new(i, j, Length)];
-	//			cropped[k][x] = imageData[k + 70][x_new(i + 190, j + 220, Length)];
-	//			potential[k][x] = 0;
-	//			distanceMap3D[k][x] = 0;
-	//			path3D[k][x] = 0;
-	//			status[k][x] = false;
-	//		}
-	//	}
-	//}
+	for (k = 0; k < HeightNew; k++) {
+		for (i = 0; i < LengthNew; i++) {
+			for (j = 0; j < WidthNew; j++) {
+				x = x_new(i, j, LengthNew);
+				//cropped[k][x] = imageData[k + 150][x_new(i + 160, j + 200, Length)];
+				//cropped[k][x] = 0; //imageData[k + 144][x_new(i + 160, j + 200, Length)];
+				//cropped[k][x] = imageData[k][x_new(i, j, Length)];
+				cropped[k][x] = imageData[k + 70][x_new(i + 190, j + 220, Length)];
+				potential[k][x] = 0;
+				distanceMap3D[k][x] = 0;
+				path3D[k][x] = 0;
+				status[k][x] = false;
+			}
+		}
+	}
 
-	//std::string cropped3D = outputPath + "croppedImage.raw";
-	//store3dRawData<dataType>(cropped, LengthNew, WidthNew, HeightNew, cropped3D.c_str());
+	std::string cropped3D = outputPath + "croppedImage.raw";
+	store3dRawData<dataType>(cropped, LengthNew, WidthNew, HeightNew, cropped3D.c_str());
 
-	////Freeing imageData pointer 
-	//for (k = 0; k < Height; k++) {
-	//	delete[] imageData[k];
-	//}
-	//delete[] imageData;
+	//Freeing imageData pointer 
+	for (k = 0; k < Height; k++) {
+		delete[] imageData[k];
+	}
+	delete[] imageData;
 
 	//------------ //Draw 3D spiral //---------------------------
 
@@ -170,7 +177,7 @@ int main() {
 	//toBeFiltered.imageDataPtr = imageData; toBeFiltered.height = Height; toBeFiltered.length = Length; toBeFiltered.width = Width;
 	//filterImage(toBeFiltered, filterParm, method);
 	//rescaleNewRange(imageData, Length, Width, Height, 0, 4000);
-	//std::string filteredImagePath = outputPath + "filteredMC.raw";
+	//std::string filteredImagePath = outputPath + "filtered1bMC.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
 
 	//---------------Fast marching already implemented in the library -------------
@@ -178,19 +185,19 @@ int main() {
 	////cropped[20][x_new(50, 50, LengthNew)] = 1;
 	////////thresholding3dFunctionN(cropped, Length, Width, Height, thresmin, thresmax, 0, 1);
 
-	//Point3D* seedP = (Point3D*)malloc(2 * sizeof(Point3D));
-	//seedP[0].x = 100; seedP[0].y = 87; seedP[0].z = 198;
-	//seedP[1].x = 70; seedP[1].y = 37; seedP[1].z = 77;
+	//Point3D* seedPoint = (Point3D*)malloc(2 * sizeof(Point3D));
+	//seedPoint[0].x = 100; seedPoint[0].y = 87; seedPoint[0].z = 198;
+	//seedPoint[1].x = 70; seedPoint[1].y = 37; seedPoint[1].z = 77;
 
 	//Distance_Map_Params distanceParamerters; distanceParamerters.h = 1.0; distanceParamerters.initValue = 1000000000;
 	//distanceParamerters.tau = 0.4; distanceParamerters.tolerance = 0.5; distanceParamerters.objectPixel = 1;
 	//DistanceMapMethod distMethod = FAST_MARCH; //FAST_SWEEP; //BRUTE_FORCE; //ROUY_TOURIN;    
 	//dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//computeDistanceMap(distanceMap3D, cropped, LengthNew, WidthNew, HeightNew, distanceParamerters, distMethod, seedP);
+	//computeDistanceMap(distanceMap3D, cropped, LengthNew, WidthNew, HeightNew, distanceParamerters, distMethod, seedPoint);
 	//dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	//std::string ImagePath3D = outputPath + "distanceOld.raw";
-	//store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, ImagePath3D.c_str());
+	//std::string distance3D = outputPath + "distanceOld.raw";
+	//store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, distance3D.c_str());
 
 	////Freeing imageData pointer 
 	//for (k = 0; k < Height; k++) {
@@ -201,13 +208,13 @@ int main() {
 	//delete[] distanceMap3D;
 	//delete[] potential;
 	//delete[] path3D;
-	//free(seedP);
+	//free(seedPoint);
  
 	//---------------- Fast Marching new implementation ---------------------------------
 
-	//Point3d* seedP = (Point3d*)malloc(2 * sizeof(Point3d));
-	//seedP[0].x = 100; seedP[0].y = 87, seedP[0].z = 198;
-	//seedP[1].x = 70; seedP[1].y = 37, seedP[1].z = 77;
+	Point3d* seedP = (Point3d*)malloc(2 * sizeof(Point3d));
+	seedP[0].x = 100; seedP[0].y = 87, seedP[0].z = 198;
+	seedP[1].x = 70; seedP[1].y = 37, seedP[1].z = 77;
 
 	//////compute3dPotential(cropped, potential, LengthNew, WidthNew, HeightNew, seedP);
 	//////thresholding3dFunctionN(potential, LengthNew, WidthNew, HeightNew, 0, 0.06, 0, 1);
@@ -222,29 +229,29 @@ int main() {
 	//////std::string segmented = outputPath + "segmentedImage.raw";
 	//////store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, segmented.c_str());
 
-	//dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	////fastMarching3d_N(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
-	//FastMarching3DNewVersion(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
-	//dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	//std::string DistancePath = outputPath + "distanceV_New.raw";
-	//store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, DistancePath.c_str());
+	dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	//fastMarching3d_N(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
+	FastMarching3DNewVersion(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
+	dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
+	std::string DistancePath = outputPath + "distanceV2.raw";
+	store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, DistancePath.c_str());
 
-	//shortestPath3d(distanceMap3D, path3D, LengthNew, WidthNew, HeightNew, 1.0, seedP);
-	//std::string ImagePath3D = outputPath + "resultPath.raw";
-	//store3dRawData<dataType>(path3D, LengthNew, WidthNew, HeightNew, ImagePath3D.c_str());
+	shortestPath3d(distanceMap3D, path3D, LengthNew, WidthNew, HeightNew, 1.0, seedP);
+	std::string resultedPath3D = outputPath + "resultPathV2.raw";
+	store3dRawData<dataType>(path3D, LengthNew, WidthNew, HeightNew, resultedPath3D.c_str());
 
-	//free(seedP);
-	//for (k = 0; k < HeightNew; k++) {
-	//	delete[] cropped[k];
-	//	delete[] distanceMap3D[k];
-	//	delete[] potential[k];
-	//	delete[] path3D[k];
-	//}
-	//delete[] cropped;
-	//delete[] distanceMap3D;
-	//delete[] potential;
-	//delete[] path3D;
+	free(seedP);
+	for (k = 0; k < HeightNew; k++) {
+		delete[] cropped[k];
+		delete[] distanceMap3D[k];
+		delete[] potential[k];
+		delete[] path3D[k];
+	}
+	delete[] cropped;
+	delete[] distanceMap3D;
+	delete[] potential;
+	delete[] path3D;
 
 	//---------------Real 2D image -----------------------
 
@@ -455,60 +462,70 @@ int main() {
 	//delete[] pathPtr;
 
 	/////---------- Fast Marching whole image ------------------------------------
-	 
-	Point3d* seedP = (Point3d*)malloc(2 * sizeof(Point3d));
-	seedP[0].x = 262; seedP[0].y = 256, seedP[0].z = 146;
-	seedP[1].x = 294; seedP[1].y = 315, seedP[1].z = 264;
+	// 
+	//Point3d* seedP = (Point3d*)malloc(2 * sizeof(Point3d));
 
-	dataType** distanceMap3D = new dataType* [Height];
-	dataType** potential = new dataType * [Height];
-	dataType** path3D = new dataType * [Height];
-	for (k = 0; k < Height; k++) {
-		distanceMap3D[k] = new dataType[Length * Width];
-		potential[k] = new dataType[Length * Width];
-		path3D[k] = new dataType[Length * Width];
-	}
-	if (distanceMap3D == NULL || potential == NULL || path3D == NULL)
-		return false;
+	//////Patient 2
+	////seedP[0].x = 262; seedP[0].y = 256, seedP[0].z = 146;
+	////seedP[1].x = 294; seedP[1].y = 315, seedP[1].z = 264;
 
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				x = x_new(i, j, Length);
-				distanceMap3D[k][x] = 0;
-				potential[k][x] = 0;
-				path3D[k][x] = 0;
-			}
-		}
-	}
+	////Patient 1b
+	//seedP[0].x = 260; seedP[0].y = 262, seedP[0].z = 279;
+	//seedP[1].x = 289; seedP[1].y = 360, seedP[1].z = 360;
+
+	//////Patient 7
+	////seedP[0].x = 277; seedP[0].y = 349, seedP[0].z = 145;
+	////seedP[1].x = 253; seedP[1].y = 299, seedP[1].z = 353;
+
+	//dataType** distanceMap3D = new dataType* [Height];
+	//dataType** potential = new dataType * [Height];
+	//dataType** path3D = new dataType * [Height];
+	//for (k = 0; k < Height; k++) {
+	//	distanceMap3D[k] = new dataType[Length * Width];
+	//	potential[k] = new dataType[Length * Width];
+	//	path3D[k] = new dataType[Length * Width];
+	//}
+	//if (distanceMap3D == NULL || potential == NULL || path3D == NULL)
+	//	return false;
+
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			x = x_new(i, j, Length);
+	//			distanceMap3D[k][x] = 0;
+	//			potential[k][x] = 0;
+	//			path3D[k][x] = 0;
+	//		}
+	//	}
+	//}
+
+	////dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	////fastMarching3d_N(imageData, distanceMap3D, potential, Length, Width, Height, seedP);
+	////FastMarching3DNewVersion(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
+	////dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 	//dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//fastMarching3d_N(imageData, distanceMap3D, potential, Length, Width, Height, seedP);
-	//FastMarching3DNewVersion(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
+	//FastMarching3DNewVersion(imageData, distanceMap3D, potential, Length, Width, Height, seedP);
 	//dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	//cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
+	//std::string DistancePath = outputPath + "distanceP1b.raw";
+	//store3dRawData<dataType>(distanceMap3D, Length, Width, Height, DistancePath.c_str());
 
-	dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	FastMarching3DNewVersion(imageData, distanceMap3D, potential, Length, Width, Height, seedP);
-	dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	std::string DistancePath = outputPath + "distanceV_New.raw";
-	store3dRawData<dataType>(distanceMap3D, Length, Width, Height, DistancePath.c_str());
+	//shortestPath3d(distanceMap3D, path3D, Length, Width, Height, 1.0, seedP);
+	//std::string ImagePath3D = outputPath + "resultPathP1b.raw";
+	//store3dRawData<dataType>(path3D, Length, Width, Height, ImagePath3D.c_str());
 
-	shortestPath3d(distanceMap3D, path3D, Length, Width, Height, 1.0, seedP);
-	std::string ImagePath3D = outputPath + "resultPath.raw";
-	store3dRawData<dataType>(path3D, Length, Width, Height, ImagePath3D.c_str());
-
-	free(seedP);
-	for (k = 0; k < Height; k++) {
-		delete[] imageData[k];
-		delete[] distanceMap3D[k];
-		delete[] potential[k];
-		delete[] path3D[k];
-	}
-	delete[] imageData;
-	delete[] distanceMap3D;
-	delete[] potential;
-	delete[] path3D;
+	//free(seedP);
+	//for (k = 0; k < Height; k++) {
+	//	delete[] imageData[k];
+	//	delete[] distanceMap3D[k];
+	//	delete[] potential[k];
+	//	delete[] path3D[k];
+	//}
+	//delete[] imageData;
+	//delete[] distanceMap3D;
+	//delete[] potential;
+	//delete[] path3D;
 	
 
 	return EXIT_SUCCESS;
