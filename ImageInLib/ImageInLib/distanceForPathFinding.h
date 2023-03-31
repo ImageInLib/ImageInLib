@@ -68,9 +68,9 @@ using namespace std;
 
 	void swapNeighbor(neighborPoint* a, neighborPoint* b);
 
-	void heapify(vector<neighborPoint> &in_Process, int length_InProcess, int i);
+	void heapify(vector<neighborPoint> &in_Process, int i);
 
-	void createMinHeapStructure(vector<neighborPoint> &in_Process, int length_InProcess);
+	void createMinHeapStructure(vector<neighborPoint> &in_Process);
 
 	void heapifyBottomToUp(vector<neighborPoint> &in_Process, int i);
 

@@ -234,7 +234,7 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, dataType*
 	//STEP 1
 	//In labelAray we have : 1 ---> already processed, 2 ---> in process and 3 ---> not processed
 	for (k = 0; k < dim2D; k++) {
-		distanceFuncPtr[k] = BIG_VALUE;
+		distanceFuncPtr[k] = INFINITY;
 		labelArray[k] = 3;
 	}
 	//--------------------End of STEP 1 -----------------------------------
@@ -483,7 +483,6 @@ bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, dataType*
 	//cout << "\n" << cpt << " pixels with distance < 0 : " << endl;
 	//cout << "\nNumber of processed Point :" << i_Processed.size() << endl;
 
-	//free(labelArray);
 	delete[] labelArray;
 
 	return true;
@@ -1024,7 +1023,7 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 		for (i = 0; i < length; i++) {
 			for (j = 0; j < width; j++) {
 				xd = x_new(j, i, width);
-				distanceFuncPtr[k][xd] = BIG_VALUE;
+				distanceFuncPtr[k][xd] = INFINITY;
 				labelArray[k][xd] = 3;
 			}
 		}
@@ -1143,18 +1142,8 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 
 		//Set the distance to the processed pixel
 
-		//if (distanceFuncPtr[k][currentIndx] > minSolution) {
-		//	distanceFuncPtr[k][currentIndx] = minSolution;
-		//}
-
-		//cout << "min distance = " << minSolution << endl;
-		 
 		distanceFuncPtr[k][currentIndx] = minSolution;
 		labelArray[k][currentIndx] = 1;
-
-		//i_Processed.push_back(i); 
-		//j_Processed.push_back(j);
-		//k_Processed.push_back(k);
 
 		//Remove the processed pixel from inProcess
 		if (indxSol == 0 ) {
@@ -1357,21 +1346,21 @@ bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataT
 
 	}
 
-	for (k = 0; k < height; k++) {
-		for (i = 0; i < length; i++) {
-			for (j = 0; j < width; j++) {
-				if (labelArray[k][x_new(j, i, width)] == 3) {
-					cpt++;
-				}
-			}
-		}
-	}
-	if (cpt == 0) {
-		cout << "\nAll the pixels have been visited" << endl;
-	}
-	else {
-		cout << "\n" << cpt << " pixels haven't been visited" << endl;
-	}
+	//for (k = 0; k < height; k++) {
+	//	for (i = 0; i < length; i++) {
+	//		for (j = 0; j < width; j++) {
+	//			if (labelArray[k][x_new(j, i, width)] == 3) {
+	//				cpt++;
+	//			}
+	//		}
+	//	}
+	//}
+	//if (cpt == 0) {
+	//	cout << "\nAll the pixels have been visited" << endl;
+	//}
+	//else {
+	//	cout << "\n" << cpt << " pixels haven't been visited" << endl;
+	//}
 
 	for (k = 0; k < height; k++) {
 		delete[] labelArray[k];
@@ -1473,19 +1462,20 @@ void swapNeighbor(neighborPoint* a, neighborPoint* b) {
 	*b = temp;
 }
 
-void heapify(vector<neighborPoint>& in_Process, int length_InProcess, int i) {
+void heapify(vector<neighborPoint>& in_Process, int i) {
 
+	int length_array = in_Process.size();
 	int current = i;
 	int left_child = 2 * i + 1;
 	int right_child = 2 * i + 2;
 
 	dataType val_current = 0.0, val_left = 0.0, val_right = 0.0;
 
-	if (current >= 0 && current < length_InProcess) {
+	if (current >= 0 && current < length_array) {
 		val_current = in_Process[current].arrival;
 	}
 	
-	if (left_child < length_InProcess) {
+	if (left_child < length_array) {
 		val_left = in_Process[left_child].arrival;
 		if (val_left < val_current) {
 			current = left_child;
@@ -1493,7 +1483,7 @@ void heapify(vector<neighborPoint>& in_Process, int length_InProcess, int i) {
 		}
 	}
 
-	if (right_child < length_InProcess) {
+	if (right_child < length_array) {
 		val_right = in_Process[right_child].arrival;
 		if (val_right < val_current) {
 			current = right_child;
@@ -1502,45 +1492,22 @@ void heapify(vector<neighborPoint>& in_Process, int length_InProcess, int i) {
 
 	if (current != i) {
 		swapNeighbor(&in_Process[i], &in_Process[current]);
-		heapify(in_Process, length_InProcess, current);
+		heapify(in_Process, current);
 	}
 
 }
 
-void createMinHeapStructure(vector<neighborPoint>& in_Process, int length_InProcess){
-	int ind, start = length_InProcess / 2 - 1; 
+void createMinHeapStructure(vector<neighborPoint>& in_Process){
+	int length_array = in_Process.size();
+	int ind, start = length_array / 2 - 1; 
 	for (ind = start; ind >= 0; ind--) {
-		heapify(in_Process, length_InProcess, ind);
+		heapify(in_Process, ind);
 	}
 }
 
 void heapifyBottomToUp(vector<neighborPoint>& in_Process, int i) {
 
-	//int l = in_Process.size();
 	int current = i;
-
-	//if (i > 0 && i % 2 == 0) {
-	//	int parent = (i - 1) / 2;
-	//	int brother = i - 1;
-	//	dataType val_current = in_Process[current].arrival;
-	//	dataType val_parent = in_Process[parent].arrival;
-	//	dataType val_brother = in_Process[brother].arrival;
-	//	if (val_current < val_parent) {
-	//		current = parent;
-	//		val_current = in_Process[current].arrival;
-	//	}
-	//	if (val_brother < val_parent) {
-	//		current = brother;
-	//	}
-	//}
-	//else {
-	//	int parent = (i - 1) / 2;
-	//	dataType val_current = in_Process[current].arrival;
-	//	dataType val_parent = in_Process[parent].arrival;
-	//	if (val_current < val_parent) {
-	//		current = parent;
-	//	}
-	//}
 
 	if (i > 0) {
 		int parent = (i - 1) / 2;
@@ -1598,9 +1565,6 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 	i = seedPoints[0].y;
 	k = seedPoints[0].z;
 	currentIndx = x_new(j, i, width);
-	//current.label = 1;
-	//current.arrival = 0.0;
-	//current = {j, i, k, 1, poxy, 0.0};
 	distanceFuncPtr[k][currentIndx] = 0.0;
 	labelArray[k][currentIndx] = 1;
 
@@ -1698,9 +1662,9 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 		labelArray[k][indxWest] = 2;
 	}
 
-	int n = inProcess.size();
+	//int n = inProcess.size();
 
-	createMinHeapStructure(inProcess, n);
+	createMinHeapStructure(inProcess);
 	size_t label = 0;
 
 	int l = 0, m = 0;
@@ -1709,53 +1673,22 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//processed the minimum
 		current = inProcess[0]; // index 0 exist because, if not we will be out of the while loop
-
-		//cout << "min distance find by heap =  " << current.arrival << endl;
-
-		//dataType minS = INFINITY;
-		//for (size_t t = 0; t < inProcess.size(); t++) {
-		//	if (minS > inProcess[t].arrival) {
-		//		minS = inProcess[t].arrival;
-		//	}
-		//}
-
-		//cout << "min distance find by classical min search =  " << minS << endl;
-
 		j = current.x;
 		i = current.y;
 		k = current.z;
 		currentIndx = x_new(j, i, width);
 		labelArray[k][currentIndx] = 1;
 		distanceFuncPtr[k][currentIndx] = current.arrival;
-
-		//if (distanceFuncPtr[k][poxy] > current.arrival) {
-		//	distanceFuncPtr[k][poxy] = current.arrival;
-		//}
-
 		l = inProcess.size();
-		//if (l > 1) {
-		//	swapNeighbor(&inProcess[0], &inProcess[l - 1]);
-		//}
-
-		//dataType minSol = INFINITY;
-		//for (int t = 0; i < inProcess.size(); t++) {
-		//	if (minSol > inProcess[t].arrival) {
-		//		minSol = inProcess[t].arrival;
-		//	}
-		//}
-
 		swapNeighbor(&inProcess[0], &inProcess[l - 1]);
 		inProcess.pop_back();
-		m = inProcess.size();
-		heapify(inProcess, m, 0);
+		heapify(inProcess, 0);
 		
 		//Treat neighbors of the minimum in the narrow band
 		//Bottom
 		if (k < height_minus && i >= 0 && i < length && j >= 0 && j < width) {
-
 			kplus = k + 1;
 			label = labelArray[kplus][currentIndx];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, i, j, kplus);
 				y = select3dY(distanceFuncPtr, length, width, height, i, j, kplus);
@@ -1782,10 +1715,8 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//Top
 		if (k > 0 && j >= 0 && j < width && i >= 0 && i < length) {
-			
 			kminus = k - 1;
 			label = labelArray[kminus][currentIndx];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, i, j, kminus);
 				y = select3dY(distanceFuncPtr, length, width, height, i, j, kminus);
@@ -1812,11 +1743,9 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//East
 		if (i < length_minus && j >= 0 && j < width && k >= 0 && k < height) {
-
 			iplus = i + 1;
 			indxEast = x_new(j, iplus, width);
 			label = labelArray[k][indxEast];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, iplus, j, k);
 				y = select3dY(distanceFuncPtr, length, width, height, iplus, j, k);
@@ -1843,11 +1772,9 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//West
 		if (i > 0 && j >= 0 && j < width && k >= 0 && k < height) {
-
 			iminus = i - 1;
 			indxWest = x_new(j, iminus, width);
 			label = labelArray[k][indxWest];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, iminus, j, k);
 				y = select3dY(distanceFuncPtr, length, width, height, iminus, j, k);
@@ -1874,11 +1801,9 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//North
 		if (j > 0 && i >= 0 && i < length && k >= 0 && k < height) {
-
 			jminus = j - 1;
 			indxNorth = x_new(jminus, i, width);
 			label = labelArray[k][indxNorth];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, i, jminus, k);
 				y = select3dY(distanceFuncPtr, length, width, height, i, jminus, k);
@@ -1905,11 +1830,9 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 
 		//South
 		if (j < width_minus && i >= 0 && i < length && k >= 0 && k < height) {
-
 			jplus = j + 1;
 			indxSouth = x_new(jplus, i, width);
 			label = labelArray[k][indxSouth];
-
 			if (label != 1) {
 				x = select3dX(distanceFuncPtr, length, width, height, i, jplus, k);
 				y = select3dY(distanceFuncPtr, length, width, height, i, jplus, k);
@@ -1933,34 +1856,34 @@ bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPt
 				}
 			}
 		}
-
 	}
 
-	size_t cpt1 = 0, cpt2 = 0,cpt3 = 0 ;
-	for (k = 0; k < height; k++) {
-		for (i = 0; i < length; i++) {
-			for (j = 0; j < width; j++) {
-				currentIndx = x_new(j, i, width);
-				if (distanceFuncPtr[k][currentIndx] == INFINITY) {
-					cpt1++;
-				}
-				if (labelArray[k][currentIndx] == 2) {
-					cpt2++;
-				}
-				if (labelArray[k][currentIndx] == 3) {
-					cpt3++;
-				}
-			}
-		}
-	}
-	cout << cpt1 << " point(s) with distance = INFINITY" << endl;;
-	cout << cpt2 << " point(s) with label = 2" << endl;
-	cout << cpt3 << " point(s) with label = 3" << endl;
+	//size_t cpt1 = 0, cpt2 = 0,cpt3 = 0 ;
+	//for (k = 0; k < height; k++) {
+	//	for (i = 0; i < length; i++) {
+	//		for (j = 0; j < width; j++) {
+	//			currentIndx = x_new(j, i, width);
+	//			if (distanceFuncPtr[k][currentIndx] == INFINITY) {
+	//				cpt1++;
+	//			}
+	//			if (labelArray[k][currentIndx] == 2) {
+	//				cpt2++;
+	//			}
+	//			if (labelArray[k][currentIndx] == 3) {
+	//				cpt3++;
+	//			}
+	//		}
+	//	}
+	//}
+	//cout << cpt1 << " point(s) with distance = INFINITY" << endl;;
+	//cout << cpt2 << " point(s) with label = 2" << endl;
+	//cout << cpt3 << " point(s) with label = 3" << endl;
 
 	for (k = 0; k < height; k++) {
 		delete[] labelArray[k];
 	}
 	delete[] labelArray;
+
 	return true;
 }
 
