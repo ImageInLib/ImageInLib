@@ -8,7 +8,7 @@
 //==============================================================================
 // Local Prototypes
 // Solves the Eikonal Equation 3D
-dataType eikonalSolve3D(/*dataType uniform_speed, dataType grid_spacex, dataType grid_spacey*/ dataType T1, dataType T2, dataType T3, dataType speed);
+dataType eikonalSolve3D(/*dataType uniform_speed, dataType grid_spacex, dataType grid_spacey*/ dataType T1, dataType T2, dataType T3);
 //Solve 3D quadratic for fast marching
 dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W);
 // Solves the Quadratic Equation
@@ -20,6 +20,7 @@ void smallSort(dataType *a, dataType *b, dataType *c);
 // Sorts 2 pointer values
 void smallSort2D(dataType *a, dataType *b);
 //==============================================================================
+//use to solve fast marching on uniform grid and when the speed is not constant/uniform
 dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W) {
 
 	dataType sol = 0.0, a = 0.0, b = 0.0, c = 0.0, delta = 0.0;
@@ -118,7 +119,7 @@ dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dat
 }
 //-----------------------------------------------------------------------------=
 // Fast Marching Method
-void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints, Point3D* seedPoints)
+void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints, Point3D* seedPoints)
 {
 	// 1. Initialization
 	size_t i;
@@ -282,10 +283,8 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 				T01 = min(objBegin.arrival, objEnd.arrival);
 				T02 = min(objLeft.arrival, objRight.arrival);
 				T03 = min(objTop.arrival, objBottom.arrival);
-				valSpeed = speedSourcePtr[posz][x_new(posx, posy, imageLength)];
 
-				//neighbours->arrival = eikonalSolve3D(T01, T02, T03, valSpeed);
-				neighbours->arrival = solve3dQuadraticForFastMatching(T01, T02, T03, valSpeed);
+				neighbours->arrival = eikonalSolve3D(T01, T02, T03);
 
 				if (neighbours->state == NARROWBAND)
 				{
@@ -371,7 +370,7 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 			else
 			{
 				// Solve T
-				dataType T11, T12, T13, valSpeed;
+				dataType T11, T12, T13;
 				// Access Object Coordinate Positions
 				int pox = neighbourx->xpos;
 				int poy = neighbourx->ypos;
@@ -450,10 +449,8 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 				T11 = min(neibourBegin.arrival, neibourEnd.arrival);
 				T12 = min(neibourLeft.arrival, neibourRight.arrival);
 				T13 = min(neibourTop.arrival, neibourBottom.arrival);
-				valSpeed = speedSourcePtr[poz][x_new(pox, poy, imageLength)];
 
-				//dataType tmp = eikonalSolve3D(T11, T12, T13, valSpeed);
-				dataType tmp = solve3dQuadraticForFastMatching(T11, T12, T13, valSpeed);
+				dataType tmp = eikonalSolve3D(T11, T12, T13);
 
 				if (neighbourx->arrival == INFINITY)
 				{
@@ -491,9 +488,9 @@ void fastMarching3D(dataType** speedSourcePtr, struct Node * band, Obj_Structure
 	// 3. Finalization - Exit the function after calculating the new values
 }
 //==============================================================================
-dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3, dataType speed)
+dataType eikonalSolve3D(dataType T1, dataType T2, dataType T3)
 {
-	dataType uniform_speed = speed; //1.0;
+	dataType uniform_speed = 1.0;
 	dataType grid_spacex = 1.0, grid_spacey = 1.0, grid_spacez = 1.0;
 	double T, Tp, grid_T;
 	double a, b, c;

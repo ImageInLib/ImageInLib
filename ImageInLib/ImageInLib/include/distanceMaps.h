@@ -22,7 +22,7 @@ extern "C" {
 		dataType tolerance;
 	} Distance_Map_Params;
 
-	void computeDistanceMap(dataType **, dataType **, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, Distance_Map_Params distParams, DistanceMapMethod method, Point3D* seedPoints);
+	void computeDistanceMap(dataType **, dataType **, const size_t imageLength, const size_t imageWidth, const size_t imageHeight, Distance_Map_Params distParams, DistanceMapMethod method);
 
 #ifdef __cplusplus
 }
