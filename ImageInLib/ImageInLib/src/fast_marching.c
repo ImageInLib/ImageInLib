@@ -117,9 +117,9 @@ dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dat
 	}
 
 }
-//-----------------------------------------------------------------------------=
+//-----------------------------------------------------------------------------= 
 // Fast Marching Method
-void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints, Point3D* seedPoints)
+void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
 {
 	// 1. Initialization
 	size_t i;
