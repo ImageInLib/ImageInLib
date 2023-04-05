@@ -14,14 +14,34 @@ extern "C" {
 
 using namespace std;
 
-	typedef struct {
-		size_t x, y;
-	} Point2D;
+	//2D functions
 
 	typedef struct {
-		size_t x, y, z;
+		size_t x, y;
+	} point2D;
+
+	typedef struct {
+		size_t x, y;
 		dataType arrival;
-	}neighborPoint;
+	}pointFastMarching2D;
+
+	// heap functions
+
+	void swap2dPoints(pointFastMarching2D* a, pointFastMarching2D* b);
+
+	void heapifyDown2D(vector<pointFastMarching2D>& in_Process, int pos);
+
+	void heapifyUp2D(vector<pointFastMarching2D>& in_Process, int pos);
+
+	void heapifyVector2D(vector<pointFastMarching2D>& in_Process);
+
+	void deleteRootHeap2D(vector<pointFastMarching2D>& in_Process);
+
+	void addPointHeap2D(vector<pointFastMarching2D>& in_Process, pointFastMarching2D point);
+
+	bool fastMarching2D(dataType* imageDataPtr, dataType* distancePtr, dataType* potentialPtr, const size_t height, const size_t width, point2D* seedPoints);
+
+	//fast marching functions
 
 	dataType solve2dQuadratic(dataType X, dataType Y, dataType W);
 
@@ -33,18 +53,21 @@ using namespace std;
 
 	dataType computeGradientNorm2d(dataType* gradientVectorX, dataType* gradientVectorY, const size_t height, const size_t width);
 
-	bool computePotential(dataType * imageDataPtr, dataType* potentialFuncPtr, const size_t height, const size_t width, Point2D* seedPoints);
+	bool computePotential(dataType * imageDataPtr, dataType* potentialFuncPtr, const size_t height, const size_t width, point2D* seedPoints);
 
-	bool fastMarching2d(dataType* imageDataPtr, dataType* distanceFuncPtr, dataType* potentialFuncPtr, const size_t height, const size_t width, Point2D* seedPoints);
-
-	bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t height, const size_t width, dataType h, Point2D* seedPoints);
+	bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const size_t height, const size_t width, dataType h, point2D* seedPoints);
 
 	//==============================================================
 	 
 	//3D functions
 	typedef struct {
 		size_t x, y, z;
-	} Point3d;
+	} point3d;
+
+	typedef struct {
+		size_t x, y, z;
+		dataType arrival;
+	}pointFastMarching3D;
 
 	dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W);
 
@@ -58,21 +81,26 @@ using namespace std;
 
 	bool compute3dImageGradient(dataType** imageDataPtr, dataType** gradientVectorX, dataType** gradientVectorY, dataType** gradientVectorZ, const size_t lenght, const size_t width, const size_t height, dataType h);
 
-	bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
+	bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, point3d* seedPoints);
 
-	bool fastMarching3d_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
+	//heap functions
+	void swap3dPoints(pointFastMarching3D* a, pointFastMarching3D* b);
 
-	bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const size_t length, const size_t width, const size_t height, dataType h, Point3d* seedPoints);
+	void heapifyDown3D(vector<pointFastMarching3D>& in_Process, int i);
 
-	bool FastMarching3DNewVersion(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, Point3d* seedPoints);
+	void heapifyVector3D(vector<pointFastMarching3D>& in_Process);
 
-	void swapNeighbor(neighborPoint* a, neighborPoint* b);
+	void heapifyUp3D(vector<pointFastMarching3D>& in_Process, int i);
 
-	void heapify(vector<neighborPoint> &in_Process, int i);
+	void deleteRootHeap3D(vector<pointFastMarching3D>& in_Process);
 
-	void createMinHeapStructure(vector<neighborPoint> &in_Process);
+	void addPointHeap3D(vector<pointFastMarching3D>& in_Process, pointFastMarching3D point);
 
-	void heapifyBottomToUp(vector<neighborPoint> &in_Process, int i);
+	bool fastMarching3D_N(dataType** imageDataPtr, dataType** distanceFuncPtr, dataType** potentialFuncPtr, const size_t length, const size_t width, const size_t height, point3d* seedPoints);
+
+	bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const size_t length, const size_t width, const size_t height, dataType h, point3d* seedPoints);
+
+	//================================================================
 
 #ifdef __cplusplus
 }
