@@ -209,7 +209,7 @@ void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[
 			else
 			{
 				// Solve T's
-				dataType T01, T02, T03, valSpeed;
+				dataType T01, T02, T03;
 				// Access Object Coordinate Positions
 				int posx = neighbours->xpos;
 				int posy = neighbours->ypos;
