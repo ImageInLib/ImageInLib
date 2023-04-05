@@ -213,58 +213,58 @@ int main() {
 
 	//---------------Real 2D image -----------------------
 
-	////Extract Slice of interest
+	//Extract Slice of interest
 
-	//dataType* real2dImageData = new dataType [Height * Width];
-	//dataType* loadingPtr = new dataType[Height * Width];
+	dataType* real2dImageData = new dataType [Height * Width];
+	dataType* loadingPtr = new dataType[Height * Width];
 
-	//i = 0;
-	////size_t cst = 238; // test 1 and 2
-	////size_t cst = 234; // test 3
-	//size_t cst = 285; // test 4
-	////size_t cst = 280; // test 5
-	//for (k = 0; k < Height; k++) {
-	//	for (j = 0; j < Width; j++) {
-	//		x = x_new(cst, j, Length);
-	//		loadingPtr[i] = imageData[k][x];
-	//		i++;
-	//	}
-	//}
+	i = 0;
+	//size_t cst = 238; // test 1 and 2
+	//size_t cst = 234; // test 3
+	size_t cst = 285; // test 4
+	//size_t cst = 280; // test 5
+	for (k = 0; k < Height; k++) {
+		for (j = 0; j < Width; j++) {
+			x = x_new(cst, j, Length);
+			loadingPtr[i] = imageData[k][x];
+			i++;
+		}
+	}
 
-	//for (i = 0; i < Height; i++) {
-	//	for (j = 0; j < Width; j++) {
-	//		real2dImageData[x_new(i, j, Height)] = loadingPtr[x_new(Height - i - 1, Width - j - 1, Height)];
-	//	}
-	//}
+	for (i = 0; i < Height; i++) {
+		for (j = 0; j < Width; j++) {
+			real2dImageData[x_new(i, j, Height)] = loadingPtr[x_new(Height - i - 1, Width - j - 1, Height)];
+		}
+	}
 
-	////std::string real2dImagePath = outputPath + "loaded2dImage.raw";
-	////store2dRawData<dataType>(real2dImageData, Height, Width, real2dImagePath.c_str());
+	//std::string real2dImagePath = outputPath + "loaded2dImage.raw";
+	//store2dRawData<dataType>(real2dImageData, Height, Width, real2dImagePath.c_str());
 
-	//delete[] loadingPtr;
-	//for (k = 0; k < Height; k++) {
-	//	delete[] imageData[k];
-	//}
-	//delete[] imageData;
-	////delete[] real2dImageData;
+	delete[] loadingPtr;
+	for (k = 0; k < Height; k++) {
+		delete[] imageData[k];
+	}
+	delete[] imageData;
+	//delete[] real2dImageData;
 
-	//point2D* startAndEnd = (point2D*)malloc(2 * sizeof(point2D));
+	point2D* startAndEnd = (point2D*)malloc(2 * sizeof(point2D));
 	 
-	////test 1
-	//startAndEnd[0].x = 292; startAndEnd[0].y = 336;
-	//startAndEnd[1].x = 333; startAndEnd[1].y = 192;
+	//test 1
+	startAndEnd[0].x = 292; startAndEnd[0].y = 336;
+	startAndEnd[1].x = 333; startAndEnd[1].y = 192;
 
-	////test 2
-	//startAndEnd[0].x = 246; startAndEnd[0].y = 277;
-	//startAndEnd[1].x = 250; startAndEnd[1].y = 135;
+	//test 2
+	startAndEnd[0].x = 246; startAndEnd[0].y = 277;
+	startAndEnd[1].x = 250; startAndEnd[1].y = 135;
 
-	////test 3
-	//startAndEnd[0].x = 205; startAndEnd[0].y = 296;
-	//startAndEnd[1].x = 240; startAndEnd[1].y = 188;
+	//test 3
+	startAndEnd[0].x = 205; startAndEnd[0].y = 296;
+	startAndEnd[1].x = 240; startAndEnd[1].y = 188;
 
-	////test 4
-	//startAndEnd[1].x = 224; startAndEnd[1].y = 194;
-	//startAndEnd[0].x = 225 /*213*/; startAndEnd[0].y = 130 /*133*/;
-	////startAndEnd[0].x = 213; startAndEnd[0].y = 133;
+	//test 4
+	startAndEnd[1].x = 224; startAndEnd[1].y = 194;
+	startAndEnd[0].x = 225 /*213*/; startAndEnd[0].y = 130 /*133*/;
+	//startAndEnd[0].x = 213; startAndEnd[0].y = 133;
 
 	////test 5
 	//startAndEnd[0].x = 231; startAndEnd[0].y = 203;
@@ -368,117 +368,55 @@ int main() {
 
 	//----------- 2D Fast Marching ------------------------
 
-	//dataType* distanceMap = new dataType[Height * Width];
-	//dataType* potentialPtr = new dataType[Height * Width];
-	//dataType* pathPtr = new dataType[Height * Width];
+	dataType* distanceMap = new dataType[Height * Width];
+	dataType* potentialPtr = new dataType[Height * Width];
+	dataType* pathPtr = new dataType[Height * Width];
 
-	//for (i = 0; i < Height; i++) {
-	//	for (j = 0; j < Width; j++) {
-	//		x = x_new(j, i, Width);
-	//		potentialPtr[x] = 0;
-	//		distanceMap[x] = 0;
-	//		pathPtr[x] = 0;
-	//	}
-	//}
-
-	//dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//fastMarching2D(real2dImageData, distanceMap, potentialPtr, Height, Width, startAndEnd);
-	//dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//cout << "Execution time : " << secondCpuTime - firstCpuTime << " s" << endl;
-	////std::string distanceOutPut = outputPath + "distanceNew.raw";
-	////store2dRawData<dataType>(distanceMap, Height, Width, distanceOutPut.c_str());
-	////distanceOutPut = outputPath + "potentialNew.raw";
-	////store2dRawData<dataType>(potentialPtr, Height, Width, distanceOutPut.c_str());
-
-	//shortestPath2d(distanceMap, pathPtr, Height, Width, 1.0, startAndEnd);
-	////distanceOutPut = outputPath + "pathNew.raw";
-	////store2dRawData<dataType>(pathPtr, Height, Width, distanceOutPut.c_str());
-
-	//for (i = 0; i < Height; i++) {
-	//	for (j = 0; j < Width; j++) {
-	//		x = x_new(j, i, Width);
-	//		if (pathPtr[x] == 1) {
-	//			real2dImageData[x] = 0;
-	//			//artificial2dImage[x] = 0;
-	//		}
-	//	}
-	//}
-
-	//std::string outPath = outputPath + "ImagePlusPathNew.raw";
-	//store2dRawData<dataType>(real2dImageData, Height, Width, outPath.c_str());
-	////store2dRawData<dataType>(artificial2dImage, Height, Width, outPath.c_str());
-
-	////////outPath = outputPath + "DistancePlusPath.raw";
-	////////store2dRawData<dataType>(distanceMap, Height, Width, outPath.c_str());
-
-	//free(startAndEnd);
-	//delete[] real2dImageData;
-	////delete[] artificial2dImage;
-	//delete[] distanceMap;
-	//delete[] potentialPtr;
-	//delete[] pathPtr;
-
-	/////---------- Fast Marching whole image ------------------------------------
-	 
-	point3d* seedP = new point3d[2];
-
-	//Patient 2
-	seedP[0].x = 262; seedP[0].y = 256, seedP[0].z = 146;
-	seedP[1].x = 294; seedP[1].y = 315, seedP[1].z = 264;
-
-	////Patient 1b
-	//seedP[0].x = 260; seedP[0].y = 262, seedP[0].z = 279;
-	//seedP[1].x = 289; seedP[1].y = 360, seedP[1].z = 360;
-
-	//////Patient 7
-	////seedP[0].x = 277; seedP[0].y = 349, seedP[0].z = 145;
-	////seedP[1].x = 253; seedP[1].y = 299, seedP[1].z = 353;
-
-	dataType** distanceMap3D = new dataType* [Height];
-	dataType** potential = new dataType * [Height];
-	dataType** path3D = new dataType * [Height];
-	dataType** edgeAorta = new dataType * [Height];
-	for (k = 0; k < Height; k++) {
-		distanceMap3D[k] = new dataType[Length * Width];
-		potential[k] = new dataType[Length * Width];
-		path3D[k] = new dataType[Length * Width];
-	}
-	if (distanceMap3D == NULL || potential == NULL || path3D == NULL)
-		return false;
-
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				x = x_new(i, j, Length);
-				distanceMap3D[k][x] = 0;
-				potential[k][x] = 0;
-				path3D[k][x] = 0;
-			}
+	for (i = 0; i < Height; i++) {
+		for (j = 0; j < Width; j++) {
+			x = x_new(j, i, Width);
+			potentialPtr[x] = 0;
+			distanceMap[x] = 0;
+			pathPtr[x] = 0;
 		}
 	}
 
 	dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	fastMarching3D_N(imageData, distanceMap3D, potential, Length, Width, Height, seedP);
+	fastMarching2D(real2dImageData, distanceMap, potentialPtr, Height, Width, startAndEnd);
 	dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	//std::string DistancePath = outputPath + "distanceP2.raw";
-	//store3dRawData<dataType>(distanceMap3D, Length, Width, Height, DistancePath.c_str());
+	cout << "Execution time : " << secondCpuTime - firstCpuTime << " s" << endl;
+	//std::string distanceOutPut = outputPath + "distanceNew.raw";
+	//store2dRawData<dataType>(distanceMap, Height, Width, distanceOutPut.c_str());
+	//distanceOutPut = outputPath + "potentialNew.raw";
+	//store2dRawData<dataType>(potentialPtr, Height, Width, distanceOutPut.c_str());
 
-	shortestPath3d(distanceMap3D, path3D, Length, Width, Height, 1.0, seedP);
-	std::string ImagePath3D = outputPath + "resultPathP2.raw";
-	store3dRawData<dataType>(path3D, Length, Width, Height, ImagePath3D.c_str());
+	shortestPath2d(distanceMap, pathPtr, Height, Width, 1.0, startAndEnd);
+	//distanceOutPut = outputPath + "pathNew.raw";
+	//store2dRawData<dataType>(pathPtr, Height, Width, distanceOutPut.c_str());
 
-	delete[] seedP;
-	for (k = 0; k < Height; k++) {
-		delete[] imageData[k];
-		delete[] distanceMap3D[k];
-		delete[] potential[k];
-		delete[] path3D[k];
+	for (i = 0; i < Height; i++) {
+		for (j = 0; j < Width; j++) {
+			x = x_new(j, i, Width);
+			if (pathPtr[x] == 1) {
+				real2dImageData[x] = 0;
+				//artificial2dImage[x] = 0;
+			}
+		}
 	}
-	delete[] imageData;
-	delete[] distanceMap3D;
-	delete[] potential;
-	delete[] path3D;
+
+	std::string outPath = outputPath + "ImagePlusPathNew.raw";
+	store2dRawData<dataType>(real2dImageData, Height, Width, outPath.c_str());
+	//store2dRawData<dataType>(artificial2dImage, Height, Width, outPath.c_str());
+
+	//////outPath = outputPath + "DistancePlusPath.raw";
+	//////store2dRawData<dataType>(distanceMap, Height, Width, outPath.c_str());
+
+	free(startAndEnd);
+	delete[] real2dImageData;
+	//delete[] artificial2dImage;
+	delete[] distanceMap;
+	delete[] potentialPtr;
+	delete[] pathPtr;
 	
 	return EXIT_SUCCESS;
 }
