@@ -139,8 +139,9 @@ int main() {
 				//cropped[k][x] = imageData[k + 150][x_new(i + 160, j + 200, Length)];
 				//cropped[k][x] = 0; //imageData[k + 144][x_new(i + 160, j + 200, Length)];
 				//cropped[k][x] = imageData[k][x_new(i, j, Length)];
-				cropped[k][x] = imageData[k + 70][x_new(i + 190, j + 220, Length)];
+				cropped[k][x] = 0; // imageData[k + 70][x_new(i + 190, j + 220, Length)];
 				potential[k][x] = 0;
+				distanceMap3D[k][x] = 0;
 				distanceMap3D[k][x] = 0;
 				path3D[k][x] = 0;
 				status[k][x] = false;
@@ -148,62 +149,34 @@ int main() {
 		}
 	}
 
-	////cropped[20][x_new(50, 50, LengthNew)] = 1;
+	cropped[0][0] = 1;
 	//thresholding3dFunctionN(cropped, LengthNew, WidthNew, HeightNew, 1050, 1200, 0, 1);
 
-	//Point3D* seedPoint = (Point3D*)malloc(2 * sizeof(Point3D));
-	//seedPoint[0].x = 100; seedPoint[0].y = 87; seedPoint[0].z = 198;
-	//seedPoint[1].x = 70; seedPoint[1].y = 37; seedPoint[1].z = 77;
+	Point3D* seedPoint = (Point3D*)malloc(2 * sizeof(Point3D));
+	seedPoint[0].x = 100; seedPoint[0].y = 87; seedPoint[0].z = 198;
+	seedPoint[1].x = 70; seedPoint[1].y = 37; seedPoint[1].z = 77;
 
-	//Distance_Map_Params distanceParamerters; distanceParamerters.h = 1.0; distanceParamerters.initValue = 1000000000;
-	//distanceParamerters.tau = 0.4; distanceParamerters.tolerance = 0.5; distanceParamerters.objectPixel = 0;
-	//DistanceMapMethod distMethod =  FAST_MARCH; // FAST_SWEEP; ROUY_TOURIN;  BRUTE_FORCE;
-	//dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//computeDistanceMap(distanceMap3D, cropped, LengthNew, WidthNew, HeightNew, distanceParamerters, distMethod);
-	//dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	//std::string distance3D = outputPath + "distance.raw";
-	//store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, distance3D.c_str());
-
-	////Freeing imageData pointer 
-	//for (k = 0; k < Height; k++) {
-	//	delete[] imageData[k];
-	//}
-	//delete[] imageData;
-	//delete[] cropped;
-	//delete[] distanceMap3D;
-	//delete[] potential;
-	//delete[] path3D;
-	//free(seedPoint);
- 
-	//---------------- Fast Marching new implementation ---------------------------------
-
-	point3d* seedP = (point3d*)malloc(2 * sizeof(point3d));
-	seedP[0].x = 100; seedP[0].y = 87, seedP[0].z = 198;
-	seedP[1].x = 70; seedP[1].y = 37, seedP[1].z = 77;
-
+	Distance_Map_Params distanceParamerters; distanceParamerters.h = 1.0; distanceParamerters.initValue = 1000000000;
+	distanceParamerters.tau = 0.4; distanceParamerters.tolerance = 0.5; distanceParamerters.objectPixel = 1;
+	DistanceMapMethod distMethod = FAST_MARCH;  // ROUY_TOURIN; // FAST_SWEEP; //  BRUTE_FORCE;
 	dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	fastMarching3D_N(cropped, distanceMap3D, potential, LengthNew, WidthNew, HeightNew, seedP);
+	computeDistanceMap(distanceMap3D, cropped, LengthNew, WidthNew, HeightNew, distanceParamerters, distMethod);
 	dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	std::string DistancePath = outputPath + "distanceV2.raw";
-	store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, DistancePath.c_str());
+	std::string distance3D = outputPath + "distance.raw";
+	store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, distance3D.c_str());
 
-	shortestPath3d(distanceMap3D, path3D, LengthNew, WidthNew, HeightNew, 1.0, seedP);
-	std::string resultedPath3D = outputPath + "resultPathV2.raw";
-	store3dRawData<dataType>(path3D, LengthNew, WidthNew, HeightNew, resultedPath3D.c_str());
-
-	free(seedP);
-	for (k = 0; k < HeightNew; k++) {
-		delete[] cropped[k];
-		delete[] distanceMap3D[k];
-		delete[] potential[k];
-		delete[] path3D[k];
+	//Freeing imageData pointer 
+	for (k = 0; k < Height; k++) {
+		delete[] imageData[k];
 	}
+	delete[] imageData;
 	delete[] cropped;
 	delete[] distanceMap3D;
 	delete[] potential;
 	delete[] path3D;
+	free(seedPoint);
+
 	
 	return EXIT_SUCCESS;
 }
