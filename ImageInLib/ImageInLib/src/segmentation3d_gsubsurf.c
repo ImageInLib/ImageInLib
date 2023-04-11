@@ -149,25 +149,26 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	//compute coefficients from presmoothed image
 	generalizedGFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, edgeGradientPtr, GPtrs, VPtrs, segParameters, explicit_lhe_Parameters);
 
-
-	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	if (vtkInfo == NULL) return false;
-	vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
-	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
-	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
-	const char* pathsaveVTK;
+	//Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	//if (vtkInfo == NULL) return false;
+	//vtkInfo->spacing[0] = segParameters.h; vtkInfo->spacing[1] = segParameters.h; vtkInfo->spacing[2] = segParameters.h;
+	//vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	//vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
+	//vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
+	//const char* pathsaveVTK;
 
 	//Array for name construction
 	unsigned char  name[500];
 	unsigned char  name_ending[200];
+	Storage_Flags flags = { false,false };
 
 	strcpy_s(name, sizeof name, outputPathPtr);
 	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.vtk");
 	strcat_s(name, sizeof(name), name_ending);
-	pathsaveVTK = name;
-	vtkInfo->dataPointer = edgeGradientPtr;
-	storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
+	store3dDataArrayD(edgeGradientPtr, length, width, height, name, flags);
+	//pathsaveVTK = name;
+	//vtkInfo->dataPointer = edgeGradientPtr;
+	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
@@ -178,6 +179,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		//firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 		//calcution of coefficients
+		//compute CoefPtrs
 		generalizedGaussSeidelCoefficients(prevSol_extPtr, imageData, edgeGradientPtr, CoefPtrs, segParameters);
 
 		// Call to function that will evolve segmentation function in each discrete time step
@@ -269,7 +271,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	free(prevSol_extPtr);
 	free(gauss_seidelPtr);
 
-	free(vtkInfo);
+	//free(vtkInfo);
 
 	return true;
 }
@@ -445,6 +447,7 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 	copyDataToExtendedArea(edgeGradientPtr, gradient_coef_ext, inputImageData.height, inputImageData.length, inputImageData.width);
 	reflection3D(gradient_coef_ext, height_ext, length_ext, width_ext);
 
+	//Try to rewrite the central difference used here 
 	for (k = 0, k_ext = 1; k < inputImageData.height; k++, k_ext++) {
 		for (i = 0, i_ext = 1; i < inputImageData.length; i++, i_ext++) {
 			for (j = 0, j_ext = 1; j < inputImageData.width; j++, j_ext++) {
@@ -642,7 +645,7 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
 
-	const dataType coef_tauh = tau / hhh;
+	const dataType coef_tauh = tau / hh;
 
 	//copy data to extended area which will be used in each Gauss Seidel iteration
 	copyDataToExtendedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
@@ -651,6 +654,8 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 	//set boundary values to ensure Zero Dirichlet boundary condition.
 	setBoundaryToZeroDirichletBC(gauss_seidelPtr, length_ext, width_ext, height_ext);
 	setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
+	//reflection3D(gauss_seidelPtr, height_ext, length_ext, width_ext);
+	//reflection3D(prevSol_extPtr, height_ext, length_ext, width_ext);
 
 	// The Implicit Scheme Evaluation
 	z = 0;
@@ -727,6 +732,7 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 	printf("Step is %zd\n", segParameters.numberOfTimeStep);
 
 	//Copy the current time step to original data array after timeStepsNum
+	//rescaleToIntervalZeroOne(gauss_seidelPtr, length_ext, width_ext, height_ext);
 	copyDataToReducedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
 
 	//Rescale values of segmentation function and current time step to interval (0, 1)
@@ -736,7 +742,7 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	if (no_of_centers == 1)
 	{
-		rescaleToIntervalZeroOne(inputImageData.segmentationFuntionPtr, length, width, height);
+		//rescaleToIntervalZeroOne(inputImageData.segmentationFuntionPtr, length, width, height);
 		rescaleToIntervalZeroOne(gauss_seidelPtr, length_ext, width_ext, height_ext);
 	}
 	else

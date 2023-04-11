@@ -310,6 +310,7 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 	printf("Step is %zd\n", segParameters.numberOfTimeStep);
 
 	//Copy the current time step to original data array after timeStepsNum
+	//copy gauss_seidelPtr ---> inputImageData.segmentationFunctionPtr
 	copyDataToReducedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
 
 	//Rescale values of segmentation function and current time step to interval (0, 1)
@@ -473,7 +474,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					size_t x_n = x_new(i, j, length);
 					// Set Value
 					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
-					new_value = 1; // (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
+					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
 					if (s == 0)
 					{
 						if (norm_of_distance > R)
@@ -491,17 +492,17 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 			}
 		}
 
-		//if (no_of_centers == 1)
-		//{
-		//	rescaleToIntervalZeroOne(inputDataArrayPtr, length, width, height);
-		//}
-		//else
-		//{
-		//	for (i = 0; i < no_of_centers; i++)
-		//	{
-		//		rescaleLocallyToIntervalZeroOne(inputDataArrayPtr, length, width, height, centers[s].x, centers[s].y, centers[s].z, 6., s);
-		//	}
-		//}
+		if (no_of_centers == 1)
+		{
+			rescaleToIntervalZeroOne(inputDataArrayPtr, length, width, height);
+		}
+		else
+		{
+			for (i = 0; i < no_of_centers; i++)
+			{
+				rescaleLocallyToIntervalZeroOne(inputDataArrayPtr, length, width, height, centers[s].x, centers[s].y, centers[s].z, 6., s);
+			}
+		}
 	}
 	//storeVtkFile(pathsaveVTK, vtkInfo, dataForm);
 	//free(vtkInfo);

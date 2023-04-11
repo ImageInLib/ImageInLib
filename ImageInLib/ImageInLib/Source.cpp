@@ -33,6 +33,7 @@
 #include "../src/imageInterpolation.h"
 #include "distanceForPathFinding.h"
 #include "distanceMaps.h"
+#include "../src/trajectories.h"
 
 //#define thresmin 995
 //#define thresmax 1213
@@ -40,12 +41,12 @@
 
 int main() {
 
-	size_t i, j, k, x, xd, m, n;
+	size_t i, j, k, xd, m, n;
 
 	//image Dimensions
-	const size_t Width = 512;
-	const size_t Length = 512;
-	const size_t Height = 406; /*607*/ /*508*/
+	const size_t Width = 64; /*512*/
+	const size_t Length = 64; /*512*/
+	const size_t Height = 64; /*406*/ /*607*/ /*508*/
 	const size_t dim2D = Width * Length;
 
 	//-------------Real 3D image -------------------------
@@ -72,8 +73,7 @@ int main() {
 	//std::string inputImagePath = "C:/Users/Konan Allaly/Documents/Tests/output/filteredP1bMC.raw";
 	//std::string inputImagePath = inputPath + "patient7.raw";
 	//std::string inputImagePath = inputPath + "Slices304.raw";
-
-	std::string inputImagePath = inputPath + "filteredMC.raw";
+	//std::string inputImagePath = inputPath + "filteredMC.raw";
 
 	//if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
 	//{
@@ -88,8 +88,7 @@ int main() {
 	//	}
 	//}
 
-	load3dArrayRAW<dataType>(imageData, Length, Width, Height, inputImagePath.c_str());
-	
+	//load3dArrayRAW<dataType>(imageData, Length, Width, Height, inputImagePath.c_str());
 	//std::string loaded3D = outputPath + "loaded.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, loaded3D.c_str());
 
@@ -114,69 +113,75 @@ int main() {
 	//std::string filteredImagePath = outputPath + "filtered1bMC.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
 
-	//---------------Fast marching already implemented in the library -------------
+	//--------------- Generate artificial Image -----
 
-	const size_t LengthNew = 130, WidthNew = 130, HeightNew = 220;
-	dataType** cropped = new dataType * [HeightNew];
-	dataType** distanceMap3D = new dataType * [HeightNew];
-	dataType** potential = new dataType * [HeightNew];
-	dataType** path3D = new dataType * [HeightNew];
-	bool** status = new bool* [HeightNew];
-	for (k = 0; k < HeightNew; k++) {
-		cropped[k] = new dataType[LengthNew * WidthNew];
-		distanceMap3D[k] = new dataType[LengthNew * WidthNew];
-		potential[k] = new dataType[LengthNew * WidthNew];
-		path3D[k] = new dataType[LengthNew * WidthNew];
-		status[k] = new bool[LengthNew * WidthNew];
+	//// Artificial Sphere
+	size_t x = Length / 2, y = Width / 2, z = Height / 2;
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (sqrt((x - i)*(x - i) + (y - j)*(y - j) + (z - k)*(z - k)) <= 50) {
+	//				imageData[k][x_new(i, j, Length)] = 1;
+	//			}
+	//			else {
+	//				imageData[k][x_new(i, j, Length)] = 0;
+	//			}
+	//		}
+	//	}
+	//}
+
+	Point3D c = { x,y,z };
+	dataType radius = 20;
+	dataType small_radius = 6;
+	//size_t pitch_ball = 30;
+	dataType fill_value = 1.0;
+
+	std::string artificialImage = outputPath + "ballsWithHoles.raw";
+
+	//generateSphere(imageData, c, Length, Width, Height, radius, fill_value, artificialImage.c_str());
+	generateSphereWithSixHoles(imageData, c, Length, Width, Height, radius, small_radius, fill_value, artificialImage.c_str());
+	//ballsOnHelix(imageData, pitch_ball, Length, Width, Height, radius, small_radius, fill_value);
+
+	store3dRawData<dataType>(imageData, Length, Width, Height, artificialImage.c_str());
+
+	//--------------- Test segmentation -------------
+
+	Point3D* centerSeg = new Point3D[1];
+	size_t nb_centers = 1;
+	centerSeg->x = x; centerSeg->y = y; centerSeg->z = z;
+
+	dataType** initialSegment = new dataType * [Height];
+	for (k = 0; k < Height; k++) {
+		initialSegment[k] = new dataType[Width * Height];
 	}
-	if (cropped == NULL || distanceMap3D == NULL || potential == NULL || path3D == NULL || status == NULL)
-		return false;
 
-	for (k = 0; k < HeightNew; k++) {
-		for (i = 0; i < LengthNew; i++) {
-			for (j = 0; j < WidthNew; j++) {
-				x = x_new(i, j, LengthNew);
-				//cropped[k][x] = imageData[k + 150][x_new(i + 160, j + 200, Length)];
-				//cropped[k][x] = 0; //imageData[k + 144][x_new(i + 160, j + 200, Length)];
-				//cropped[k][x] = imageData[k][x_new(i, j, Length)];
-				cropped[k][x] = 0; // imageData[k + 70][x_new(i + 190, j + 220, Length)];
-				potential[k][x] = 0;
-				distanceMap3D[k][x] = 0;
-				distanceMap3D[k][x] = 0;
-				path3D[k][x] = 0;
-				status[k][x] = false;
-			}
-		}
-	}
+	////If we want to start with the segmentatation function originally implemented in the library
+	generateInitialSegmentationFunctionForMultipleCentres(initialSegment, Length, Width, Height, centerSeg, 0.5, 10, nb_centers);
 
-	cropped[0][0] = 1;
-	//thresholding3dFunctionN(cropped, LengthNew, WidthNew, HeightNew, 1050, 1200, 0, 1);
+	std::string segmFolderPath = outputPath + "segmentation/";
+	//store3dRawData<dataType>(initialSegment, Length, Width, Height, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
 
-	Point3D* seedPoint = (Point3D*)malloc(2 * sizeof(Point3D));
-	seedPoint[0].x = 100; seedPoint[0].y = 87; seedPoint[0].z = 198;
-	seedPoint[1].x = 70; seedPoint[1].y = 37; seedPoint[1].z = 77;
+	Image_Data segment; segment.height = Height; segment.length = Length; segment.width = Width; segment.imageDataPtr = imageData;
+	//rescaleNewRange(segment.imageDataPtr, Length, Width, Height, 0, 1);
+	Segmentation_Parameters segmentParameters; segmentParameters.coef = 10000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-3;
+	segmentParameters.h = 1.0; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 50; segmentParameters.mod = 1;
+	segmentParameters.numberOfTimeStep = 50; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-4; segmentParameters.tau = 8;
 
-	Distance_Map_Params distanceParamerters; distanceParamerters.h = 1.0; distanceParamerters.initValue = 1000000000;
-	distanceParamerters.tau = 0.4; distanceParamerters.tolerance = 0.5; distanceParamerters.objectPixel = 1;
-	DistanceMapMethod distMethod = FAST_MARCH;  // ROUY_TOURIN; // FAST_SWEEP; //  BRUTE_FORCE;
-	dataType firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	computeDistanceMap(distanceMap3D, cropped, LengthNew, WidthNew, HeightNew, distanceParamerters, distMethod);
-	dataType secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	cout << "Execution time : " << secondCpuTime - firstCpuTime << endl;
-	std::string distance3D = outputPath + "distance.raw";
-	store3dRawData<dataType>(distanceMap3D, LengthNew, WidthNew, HeightNew, distance3D.c_str());
+	Filter_Parameters filterParameters; filterParameters.coef = 1e-2; filterParameters.edge_detector_coefficient = 1; filterParameters.eps2 = 1e-4;
+	filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
+	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 4 * 1e-4;
 
-	//Freeing imageData pointer 
+	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
+	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, nb_centers, outputPathPtr);
+	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, nb_centers, outputPathPtr, 0.5, 0.2);
+
+	delete[] centerSeg;
 	for (k = 0; k < Height; k++) {
 		delete[] imageData[k];
+		delete[] initialSegment[k];
 	}
 	delete[] imageData;
-	delete[] cropped;
-	delete[] distanceMap3D;
-	delete[] potential;
-	delete[] path3D;
-	free(seedPoint);
+	delete[] initialSegment;
 
-	
 	return EXIT_SUCCESS;
 }
