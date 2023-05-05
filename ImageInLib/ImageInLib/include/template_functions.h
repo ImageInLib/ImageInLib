@@ -72,7 +72,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	//revert byte
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < step; i++) {
-			//revertBytesEx(&imageDataPtr[k][i], dataSize, swapBuf);
+			revertBytesEx(&imageDataPtr[k][i], dataSize, swapBuf);
 		}
 	}
 
