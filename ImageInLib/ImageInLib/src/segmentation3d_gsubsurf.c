@@ -29,13 +29,11 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr, dataType coef_conv, dataType coef_dif) {
 
 	size_t i, j, k;
-	size_t dim2D = inputImageData.length * inputImageData.width;
-	size_t height = inputImageData.height;
-	size_t length = inputImageData.length;
-	size_t width = inputImageData.width;
-	size_t height_ext = inputImageData.height + 2;
-	size_t length_ext = inputImageData.length + 2;
-	size_t width_ext = inputImageData.width + 2;
+	size_t height = inputImageData.height, length = inputImageData.length, width = inputImageData.width;
+	size_t dim2D = length * width;
+	size_t height_ext = height + 2;
+	size_t length_ext = length + 2;
+	size_t width_ext = width + 2;
 	size_t dim2D_ext = length_ext * width_ext;
 	dataType h = segParameters.h;
 
