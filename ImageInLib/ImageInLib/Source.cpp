@@ -35,8 +35,8 @@
 #include "distanceMaps.h"
 #include "../src/trajectories.h"
 
-//#define thresmin 995
-//#define thresmax 1213
+#define thresmin 995
+#define thresmax 1213
 
 
 int main() {
@@ -46,7 +46,7 @@ int main() {
 	//image Dimensions
 	const size_t Width = 512;
 	const size_t Length = 512;
-	const size_t Height = 406; /*607*/ /*508*/
+	const size_t Height = 508; /*607*/ /*508*/
 	const size_t dim2D = Width * Length;
 
 	//-------------Real 3D image -------------------------
@@ -64,12 +64,12 @@ int main() {
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
 
-	std::string inputImagePath = inputPath + "patient2.raw";
+	//std::string inputImagePath = inputPath + "patient2.raw";
 	////std::string inputImagePath = inputPath + "patient2_filtered.raw";
 	////std::string inputImagePath = inputPath + "filteredK100.raw";
 	////std::string inputImagePath = inputPath + "filteredK1.raw"; filteredHeatEQ
 	//std::string inputImagePath = inputPath + "filteredHeatEQ.raw";
-	//std::string inputImagePath = inputPath + "patient1b.raw";
+	std::string inputImagePath = inputPath + "patient1b.raw";
 	//std::string inputImagePath = "C:/Users/Konan Allaly/Documents/Tests/output/filteredP1bMC.raw";
 	//std::string inputImagePath = inputPath + "patient7.raw";
 	//std::string inputImagePath = inputPath + "Slices304.raw";
@@ -89,8 +89,39 @@ int main() {
 		}
 	}
 
+	///////////////////////
+	//size_t kMin = 332, iMin = 126, jMin = 180, kn, in, jn;
+	//const size_t heightNew = 170, lengthNew = 180, widthNew = 180, dim2dNew = lengthNew * widthNew;
+
+	//dataType** croppedImage = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** maskThreshold = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** distanceMap = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//dataType** initialSegment = (dataType**)malloc(sizeof(dataType*) * heightNew);
+	//for (k = 0; k < heightNew; k++) {
+	//	croppedImage[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	distanceMap[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	maskThreshold[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//	initialSegment[k] = (dataType*)malloc(sizeof(dataType) * dim2dNew);
+	//}
+	//if (croppedImage == NULL || distanceMap == NULL || maskThreshold == NULL || initialSegment == NULL) {
+	//	return false;
+	//}
+	//const dataType initialSegmentationValue = 1.0;
+
+	//for (k = 0, kn = kMin; k < heightNew; k++, kn++) {
+	//	for (i = 0, in = iMin; i < lengthNew; i++, in++) {
+	//		for (j = 0, jn = jMin; j < widthNew; j++, jn++) {
+	//			x = x_new(i, j, lengthNew);
+	//			croppedImage[k][x] = resampledImage[kn][x_new(in, jn, Length)];
+	//			maskThreshold[k][x] = croppedImage[k][x];
+	//			initialSegment[k][x] = initialSegmentationValue;
+	//		}
+	//	}
+	//}
+	///////////////////////
+
 	
-	size_t length_new = 219, width_new = 205, height_new = 80;
+	size_t length_new = 180, width_new = 180, height_new = 170;
 	dataType** croppedImage = new dataType * [height_new];
 	dataType** imageThresh = new dataType * [height_new];
 	dataType** distanceMap = new dataType * [height_new];
@@ -105,9 +136,10 @@ int main() {
 
 	//cropping
 	size_t i_ext, j_ext, k_ext;
-	for (k = 0, k_ext = 153; k < height_new; k++, k_ext++) {
-		for (i = 0, i_ext = 167; i < length_new; i++, i_ext++) {
-			for (j = 0, j_ext = 113; j < width_new; j++, j_ext++) {
+	size_t kMin = 332, iMin = 126, jMin = 180;
+	for (k = 0, k_ext = kMin; k < height_new; k++, k_ext++) {
+		for (i = 0, i_ext = iMin; i < length_new; i++, i_ext++) {
+			for (j = 0, j_ext = jMin; j < width_new; j++, j_ext++) {
 				xd = x_new(i, j, length_new);
 				croppedImage[k][xd] = imageData[k_ext][x_new(i_ext, j_ext, Length)];
 				imageThresh[k][xd] = imageData[k_ext][x_new(i_ext, j_ext, Length)];
@@ -179,7 +211,7 @@ int main() {
 
 	Distance_Map_Params distParameters = {0.4, 1.0, 0.0, 100000, 0.001};
 	DistanceMapMethod method = FAST_SWEEP;
-	thresholding3dFunctionN(imageThresh, length_new, width_new, height_new, 995, 1250, 0.0, 1.0);
+	thresholding3dFunctionN(imageThresh, length_new, width_new, height_new, thresmin, thresmax, 0.0, 1.0);
 	computeDistanceMap(distanceMap, imageThresh, length_new, width_new, height_new, distParameters, method);
 
 	loaded3D = outputPath + "distanceMap.raw";
