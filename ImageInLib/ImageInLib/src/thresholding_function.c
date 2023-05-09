@@ -97,7 +97,7 @@ bool thresholding2dFunctionD(dataType * image2DPtr, const size_t xDim, const siz
 	return true;
 }
 
-bool thresholding3dFunctionN(dataType** image3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType thres_min, dataType thres_max, dataType backGround, dataType overGround) {
+bool thresholding3dFunctionN(dataType** image3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType thres_min, dataType thres_max, dataType backGround, dataType forGround) {
 	size_t i, j, k;
 
 	if (image3DPtr == NULL)
@@ -107,7 +107,7 @@ bool thresholding3dFunctionN(dataType** image3DPtr, const size_t xDim, const siz
 		for (i = 0; i < xDim; i++) {
 			for (j = 0; j < yDim; j++) {
 				if (image3DPtr[k][x_new(i, j, xDim)] >= thres_min && image3DPtr[k][x_new(i, j, xDim)] <= thres_max) {
-					image3DPtr[k][x_new(i, j, xDim)] = overGround;
+					image3DPtr[k][x_new(i, j, xDim)] = forGround;
 				}
 				else {
 					image3DPtr[k][x_new(i, j, xDim)] = backGround;

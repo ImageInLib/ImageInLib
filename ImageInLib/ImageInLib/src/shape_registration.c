@@ -123,12 +123,13 @@ void run_registration(dataType **fixedData, dataType **movingData, dataType **re
 void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType objPixel)
 {
 	size_t k, i, j, x;
+
 	struct Node * band = NULL; // Holds all the Objects
 							   // Sets the structure size, to hold all the calculated arrival times
-	Obj_Structure ** objectNthD = (Obj_Structure **)malloc(sizeof(Obj_Structure*)*imageHeight);
+	Obj_Structure ** objectNthD = (Obj_Structure **)malloc(sizeof(Obj_Structure*) * imageHeight);
 	for (i = 0; i < imageHeight; i++)
 	{
-		objectNthD[i] = (Obj_Structure *)malloc(sizeof(Obj_Structure) * (imageLength*imageWidth));
+		objectNthD[i] = (Obj_Structure *)malloc(sizeof(Obj_Structure) * (imageLength * imageWidth));
 	}
 	// Initialize Object2D
 	for (k = 0; k < imageHeight; k++)
@@ -148,9 +149,10 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			}
 		}
 	}
-	Point3D *shapePoints = (Point3D *)malloc(sizeof(Point3D)*(imageHeight*imageLength*imageWidth));
+	Point3D *shapePoints = (Point3D *)malloc(sizeof(Point3D)*(imageHeight * imageLength * imageWidth));
 	int loop = 0;
 	// Derive the points
+
 	for (k = 0; k < imageHeight; k++)
 	{
 		for (i = 0; i < imageLength; i++)
@@ -161,7 +163,7 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 				x = x_new(i, j, imageLength);
 				if (dataSourcePtr[k][x] == objPixel) // Fill value for block
 				{
-					// Save the dimension with those values
+					//Save the dimension with those values
 					shapePoints[loop].x = (dataType)i;
 					shapePoints[loop].y = (dataType)j;
 					shapePoints[loop].z = (dataType)k;
@@ -170,12 +172,14 @@ void fastMarching(dataType ** distancePtr, dataType ** dataSourcePtr, size_t ima
 			}
 		}
 	}
+
 	// Arrival times
 	Arrival_Time *shapeArrival = (Arrival_Time *)malloc(sizeof(Arrival_Time)*loop);
 	for (i = 0; i < loop; i++)
 	{
 		shapeArrival[i].T = 0.0;
 	}
+
 	// Calls Fm3D
 	fastMarching3D(band, objectNthD, shapePoints, shapeArrival, imageHeight, imageLength, imageWidth, loop);
 	// Copy Fast marching modified to distancePtr

@@ -4,6 +4,8 @@
 #pragma warning(disable : 4267)
 #pragma warning(disable : 4700)
 
+#include <iostream>
+#include<vector>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h> 
@@ -29,54 +31,60 @@
 #include "../src/noise_generator.h"
 #include "../src/image_norm.h"
 #include "../src/imageInterpolation.h"
+#include "distanceForPathFinding.h"
+#include "distanceMaps.h"
+#include "../src/trajectories.h"
 
-#define originalMean 71.1245
-#define offSet 1024
-#define standarDeviation 22.001
 #define thresmin 995
 #define thresmax 1213
-#define minimalSize 2000
-
-#define epsilonFast 0.01
 
 
 int main() {
 
-	size_t i, j, k, x;
+	size_t i, j, k, xd, m, n;
 
 	//image Dimensions
 	const size_t Width = 512;
 	const size_t Length = 512;
-	const size_t Height = 406;
+	const size_t Height = 508; /*607*/ /*508*/
 	const size_t dim2D = Width * Length;
-	/*The Width and Lenght are the same for all the patients
-	Height : patient1b = patient3 = 508, patient2 = 406, patient6 = 880, patient7 = 607*/
+
+	//-------------Real 3D image -------------------------
 	
 	//Preparation of image data pointers
-	dataType** imageData = (dataType**)malloc(Height * sizeof(dataType*));
-	short** image = (short**)malloc(Height * sizeof(short*));
+	dataType** imageData = new dataType * [Height];
+	short** image = new short * [Height];
 	for (k = 0; k < Height; k++) {
-		imageData[k] = (dataType*)malloc(dim2D * sizeof(dataType));
-		image[k] = (short*)malloc(dim2D * sizeof(short));
+		imageData[k] = new dataType [dim2D];
+		image[k] = new short [dim2D];
 	}
-
-	if (imageData == NULL || image == NULL) 
+	if (imageData == NULL || image == NULL) {
 		return false;
-
+	}
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
-	std::string inputImagePath = inputPath +  "patient2.raw";
+
+	//std::string inputImagePath = inputPath + "patient2.raw";
+	////std::string inputImagePath = inputPath + "patient2_filtered.raw";
+	////std::string inputImagePath = inputPath + "filteredK100.raw";
+	////std::string inputImagePath = inputPath + "filteredK1.raw"; filteredHeatEQ
+	//std::string inputImagePath = inputPath + "filteredHeatEQ.raw";
+	std::string inputImagePath = inputPath + "patient1b.raw";
+	//std::string inputImagePath = "C:/Users/Konan Allaly/Documents/Tests/output/filteredP1bMC.raw";
+	//std::string inputImagePath = inputPath + "patient7.raw";
+	//std::string inputImagePath = inputPath + "Slices304.raw";
+	//std::string inputImagePath = inputPath + "filteredMC.raw";
 
 	if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str()) == false)
 	{
 		printf("inputImagePath does not exist\n");
 	}
-
+	
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
-				x = x_new(i, j, Length);
-				imageData[k][x] = (dataType)image[k][x];
+				xd = x_new(i, j, Length);
+				imageData[k][xd] = (dataType)image[k][xd];
 			}
 		}
 	}
@@ -192,7 +200,10 @@ int main() {
 	//std::string croppedVolumePath = outputPath + "croppedImage.raw";
 	//store3dRawData<dataType>(croppedImage, lengthNew, widthNew, heightNew, croppedVolumePath.c_str());
 
-	//------------------------------------------------------------------------------------------------------------
+	Distance_Map_Params distParameters = {0.4, 1.0, 0.0, 100000, 0.001};
+	DistanceMapMethod method = FAST_SWEEP;
+	thresholding3dFunctionN(imageThresh, length_new, width_new, height_new, thresmin, thresmax, 0.0, 1.0);
+	computeDistanceMap(distanceMap, imageThresh, length_new, width_new, height_new, distParameters, method);
 
 	//Fast sweeping to find the point with the higest distance
 	//thresholding3dFunctionN(maskThreshold, lengthNew, widthNew, heightNew, thresmin, thresmax, 0, 1);
@@ -226,7 +237,7 @@ int main() {
 	//centerSeg[1].x = i_max + 50; centerSeg[1].y = j_max - 70; centerSeg[1].z = k_max;
 
 	////If we want to start with the segmentatation function originally implemented in the library
-	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, lengthNew, widthNew, heightNew, centerSeg, 0.5, 15, numb_centers);
+	//generateInitialSegmentationFunctionForMultipleCentres(initialSegment, Length, Width, Height, centerSeg, 0.5, 30, nb_centers);
 
 	std::string segmFolderPath = outputPath + "segmentation/";
 	//store3dRawData<dataType>(initialSegment, lengthNew, widthNew, heightNew, (segmFolderPath + std::string("_seg_func_000.raw")).c_str());
@@ -241,30 +252,27 @@ int main() {
 	filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
 	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.2; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 4*1e-4;
 
+	Filter_Parameters filterParameters; filterParameters.coef = 1e-2; filterParameters.edge_detector_coefficient = 1; filterParameters.eps2 = 1e-6;
+	filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
+	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 1.0; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 4 * 1e-4;
+
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
-	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr);
-	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, numb_centers, outputPathPtr, 0.2, 10);
+	//subsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, nb_centers, outputPathPtr);
+	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filterParameters, centerSeg, nb_centers, outputPathPtr, 1.0, 1.0);
 
-	//------------------------------------------------------------------------------------------------
-
-	//free memory
-	for (k = 0; k < Height; k++) {
-		free(imageData[k]); free(image[k]);
+	//delete[] centerSeg;
+	for (k = 0; k < height_new; k++) {
+		//delete[] imageData[k];
+		delete[] imageThresh[k];
+		delete[] distanceMap[k];
+		//delete[] initialSegment[k];
+		delete[] croppedImage[k];
 	}
-	free(imageData); free(image);
-
-	for (k = 0; k < HeightNew; k++) {
-		free(resampledImage[k]);
-	}
-	free(resampledImage);
-
-	for (k = 0; k < heightNew; k++) {
-		free(croppedImage[k]); free(distanceMap[k]); 
-		free(maskThreshold[k]); free(initialSegment[k]);
-	}
-	free(croppedImage); free(distanceMap); free(maskThreshold); free(initialSegment);
-	
-	//free(centerSeg);
+	//delete[] imageData;
+	delete[] imageThresh;
+	delete[] distanceMap;
+	delete[] croppedImage;
+	//delete[] initialSegment;
 
 	return EXIT_SUCCESS;
 }

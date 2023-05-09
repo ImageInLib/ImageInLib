@@ -9,6 +9,8 @@
 // Local Prototypes
 // Solves the Eikonal Equation 3D
 dataType eikonalSolve3D(/*dataType uniform_speed, dataType grid_spacex, dataType grid_spacey*/ dataType T1, dataType T2, dataType T3);
+//Solve 3D quadratic for fast marching
+dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W);
 // Solves the Quadratic Equation
 double quadraticSolve(double a, double b, double c);
 // Swaps two pointers values
@@ -18,6 +20,104 @@ void smallSort(dataType *a, dataType *b, dataType *c);
 // Sorts 2 pointer values
 void smallSort2D(dataType *a, dataType *b);
 //==============================================================================
+//use to solve fast marching on uniform grid and when the speed is not constant/uniform
+dataType solve3dQuadraticForFastMatching(dataType X, dataType Y, dataType Z, dataType W) {
+
+	dataType sol = 0.0, a = 0.0, b = 0.0, c = 0.0, delta = 0.0;
+
+	if (X == INFINITY && Y != INFINITY && Z != INFINITY) {
+		a = 2;
+		b = -2 * (Y + Z);
+		c = pow(Y, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(Y, Z) + W;
+		}
+	}
+
+	if (Y == INFINITY && X != INFINITY && Z != INFINITY) {
+		a = 2;
+		b = -2 * (X + Z);
+		c = pow(X, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, Z) + W;
+		}
+	}
+
+	if (Z == INFINITY && X != INFINITY && Y != INFINITY) {
+		a = 2;
+		b = -2 * (X + Y);
+		c = pow(X, 2) + pow(Y, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, Y) + W;
+		}
+	}
+
+	if (X == INFINITY && Y == INFINITY && Z != INFINITY) {
+		a = 1;
+		b = -2 * Z;
+		c = pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return Z + W;
+		}
+	}
+
+	if (X == INFINITY && Z == INFINITY && Y != INFINITY) {
+		a = 1;
+		b = -2 * Y;
+		c = pow(Y, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return Y + W;
+		}
+	}
+
+	if (Y == INFINITY && Z == INFINITY && X != INFINITY) {
+		a = 1;
+		b = -2 * X;
+		c = pow(X, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return X + W;
+		}
+	}
+
+	if (X != INFINITY && Y != INFINITY && Z != INFINITY) {
+		a = 3;
+		b = -2 * (X + Y + Z);
+		c = pow(X, 2) + pow(Y, 2) + pow(Z, 2) - W;
+		delta = b * b - 4 * a * c;
+		if (delta >= 0) {
+			return (-b + sqrt(delta)) / (2 * a);
+		}
+		else {
+			return min(X, min(Y, Z)) + W;
+		}
+	}
+
+}
+//-----------------------------------------------------------------------------= 
 // Fast Marching Method
 void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[], Arrival_Time *known, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t countPoints)
 {
@@ -111,10 +211,10 @@ void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[
 				// Solve T's
 				dataType T01, T02, T03;
 				// Access Object Coordinate Positions
-				size_t posx = neighbours->xpos;
-				size_t posy = neighbours->ypos;
-				size_t posz = neighbours->zpos;
-				size_t xy = x_new(posx, posy, imageLength);
+				int posx = neighbours->xpos;
+				int posy = neighbours->ypos;
+				int posz = neighbours->zpos;
+				int xy = x_new(posx, posy, imageLength);
 				// Y Begin
 				Obj_Structure objBegin;
 				if (posz > -1 && posz < imageHeight && posy - 1 > -1 && posy - 1 < imageWidth && posx > -1 && posx < imageLength)
@@ -179,11 +279,13 @@ void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[
 				{
 					objBottom.arrival = INFINITY;
 				}
+
 				T01 = min(objBegin.arrival, objEnd.arrival);
 				T02 = min(objLeft.arrival, objRight.arrival);
 				T03 = min(objTop.arrival, objBottom.arrival);
 
 				neighbours->arrival = eikonalSolve3D(T01, T02, T03);
+
 				if (neighbours->state == NARROWBAND)
 				{
 					// Update Band
@@ -216,8 +318,8 @@ void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[
 		// Gets the first element
 		struct Node * objFirst = getElement(band, 0);
 		// Change state to Frozen
-		size_t objx = objFirst->xpos, objy = objFirst->ypos, objz = objFirst->zpos;
-		size_t objxy = x_new(objx, objy, imageLength);
+		int objx = objFirst->xpos, objy = objFirst->ypos, objz = objFirst->zpos;
+		int objxy = x_new(objx, objy, imageLength);
 		object[objz][objxy].state = FROZEN;
 		// Remove from band
 		pop(&band);
@@ -270,10 +372,10 @@ void fastMarching3D(struct Node * band, Obj_Structure ** object, Point3D points[
 				// Solve T
 				dataType T11, T12, T13;
 				// Access Object Coordinate Positions
-				size_t pox = neighbourx->xpos;
-				size_t poy = neighbourx->ypos;
-				size_t poz = neighbourx->zpos;
-				size_t pxy = x_new(pox, poy, imageLength);
+				int pox = neighbourx->xpos;
+				int poy = neighbourx->ypos;
+				int poz = neighbourx->zpos;
+				int pxy = x_new(pox, poy, imageLength);
 
 				// Begin
 				Obj_Structure neibourBegin;

@@ -68,6 +68,7 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 	const size_t step = xDim * yDim;
 	const size_t dataSize = sizeof(T);
 	char* swapBuf = (char *)malloc(dataSize);
+
 	//revert byte
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < step; i++) {
@@ -79,5 +80,31 @@ inline bool load3dArrayRAW(T** imageDataPtr, const size_t xDim, const size_t yDi
 
 
 	fclose(file);
+	return true;
+}
+
+//2D image...
+template <typename T>
+bool store2dRawData(T* imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+template<typename T>
+inline bool store2dRawData(T* imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	FILE* file;
+
+	//checks if the memory was allocated
+	if (imageDataPtr == NULL)
+		return false;
+
+	//writing binary data to file
+	if (fopen_s(&file, pathPtr, "wb") != 0)
+		return false;
+
+	const size_t pointsInSlice = xDim * yDim;
+
+	fwrite(imageDataPtr, sizeof(T), pointsInSlice, file);
+
+	fclose(file);
+
 	return true;
 }

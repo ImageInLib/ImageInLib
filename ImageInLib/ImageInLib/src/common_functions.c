@@ -196,3 +196,68 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 		}
 	}
 }
+//==============================================================================
+
+
+
+//==============================================================================
+void copyDataTo2dExtendedArea(dataType * originalDataPtr, dataType * extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+{
+	const size_t height_ext = originalHeight + 2;
+	const size_t width_ext = originalWidth + 2;
+
+	size_t sliceBound = (height_ext - 1) * width_ext;
+	size_t i, i_d = 0;
+
+	i_d = 0;
+	for (i = 1; i < sliceBound; i++)
+	{
+		memcpy(&(extendedDataPtr[i]), &(originalDataPtr[i_d]), sizeof(dataType));
+		i_d ++;
+	}
+}
+//==============================================================================
+void copyDataTo2dReducedArea(dataType * originalDataPtr, const dataType * extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+{
+	const size_t height_ext = originalHeight + 2;
+	const size_t width_ext = originalWidth + 2;
+
+	size_t sliceBound = (height_ext - 1) * width_ext;
+	size_t i, i_d = 0;
+
+	i_d = 0;
+	for (i = 1; i < sliceBound; i++)
+	{
+		memcpy(&(originalDataPtr[i_d]), &(extendedDataPtr[i]), sizeof(dataType));
+		i_d++;
+	}
+}
+//==============================================================================
+void reflection2D(dataType * toReflectImage, size_t imageHeight, size_t imageWidth)
+{
+	size_t i, j;
+	size_t height = imageHeight, width = imageWidth;
+
+	const size_t heightMin = height - 1;
+	const size_t widthMin = width - 1;
+
+	size_t x;
+
+	// Y reflection
+	for (i = 0; i < height; i++)
+	{
+		toReflectImage[x_new(i, 0, height)] = toReflectImage[x_new(i, 1, height)];
+		toReflectImage[x_new(i, widthMin, height)] = toReflectImage[x_new(i, widthMin - 1, height)];
+	}
+
+	// X Direction
+	for (j = 0; j < width; j++)
+	{
+		x = x_new(0, j, height);
+		toReflectImage[x] = toReflectImage[x + 1];
+
+		x = x_new(heightMin, j, height);
+		toReflectImage[x] = toReflectImage[x - 1];
+	}
+
+}

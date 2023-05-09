@@ -128,6 +128,14 @@ extern "C" {
 	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
 	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
+
+	//==============================================================================
+	void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
+	//==============================================================================
+	void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
+	//==============================================================================
+	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
+
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus
