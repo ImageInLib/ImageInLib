@@ -278,7 +278,7 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 	size_t i, j, l = 0, n, xd, s;
 
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
-	if ((K < 0) && (K > 1))
+	if ((density < 0) && (density > 1))
 		return false;
 
 	//checks if the memory was allocated

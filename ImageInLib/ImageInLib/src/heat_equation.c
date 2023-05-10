@@ -100,12 +100,13 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
 	}
+	// Preparation
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, tempPtr, height, length, width);
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, currentPtr, height, length, width);
 	// Perform Reflection of the tempPtr
 	reflection3D(tempPtr, height_ext, length_ext, width_ext);
 	reflection3D(currentPtr, height_ext, length_ext, width_ext);
-	//reflection3DB(tempPtr, height, length, width,p);
+	
 	// The Gauss-Seidel Implicit Scheme
 	size_t k_ext, j_ext, i_ext, x_ext, x;
 	z = 0; // Steps counter
@@ -148,9 +149,12 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 		}
 	} while (error > implicitParameters.tolerance && z < steps);
 
-	printf("The number of iterations is %zd\n", z);
-	printf("Error is %e\n", error);
+		printf("The number of iterations is %zd for timeStep %zd\n", z, t);
+		printf("Error is %e for timeStep %zd\n", error, t);
 
+		// Copy current to tempPtr before next time step
+		copyDataToAnotherArray(currentPtr, tempPtr, height_ext, length_ext, width_ext);
+	}
 	// Copy back to original after filter
 	for (k = 0, k_ext = 1; k < height; k++, k_ext++){
 		for (i = 0, i_ext = 1; i < length; i++, i_ext++){
