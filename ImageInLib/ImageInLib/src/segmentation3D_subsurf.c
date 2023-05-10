@@ -449,14 +449,6 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	//checks if the memory was allocated
 	if (inputDataArrayPtr == NULL)
 		return false;
-
-	//Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
-	//vtkInfo->spacing[0] = 1.171875; vtkInfo->spacing[1] = 1.171875; vtkInfo->spacing[2] = 1.171875;
-	//vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
-	//vtkInfo->dimensions[1] = length; vtkInfo->dimensions[0] = width; vtkInfo->dimensions[2] = height;
-	//vtkInfo->vDataType = dta_Flt; vtkInfo->dataPointer = inputDataArrayPtr; vtkInfo->operation = copyTo;
-	//vtkDataForm dataForm = dta_binary;
-	//const char* pathsaveVTK = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/_seg_func_000.vtk";
 	
 	// Construction of segmentation function
 	for (s = 0; s < no_of_centers; s++)
