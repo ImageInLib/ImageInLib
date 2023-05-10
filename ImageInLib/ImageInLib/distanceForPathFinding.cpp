@@ -32,14 +32,15 @@ dataType solve2dQuadratic(dataType X, dataType Y, dataType W) {
 		Y = 0; a--;
 	}
 
-	b = -2 * (X + Y); c = pow(X, 2) + pow(Y, 2) - W;
-	delta = pow(b, 2) - 4 * a * c;
+	b = -2 * (X + Y); 
+	c = (dataType)(pow(X, 2) + pow(Y, 2) - W);
+	delta = (dataType)(pow(b, 2) - 4 * a * c);
 
 	if (delta >= 0) {
-		sol = (-b + sqrt(delta)) / (2 * a);
+		sol = (dataType)((-b + sqrt(delta)) / (2 * a));
 	}
 	else {
-		sol = min(X, Y) + W;
+		sol = (dataType)(min(X, Y) + W);
 	}
 
 	if (sol < 0) {
@@ -148,7 +149,7 @@ dataType computeGradientNorm2d(dataType* gradientVectorX, dataType* gradientVect
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			xd = x_new(j, i, width);
-			norm_array = norm_array + pow(gradientVectorX[xd], 2) + pow(gradientVectorY[xd], 2);
+			norm_array = (dataType)(norm_array + pow(gradientVectorX[xd], 2) + pow(gradientVectorY[xd], 2));
 		}
 	}
 	return sqrt(norm_array);
@@ -167,7 +168,7 @@ bool computePotential(dataType* imageDataPtr, dataType* potentialFuncPtr, const 
 	size_t i1 = seedPoints[0].y, j1 = seedPoints[0].x;
 	size_t i2 = seedPoints[1].y, j2 = seedPoints[1].x;
 
-	dataType seedVal = (imageDataPtr[x_new(j1, i1, width)] + imageDataPtr[x_new(j2, i2, width)]) / 2;
+	dataType seedVal = (dataType)((imageDataPtr[x_new(j1, i1, width)] + imageDataPtr[x_new(j2, i2, width)]) / 2.0);
 	size_t currentIndx = 0;
 	dataType epsylon = 0.01;
 	dataType K = 0.00005;
@@ -557,7 +558,8 @@ bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const siz
 	resultedPath[x_new(j_init + 1, i_init + 1, width)] = 1;
 	//===============
 
-	iNew = i_current; jNew = j_current;
+	iNew = (dataType)i_current; 
+	jNew = (dataType)j_current;
 	dataType currentDist = 0;
 
 	do{
@@ -568,7 +570,7 @@ bool shortestPath2d(dataType* distanceFuncPtr, dataType* resultedPath, const siz
 		dist_min = sqrt((iNew - i_init) * (iNew - i_init) + (jNew - j_init) * (jNew - j_init));
 
 		i_current = round(iNew); j_current = round(jNew);
-		resultedPath[x_new(j_current, i_current, width)] = 1;
+		resultedPath[x_new(j_current, i_current, width)] = 1.0;
 		
 		currentDist = distanceFuncPtr[x_new(j_current, i_current, width)];
 
@@ -620,8 +622,8 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 
 	if (X == INFINITY && Y != INFINITY && Z != INFINITY) {
 		a = 2;
-		b = -2 * (Y + Z);
-		c = pow(Y, 2) + pow(Z, 2) - W;
+		b = (dataType)(- 2 * (Y + Z));
+		c = (dataType)(pow(Y, 2) + pow(Z, 2) - W);
 		delta = b * b - 4 * a * c;
 		if (delta >= 0) {
 			return (-b + sqrt(delta)) / (2 * a);
@@ -633,8 +635,8 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 
 	if (Y == INFINITY && X != INFINITY && Z != INFINITY) {
 		a = 2;
-		b = -2 * (X + Z);
-		c = pow(X, 2) + pow(Z, 2) - W;
+		b = (dataType)(- 2 * (X + Z));
+		c = (dataType)(pow(X, 2) + pow(Z, 2) - W);
 		delta = b * b - 4 * a * c;
 		if (delta >= 0) {
 			return (-b + sqrt(delta)) / (2 * a);
@@ -646,8 +648,8 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 
 	if (Z == INFINITY && X != INFINITY && Y != INFINITY) {
 		a = 2;
-		b = -2 * (X + Y);
-		c = pow(X, 2) + pow(Y, 2) - W;
+		b = (dataType)(- 2 * (X + Y));
+		c = (dataType)(pow(X, 2) + pow(Y, 2) - W);
 		delta = b * b - 4 * a * c;
 		if (delta >= 0) {
 			return (-b + sqrt(delta)) / (2 * a);
