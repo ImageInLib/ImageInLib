@@ -19,7 +19,7 @@ void fillPtr(int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(float * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned int * ptr, Vtk_File_Info * vtkInfo);
 void fillPtr(unsigned char * ptr, Vtk_File_Info * vtkInfo);
-void fillPtr(short * ptr, Vtk_File_Info * vtkInfo);
+void fillPtr(short* ptr, Vtk_File_Info* vtkInfo);
 /* Manual Creation of vtkImageData*/
 int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkMetaInfo);
 //==============================================================================
@@ -192,14 +192,15 @@ int createVtkImageData(vtkImageData * imageData, Vtk_File_Info * vtkInfo)
 		fillPtr(ptr, vtkInfo);
 		break;
 	}
-	case dta_Shrt:
+	case dta_Short:
 	{
 		imageData->AllocateScalars(VTK_SHORT, 1);
 		// Assign the Data Pointer
-		short* ptr = (short*)imageData->GetScalarPointer();
+		short * ptr = (short *)imageData->GetScalarPointer();
 		// Fill in the data
 		fillPtr(ptr, vtkInfo);
 		break;
+
 	}
 	default:
 		break;
@@ -410,4 +411,3 @@ void fillPtr(short* ptr, Vtk_File_Info* vtkInfo)
 		}
 	}
 }
-//==============================================================================

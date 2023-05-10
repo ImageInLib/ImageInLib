@@ -1,3 +1,4 @@
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,9 +43,17 @@ extern "C" {
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
-
 		dataType ** imageDataPtr; // Image Data Containers
 	} Image_Data;
+
+	// Generate Random Points
+	typedef struct {
+		size_t k, xd, p;
+	}RandomPoints;
+
+	typedef struct {
+		size_t xd, p;
+	}Random2dPoints;
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
@@ -102,12 +111,14 @@ extern "C" {
 	to an array extendedDataPtr representing enlarged data (by 1 vx in each direction)
 	of dimensions originalHeight + 2, originalLength + 2 and originalWidth + 2
 	*/
-	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToExtendedArea(dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
-	void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToReducedArea(dataType** originalDataPtr, const dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	// Copy from one pointer to another pointer
-	void copyDataToAnotherArray(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width);
+	void copyDataToAnotherArray(dataType** source, dataType** destination, size_t height, size_t length, size_t width);
+	//==============================================================================
+	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew);
 	//==============================================================================
 	typedef struct {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
@@ -117,9 +128,14 @@ extern "C" {
 	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
 	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
-	// Rescales an array to a custom range
-	void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new, dataType max_dta, dataType min_dta);
+
 	//==============================================================================
+	void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
+	//==============================================================================
+	void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
+	//==============================================================================
+	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
+
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

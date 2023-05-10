@@ -79,7 +79,7 @@ void fillBall3D(dataType **inputDataArrayPtr, size_t inputHeight, size_t inputLe
 }
 
 bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
-	dataType sphereRadius, dataType smallRadius, dataType fillValue, unsigned char * outputPathPtr)
+	dataType sphereRadius, dataType smallRadius, dataType fillValue, const char * outputPathPtr)
 {
 	//checks if the memory was allocated
 	if (dataArray3D == NULL)
@@ -94,13 +94,13 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 	center.z = (dataType)(height / 2);
 
 	//Initialization of arrays
-	if (fillValue == 255)
+	if (fillValue == 1.)
 	{
 		initialize3dArrayD(dataArray3D, length, width, height, 0.);
 	}
 	else
 	{
-		initialize3dArrayD(dataArray3D, length, width, height, 255.);
+		initialize3dArrayD(dataArray3D, length, width, height, 1.);
 	}
 
 	double step = M_PI / 1000.0;
@@ -117,7 +117,7 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 			// 2D to 1D representation
 			s = x_new(i, j, length);
 			// Insertion of tube to through the sphere
-			if (fillValue == 255)
+			if (fillValue == 1.0)
 			{
 				if (((point_in_circleX <= smallRadius) || (point_in_circleY <= smallRadius) || (point_in_circleZ <= smallRadius)))
 					dataArray3D[k][s] = 0.;
@@ -127,7 +127,7 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 			else
 			{
 				if (((point_in_circleX <= smallRadius) || (point_in_circleY <= smallRadius) || (point_in_circleZ <= smallRadius)))
-					dataArray3D[k][s] = 255.;
+					dataArray3D[k][s] = 1.;
 				else
 					dataArray3D[k][s] = fillValue;
 			}
@@ -135,14 +135,14 @@ bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t 
 	}
 
 	// Store generated object to file
-	Storage_Flags flags = { true, true };
-	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
+	//Storage_Flags flags = { true, true };
+	//store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
 }
 
 bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
-	dataType sphereRadius, dataType fillValue, unsigned char * outputPathPtr)
+	dataType sphereRadius, dataType fillValue, const char * outputPathPtr)
 {
 	//checks if the memory was allocated
 	if (dataArray3D == NULL)
@@ -156,13 +156,13 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	center.z = (dataType)(height / 2);
 
 	//Initialization of arrays
-	if (fillValue == 255)
+	if (fillValue == 1.0)
 	{
 		initialize3dArrayD(dataArray3D, length, width, height, 0.);
 	}
 	else
 	{
-		initialize3dArrayD(dataArray3D, length, width, height, 255.);
+		initialize3dArrayD(dataArray3D, length, width, height, 1.0);
 	}
 
 	double step = M_PI / 1000.0;
@@ -180,8 +180,8 @@ bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size
 	}
 
 	// Store generated object to file
-	Storage_Flags flags = { true, true };
-	store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
+	//Storage_Flags flags = { true, true };
+	//store3dDataVtkD(dataArray3D, length, width, height, outputPathPtr, (2.5 / (length)), flags);
 
 	return true;
 }

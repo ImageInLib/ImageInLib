@@ -21,6 +21,8 @@ extern "C" {
 	/*Converts to doulbe*/
 	void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height);
 
+	
+
 #ifdef __cplusplus
 }
 #endif

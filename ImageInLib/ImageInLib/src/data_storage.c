@@ -1,3 +1,9 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 6386)
+#pragma warning(disable : 6031)
+#pragma warning(disable : 6387)
+
+
 #include <stdio.h>
 #include "data_storage.h"
 #include "endianity_bl.h"
@@ -79,6 +85,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
+	size_t i, j, k;
 	const size_t dimXY = xDim * yDim;
 	FILE *cfPtr;
 
@@ -101,21 +108,23 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 
 	if (flags.revertDataBytes)
 	{
-		for (size_t k = 0; k < zDim; k++)
+		for (k = 0; k < zDim; k++)
 		{
-			for (size_t j = 0; j < dimXY; j++)
+			for (i = 0; i < dimXY; i++)
 			{
-				double tmp = array3DPtr[k][j];
-				revertBytes(&tmp, sizeof(double));
-				fwrite(&tmp, sizeof(double), 1, cfPtr);
+				dataType tmp = array3DPtr[k][i];
+				revertBytes(&tmp, sizeof(dataType));
+				fwrite(&tmp, sizeof(dataType), dimXY, cfPtr);
 			}
 		}
 	}
 	else
 	{
-		for (size_t k = 0; k < zDim; k++)
+		const size_t pointsInSlice = xDim * yDim;
+
+		for (k = 0; k < zDim; k++)
 		{
-			fwrite(array3DPtr[k], sizeof(double), dimXY, cfPtr);
+			fwrite(array3DPtr[k], sizeof(dataType), pointsInSlice, cfPtr);
 		}
 	}
 
@@ -200,7 +209,8 @@ bool store3dDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDi
 		fprintf(outputfile, "DATASET STRUCTURED_POINTS\n");
 		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
 
-		fprintf(outputfile, "ORIGIN %f %f %f\n", (-1.25 + h / 2.), (-1.25 + h / 2.), (-1.25 + h / 2.));
+		//fprintf(outputfile, "ORIGIN %f %f %f\n", (-1.25 + h / 2.), (-1.25 + h / 2.), (-1.25 + h / 2.));
+		fprintf(outputfile, "ORIGIN %f %f %f\n", 0, 0, 0);
 		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
 		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
 		fprintf(outputfile, "SCALARS scalars double\n");
@@ -279,5 +289,113 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	fclose(outputfile);
 	// writing data to vtk file
 	store3dDataArrayUC(array3DPtr, imageLength, imageWidth, imageHeight, pathPtr, true);
+	return true;
+}
+
+//
+//Store 2D (.pgm) image ascii
+bool save2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	if (imageDataPtr == NULL)
+		return false;
+
+	size_t i, j;
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "w") != 0) {
+		printf("Unable to open the file");
+		return false;
+	}
+
+	fprintf(file, "P2\n");
+	fprintf(file, "%d %d\n%d\n", xDim, yDim, 255);
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			fprintf(file, "%d ", (int)imageDataPtr[i][j]);
+		}
+	}
+	fclose(file);
+
+	return true;
+}
+
+//Sotore 2D (.vtk) image ascii
+bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	if (imageData == NULL)
+		return false;
+
+	double sx = 1., sy = 1.;
+	int i, j;
+
+	FILE* f;
+	if (fopen_s(&f, pathPtr, "w") != 0) {
+		printf("Unable to open the file");
+		return false;
+	}
+
+	fprintf(f, "# vtk DataFile Version 3.0\n");
+	fprintf(f, "file in ascii format\n");
+	fprintf(f, "ASCII\n");
+	fprintf(f, "DATASET STRUCTURED_POINTS\n");
+	fprintf(f, "DIMENSIONS %d %d 1\n", xDim, yDim);
+	fprintf(f, "ORIGIN 0 0  0\n");
+	fprintf(f, "SPACING %f %f 1\n", sx, sy);
+	fprintf(f, "POINT_DATA %d\n", (xDim) * (yDim));
+	fprintf(f, "SCALARS scalars float\n");
+	fprintf(f, "LOOKUP_TABLE default\n");
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0; j < yDim; j++) {
+			fprintf(f, "%d ", imageData[i][j]);
+			fprintf(f, "\n");
+		}
+	}
+	fclose(f);
+
+	return true;
+}
+
+bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, dataType h)
+{
+	FILE* outputfile; //file stream
+	size_t i, j, k, dimXYZ = xDim * yDim * zDim;
+	dataType sx = h, sy = h, sz = h;
+	//checks if the memory was allocated
+	if (array3DPtr == NULL)
+		return false;
+
+	//checks if the file was sucessfully opened
+	if ((fopen_s(&outputfile, pathPtr, "w")) != 0) {
+		return false;
+	}
+	else
+	{
+		fprintf(outputfile, "# vtk DataFile Version 3.0\n");
+		fprintf(outputfile, "file in binary format\n");
+		fprintf(outputfile, "BINARY\n");
+		fprintf(outputfile, "DATASET STRUCTURED_POINTS\n");
+		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
+		fprintf(outputfile, "ORIGIN  0 0 0\n");
+		//fprintf(outputfile, "ORIGIN %f %f %f\n", (h - 1), (h - 1), (h - 1));
+		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
+		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
+		fprintf(outputfile, "SCALARS scalars float\n");
+		fprintf(outputfile, "LOOKUP_TABLE default\n");
+	}
+	
+	// writing data to vtk file
+	for (k = 0; k < zDim; k++) {
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
+				dataType tmp = array3DPtr[k][x_new(i, j, xDim)];
+				//revertBytes(&tmp, sizeof(dataType));
+				fwrite(&tmp, sizeof(dataType), 1, outputfile);
+			}
+		}
+	}
+	fclose(outputfile);
+	
 	return true;
 }

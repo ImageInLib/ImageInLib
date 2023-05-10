@@ -32,8 +32,19 @@ extern "C" {
 
 	bool store3dRealDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 		const size_t zDim, unsigned char * pathPtr, VTK_Header_Lines *lines, Storage_Flags flags);
+
 	bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength, const size_t imageWidth,
 		const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines *lines);
+
+	//
+	//Store 2D (.pgm) image ascii
+	bool save2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	//Store 2D (.vtk) image ascii
+	bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	//Store 3D (.vtk) image binary
+	bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, dataType h);
 
 #ifdef __cplusplus
 }

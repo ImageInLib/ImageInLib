@@ -4,8 +4,7 @@
 #include "filter_params.h"
 #include "common_functions.h"
 
-void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const size_t maxNumberOfSolverIteration,
-	dataType  coef, dataType  eps2, size_t numberOfTimeStep, const FilterMethod method)
+void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const FilterMethod method)
 {
 	switch (method)
 	{
@@ -19,13 +18,13 @@ void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, 
 		nonLinearHeatExplicitScheme(inputImageData, filterParameters);
 		break;
 	case NONLINEAR_HEATEQUATION_IMPLICIT:
-		nonLinearHeatImplicitScheme(inputImageData, filterParameters, numberOfTimeStep);
+		nonLinearHeatImplicitScheme(inputImageData, filterParameters);
 		break;
 	case MEAN_CURVATURE_FILTER:
-		meanCurvatureTimeStep(inputImageData, filterParameters, maxNumberOfSolverIteration, eps2, numberOfTimeStep);
+		meanCurvatureTimeStep(inputImageData, filterParameters);
 		break;
 	case GEODESIC_MEAN_CURVATURE_FILTER:
-		geodesicMeanCurvatureTimeStep(inputImageData, filterParameters, maxNumberOfSolverIteration, coef, eps2, numberOfTimeStep);
+		geodesicMeanCurvatureTimeStep(inputImageData, filterParameters);
 		break;
 	default:
 		break;

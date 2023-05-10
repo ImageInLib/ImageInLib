@@ -141,6 +141,18 @@
     <Filter Include="Source Files\Distance Function">
       <UniqueIdentifier>{529cb28c-1d6e-4db1-b6e6-3b2fe6d8cc75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Labelling">
+      <UniqueIdentifier>{6e8d466e-45e8-40e6-9ab7-31f58f2428ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Labelling">
+      <UniqueIdentifier>{441c6922-f006-4b26-9368-b8b3d41ec056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\morphology">
+      <UniqueIdentifier>{0b397659-66a9-4901-b55e-a528365c25af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\morphology">
+      <UniqueIdentifier>{4391e895-a529-434c-b679-ffc255f9b1ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\transformations.c">
@@ -293,6 +305,24 @@
     <ClCompile Include="src\mean_hausdorff_distance.c">
       <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Labelling.cpp">
+      <Filter>Source Files\Labelling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\morphological_change.c">
+      <Filter>Source Files\morphology</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imageInterpolation.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation3d_gsubsurf.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="distanceForPathFinding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -432,6 +462,24 @@
     </ClInclude>
     <ClInclude Include="src\mean_hausdorff_distance.h">
       <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Labelling.h">
+      <Filter>Header Files\Labelling</Filter>
+    </ClInclude>
+    <ClInclude Include="include\template_functions.h">
+      <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="include\morphological_change.h">
+      <Filter>Header Files\morphology</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imageInterpolation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3d_gsubsurf.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="distanceForPathFinding.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

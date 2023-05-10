@@ -33,10 +33,10 @@ extern "C" {
 	void fillBall3D(dataType **inputDataArrayPtr, size_t inputHeight, size_t inputLength, size_t inputWidth, dataType sphereRadius, Point3D sphereCenter, dataType fillValue);
 
 	bool generateSphereWithSixHoles(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
-		dataType sphereRadius, dataType smallRadius, dataType fillValue, unsigned char * outputPathPtr);
+		dataType sphereRadius, dataType smallRadius, dataType fillValue, const char * outputPathPtr);
 
 	bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
-		dataType sphereRadius, dataType fillValue, unsigned char * outputPathPtr);
+		dataType sphereRadius, dataType fillValue, const char * outputPathPtr);
 
 #endif // !GENERATE3DSHAPES_H
 

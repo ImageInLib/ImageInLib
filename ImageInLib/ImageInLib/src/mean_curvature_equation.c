@@ -15,21 +15,20 @@
 
 // Local Function Prototype
 
-bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters,
-	const size_t maxNumberOfSolverIteration, dataType  eps2, size_t numberOfTimeStep)
+bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL)
 		return false;
 
 	size_t k, i, j;
-	dataType  hh = filterParameters.h * filterParameters.h;
-	dataType  tau = filterParameters.timeStepSize;
+	dataType hhh = filterParameters.h * filterParameters.h * filterParameters.h;
+	dataType tau = filterParameters.timeStepSize;
 	//dataType  t = tau * numberOfTimeStep;
 	//dataType  t_prev = tau * (numberOfTimeStep - 1);
 	// Error value used to check iteration
 	// sor - successive over relation value, used in Gauss-Seidel formula
-	dataType  error, gauss_seidel;
+	dataType error, gauss_seidel;
 
 	// Perform Reflection of the tempPtr
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
@@ -38,22 +37,22 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
 	size_t k_ext, j_ext, i_ext;
-	dataType  ux, uy, uz; //change in x, y and z respectively
+	dataType ux, uy, uz; //change in x, y and z respectively
 	size_t x; //x = x_new(i, j, length);
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
 
-	const dataType  coef_tauh = tau / hh;
-	dataType  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
+	const dataType coef_tauh = tau / hhh;
+	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
-	dataType  voxel_coef, average_face_coef;
+	dataType voxel_coef, average_face_coef;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 
 	// Create temporary Image Data holder for Previous time step data - with extended boundary because of boundary condition
-	dataType  ** prevSolPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	dataType** prevSolPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	// Create temporary Image Data holder for Current time step data - with extended boundary because of boundary condition
-	dataType  ** gauss_seidelPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	dataType** gauss_seidelPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || gauss_seidelPtr == NULL)// || presmoothed_coeftempPtr == NULL)
@@ -68,12 +67,12 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 			return false;
 	}
 
-	dataType  ** orig_e_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** orig_w_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** orig_n_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** orig_s_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** orig_t_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** orig_b_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * height);
+	dataType** orig_e_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** orig_w_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** orig_n_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** orig_s_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** orig_t_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** orig_b_coefPtr = (dataType**)malloc(sizeof(dataType*) * height);
 	//checks if the memory was allocated
 	if (orig_e_coefPtr == NULL || orig_w_coefPtr == NULL || orig_n_coefPtr == NULL || orig_s_coefPtr == NULL ||
 		orig_t_coefPtr == NULL || orig_b_coefPtr == NULL)
@@ -93,12 +92,12 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 			return false;
 	}
 
-	dataType  ** coefPtr_e = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** coefPtr_w = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** coefPtr_n = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** coefPtr_s = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** coefPtr_t = (dataType  **)malloc(sizeof(dataType  *) * height);
-	dataType  ** coefPtr_b = (dataType  **)malloc(sizeof(dataType  *) * height);
+	dataType** coefPtr_e = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** coefPtr_w = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** coefPtr_n = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** coefPtr_s = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** coefPtr_t = (dataType**)malloc(sizeof(dataType*) * height);
+	dataType** coefPtr_b = (dataType**)malloc(sizeof(dataType*) * height);
 	//checks if the memory was allocated
 	if (coefPtr_e == NULL || coefPtr_w == NULL || coefPtr_n == NULL || coefPtr_s == NULL || coefPtr_t == NULL ||
 		coefPtr_b == NULL)
@@ -193,7 +192,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * filterParameters.h));
-				orig_e_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_e_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
@@ -201,7 +200,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * filterParameters.h));
-				orig_w_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_w_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in north direction
 				ux = (dataType)(((uNE + uE) - (uNW + uW))
@@ -209,7 +208,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				uy = (uN - u) / filterParameters.h;
 				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * filterParameters.h));
-				orig_n_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_n_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in south direction
 				ux = (dataType)(((uE + uSE) - (uW + uSW))
@@ -217,7 +216,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				uy = (uS - u) / filterParameters.h;
 				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * filterParameters.h));
-				orig_s_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_s_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in top direction
 				ux = (dataType)(((TuE + uE) - (TuW + uW))
@@ -225,7 +224,7 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				uy = (dataType)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Tu - u) / filterParameters.h;
-				orig_t_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_t_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// Calculation of coefficients in bottom direction
 				ux = (dataType)(((BuW + uW) - (BuE + uE))
@@ -233,13 +232,13 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				uy = (dataType)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Bu - u) / filterParameters.h;
-				orig_b_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + eps2);
+				orig_b_coefPtr[k][x] = (dataType)sqrt((ux * ux) + (uy * uy) + (uz * uz) + filterParameters.eps2);
 
 				// evaluation of norm of gradient of image at each voxel
 				average_face_coef = (dataType)(((orig_e_coefPtr[k][x] + orig_w_coefPtr[k][x] + orig_n_coefPtr[k][x] + orig_s_coefPtr[k][x]
 					+ orig_t_coefPtr[k][x] + orig_b_coefPtr[k][x]) / 6.0));
 
-				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + eps2);
+				voxel_coef = (dataType)sqrt(pow(average_face_coef, 2) + filterParameters.eps2);
 
 				/* evaluation of norm of gradient of image at each voxel, norm of gradient of presmoothed
 				image at each voxel face and reciprocal of norm of gradient of image at each voxel face*/
@@ -310,10 +309,10 @@ bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterPa
 				}
 			}
 		}
-	} while (error > filterParameters.tolerance && z < maxNumberOfSolverIteration);
+	} while (error > filterParameters.tolerance && z < filterParameters.maxNumberOfSolverIteration);
 	printf("The number of iterations is %zd\n", z);
 	printf("Error is %e\n", error);
-	printf("Step is %zd\n", numberOfTimeStep);
+	//printf("Step is %zd\n", filterParameters.timeStepsNum);
 
 	//Copy the current time step to original data holder after timeStepsNum
 	copyDataToReducedArea(inputImageData.imageDataPtr, gauss_seidelPtr, height, length, width);

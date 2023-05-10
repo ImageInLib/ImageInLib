@@ -1,3 +1,4 @@
+#include "common_functions.h"
 #include "distanceMaps.h"
 #include "fast_marching.h"
 #include "distance_function.h"

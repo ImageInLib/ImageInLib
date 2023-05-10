@@ -13,10 +13,10 @@ extern "C" {
 		dataType omega_c;
 		dataType tolerance;
 		dataType eps2;
+		dataType coef;
 		size_t p;
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
-		size_t maxNumberOftimeSteps;
 	} Filter_Parameters;
 	// Parameters used in filtering
 

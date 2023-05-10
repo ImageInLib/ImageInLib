@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="distanceForPathFinding.cpp" />
+    <ClCompile Include="Source.cpp" />
     <ClCompile Include="src\balls_on_cirlce.c" />
     <ClCompile Include="src\balls_on_helix.c" />
     <ClCompile Include="src\brute_force_algorithm.c" />
@@ -32,14 +34,17 @@
     <ClCompile Include="src\generate_3d_shapes.c" />
     <ClCompile Include="src\geodesic_mean_curvature_equation.c" />
     <ClCompile Include="src\heat_equation.c" />
+    <ClCompile Include="src\imageInterpolation.c" />
     <ClCompile Include="src\image_difference.c" />
     <ClCompile Include="src\image_norm.c" />
     <ClCompile Include="src\implicit_regularized_pm_equation.c" />
     <ClCompile Include="src\interpolations.c" />
     <ClCompile Include="src\l2_norm.c" />
+    <ClCompile Include="src\Labelling.cpp" />
     <ClCompile Include="src\linked_list.c" />
     <ClCompile Include="src\mean_curvature_equation.c" />
     <ClCompile Include="src\mean_hausdorff_distance.c" />
+    <ClCompile Include="src\morphological_change.c" />
     <ClCompile Include="src\noiseGeneration.c" />
     <ClCompile Include="src\noise_generator.c" />
     <ClCompile Include="src\pca.c" />
@@ -50,6 +55,7 @@
     <ClCompile Include="src\segmentation.c" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
     <ClCompile Include="src\segmentation3D_common.c" />
+    <ClCompile Include="src\segmentation3d_gsubsurf.c" />
     <ClCompile Include="src\segmentation3D_subsurf.c" />
     <ClCompile Include="src\setting_boundary_values.c" />
     <ClCompile Include="src\shapeGeneration.c" />
@@ -63,16 +69,20 @@
     <ClCompile Include="src\vtk_format_ascii.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="distanceForPathFinding.h" />
     <ClInclude Include="include\common_math.h" />
     <ClInclude Include="include\common_vtk.h" />
     <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
     <ClInclude Include="include\filtering.h" />
+    <ClInclude Include="include\Labelling.h" />
+    <ClInclude Include="include\morphological_change.h" />
     <ClInclude Include="include\noiseGeneration.h" />
     <ClInclude Include="include\registration.h" />
     <ClInclude Include="include\segmentation.h" />
     <ClInclude Include="include\shapeGeneration.h" />
     <ClInclude Include="include\statistics.h" />
+    <ClInclude Include="include\template_functions.h" />
     <ClInclude Include="include\transformation.h" />
     <ClInclude Include="src\common_functions.h" />
     <ClInclude Include="src\data_initialization.h" />
@@ -85,6 +95,7 @@
     <ClInclude Include="src\filter_params.h" />
     <ClInclude Include="src\generate_3d_shapes.h" />
     <ClInclude Include="src\heat_equation.h" />
+    <ClInclude Include="src\imageInterpolation.h" />
     <ClInclude Include="src\image_difference.h" />
     <ClInclude Include="src\image_norm.h" />
     <ClInclude Include="src\interpolations.h" />
@@ -98,6 +109,7 @@
     <ClInclude Include="src\registration_params.h" />
     <ClInclude Include="src\segmentation3D_atlas.h" />
     <ClInclude Include="src\segmentation3D_common.h" />
+    <ClInclude Include="src\segmentation3d_gsubsurf.h" />
     <ClInclude Include="src\segmentation3D_subsurf.h" />
     <ClInclude Include="src\setting_boundary_values.h" />
     <ClInclude Include="src\shapeAnalysis_params.h" />
@@ -119,15 +131,15 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -158,9 +170,10 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\external_libs\vtk\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)external_libs\vtk\lib64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vtkalglib-8.1d.lib;vtkCommonCore-8.1d.lib;vtkIOLegacy-8.1d.lib;vtksys-8.1d.lib;vtkCommonDataModel-8.1d.lib;vtkCommonSystem-8.1d.lib;vtkCommonMath-8.1d.lib;vtkCommonMisc-8.1d.lib;vtkCommonExecutionModel-8.1d.lib;vtkCommonTransforms-8.1d.lib;vtkIOCore-8.1d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -177,9 +190,10 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\external_libs\vtk\include;include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
