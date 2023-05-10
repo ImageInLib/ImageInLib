@@ -80,22 +80,25 @@ int main() {
 		printf("inputImagePath does not exist\n");
 	}
 	
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				xd = x_new(i, j, Length);
-				imageData[k][xd] = (dataType)image[k][xd];
-			}
-		}
-	}
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			xd = x_new(i, j, Length);
+	//			imageData[k][xd] = (dataType)image[k][xd];
+	//		}
+	//	}
+	//}
+	convertFromShortTodatatype(image, imageData, dim2D, Height);
 
 	std::string loadedImagePath = outputPath + "loaded.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
 
 	for (k = 0; k < Height; k++) {
 		delete[] image[k];
+		delete[] imageData[k];
 	}
 	delete[] image;
+	delete[] imageData;
 
 	//------------------- Filtering --------------------------------
 
@@ -271,72 +274,72 @@ int main() {
 
 	//--------------------------Point with the highest distance-------------------------------------------------
 
-	dataType** distance = new dataType * [Height];
-	dataType** maskThreshold = new dataType* [Height];
-	for (k = 0; k < Height; k++) {
-		distance[k] = new dataType[dim2D];
-		maskThreshold[k] = new dataType[dim2D];
-	}
-	if (distance == NULL || maskThreshold == NULL)
-		return false;
+	//dataType** distance = new dataType * [Height];
+	//dataType** maskThreshold = new dataType* [Height];
+	//for (k = 0; k < Height; k++) {
+	//	distance[k] = new dataType[dim2D];
+	//	maskThreshold[k] = new dataType[dim2D];
+	//}
+	//if (distance == NULL || maskThreshold == NULL)
+	//	return false;
 
-	for (i = 0; i < Height; i++) {
-		for (j = 0; j < Width * Length; j++) {
-			maskThreshold[i][j] = imageData[i][j];
-		}
-	}
-	 
-	//Fast sweeping to find the point with the higest distance
-	Distance_Map_Params distParameters = {0.4, 1.0, 0.0, 100000, 0.001};
-	DistanceMapMethod method = FAST_SWEEP;
-	thresholding3dFunctionN(maskThreshold, Length, Width, Height, thresmin, thresmax, 0.0, 1.0);
-	computeDistanceMap(distance, maskThreshold, Length, Width, Height, distParameters, method);
+	//for (i = 0; i < Height; i++) {
+	//	for (j = 0; j < Width * Length; j++) {
+	//		maskThreshold[i][j] = imageData[i][j];
+	//	}
+	//}
+	// 
+	////Fast sweeping to find the point with the higest distance
+	//Distance_Map_Params distParameters = {0.4, 1.0, 0.0, 100000, 0.001};
+	//DistanceMapMethod method = FAST_SWEEP;
+	//thresholding3dFunctionN(maskThreshold, Length, Width, Height, thresmin, thresmax, 0.0, 1.0);
+	//computeDistanceMap(distance, maskThreshold, Length, Width, Height, distParameters, method);
 
-	std::string distanceMapPath = outputPath + "distanceP2.raw";
-	store3dRawData<dataType>(distance, Length, Width, Height, distanceMapPath.c_str());
+	//std::string distanceMapPath = outputPath + "distanceP2.raw";
+	//store3dRawData<dataType>(distance, Length, Width, Height, distanceMapPath.c_str());
 
-	//finding of the point with the highest distance
-	dataType distanceMax = -1;
-	dataType i_max, j_max, k_max;
+	////finding of the point with the highest distance
+	//dataType distanceMax = -1;
+	//dataType i_max, j_max, k_max;
 
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				if (distance[k][x_new(i, j, Length)] >= distanceMax) {
-					distanceMax = distance[k][x_new(i, j, Length)];
-					i_max = i; j_max = j; k_max = k;
-				}
-			}
-		}
-	}
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			if (distance[k][x_new(i, j, Length)] >= distanceMax) {
+	//				distanceMax = distance[k][x_new(i, j, Length)];
+	//				i_max = i; j_max = j; k_max = k;
+	//			}
+	//		}
+	//	}
+	//}
 	
 	//printf("Maximal distance for the cropped volume : %f \n", distanceMax);
 	//printf("Coordinates of the highest distance (Cropped Volume) : x = %d, y = %d and z = %d \n", i_max, j_max, k_max);
 
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				xd = x_new(i, j, Length);
-				if (sqrt(pow(i - i_max, 2) + pow(j - j_max, 2) + pow(k - k_max, 2)) <= 5) {
-					maskThreshold[k][xd] = 1.0;
-				}
-				else {
-					maskThreshold[k][xd] = 0.0;
-				}
-			}
-		}
-	}
-	std::string ballImagePath = outputPath + "ballP2.raw";
-	store3dRawData<dataType>(maskThreshold, Length, Width, Height, ballImagePath.c_str());
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			xd = x_new(i, j, Length);
+	//			if (sqrt(pow(i - i_max, 2) + pow(j - j_max, 2) + pow(k - k_max, 2)) <= 5) {
+	//				maskThreshold[k][xd] = 1.0;
+	//			}
+	//			else {
+	//				maskThreshold[k][xd] = 0.0;
+	//			}
+	//		}
+	//	}
+	//}
+	//std::string ballImagePath = outputPath + "ballP2.raw";
+	//store3dRawData<dataType>(maskThreshold, Length, Width, Height, ballImagePath.c_str());
 
-	for (k = 0; k < Height; k++) {
-		delete[] imageData[k];
-		delete[] distance[k];
-		delete[] maskThreshold[k];
-	}
-	delete[] imageData;
-	delete[] distance;
-	delete[] maskThreshold;
+	//for (k = 0; k < Height; k++) {
+	//	delete[] imageData[k];
+	//	delete[] distance[k];
+	//	delete[] maskThreshold[k];
+	//}
+	//delete[] imageData;
+	//delete[] distance;
+	//delete[] maskThreshold;
 
 	//------------------------------Segmentation--------------------------------------------------------
 	 
