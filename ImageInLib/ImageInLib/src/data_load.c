@@ -199,15 +199,6 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
 			imageDataPtr[i][j] = (float)intensity;
 		}
 	}
-
-	//switch the two first bytes if the computer is little endian
-	if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
-		for (k = 0; k < imageHeight; k++) {
-			for (i = 0; i < imageLength * imageWidth; i++) {
-				reverBytes(&imageDataPtr[k][i], sizeof(dataType));
-			}
-		}
-	}
 	
 	fclose(file);
 

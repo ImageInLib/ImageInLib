@@ -1420,9 +1420,9 @@ bool shortestPath3d(dataType** distanceFuncPtr, dataType** resultedPath, const s
 
 		dist_min = sqrt((iNew - i_init) * (iNew - i_init) + (jNew - j_init) * (jNew - j_init) + (kNew - k_init) * (kNew - k_init));
 
-		i_current = round(iNew); 
-		j_current = round(jNew);
-		k_current = round(kNew);
+		i_current = (size_t)(round(iNew)); 
+		j_current = (size_t)(round(jNew));
+		k_current = (size_t)(round(kNew));
 		resultedPath[k_current][x_new(j_current, i_current, width)] = 1;
 
 		//currentDist = distanceFuncPtr[k_current][x_new(j_current, i_current, width)];
