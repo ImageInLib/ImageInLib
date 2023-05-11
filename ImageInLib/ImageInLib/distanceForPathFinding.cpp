@@ -595,31 +595,6 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 
 	dataType sol = 0.0, a = 0.0, b = 0.0, c = 0.0, delta = 0.0;
 
-	//a = 3;
-	//if (X == BIG_VALUE) {
-	//	a--; X = 0;
-	//}
-	//if (Y == BIG_VALUE) {
-	//	a--; Y = 0;
-	//}
-	//if (Z == BIG_VALUE) {
-	//	a--; Z = 0;
-	//}
-	//b = -2 * (X + Y + Z); 
-	//c = pow(X, 2) + pow(Y, 2) + pow(Z, 2) - W;
-	//delta = b * b  - 4 * a * c;
-	//if (a == 0) {
-	//	sol = 0;
-	//}
-	//else {
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = min(X, min(Y, Z)) + W;
-	//	}
-	//}
-
 	if (X == INFINITY && Y != INFINITY && Z != INFINITY) {
 		a = 2;
 		b = (dataType)(- 2 * (Y + Z));
@@ -710,88 +685,6 @@ dataType solve3dQuadratic(dataType X, dataType Y, dataType Z, dataType W) {
 			return min(X, min(Y, Z)) + W;
 		}
 	}
-
-	//else {
-	//	a = 3;
-	//	b = -2 * (X + Y + Z);
-	//	c = pow(X, 2) + pow(Y, 2) + pow(Z, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = min(X, min(Y, Z)) + W;
-	//	}
-	//}
-
-	//if (Y == BIG_VALUE) {
-	//	a = 2;
-	//	b = -2 * (X + Z);
-	//	c = pow(X, 2) + pow(Z, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = min(X, Z) + W;
-	//	}
-	//}
-	//if (Z == BIG_VALUE) {
-	//	a = 2;
-	//	b = -2 * (X + Y);
-	//	c = pow(X, 2) + pow(Y, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = min(X, Y) + W;
-	//	}
-	//}
-	//if (X == BIG_VALUE && Y == BIG_VALUE) {
-	//	a = 1;
-	//	b = -2 * Z;
-	//	c = pow(Z, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = Z + W;
-	//	}
-	//}
-	//if (X == BIG_VALUE && Z == BIG_VALUE) {
-	//	a = 1;
-	//	b = -2 * Y;
-	//	c = pow(Y, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = Y + W;
-	//	}
-	//}
-	//if (Y == BIG_VALUE && Z == BIG_VALUE) {
-	//	a = 1;
-	//	b = -2 * X;
-	//	c = pow(X, 2) - W;
-	//	delta = b * b - 4 * a * c;
-	//	if (delta >= 0) {
-	//		sol = (-b + sqrt(delta)) / (2 * a);
-	//	}
-	//	else {
-	//		sol = X + W;
-	//	}
-	//}
-	
-	//if (sol < 0) {
-	//	cout << "The solution is negative " << endl; //If everything is OK, it never happen
-	//	return 0;
-	//}
-	//else {
-	//	return sol;
-	//}
 
 }
 
