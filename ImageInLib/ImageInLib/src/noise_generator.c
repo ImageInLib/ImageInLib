@@ -328,6 +328,7 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 * Multiplicative noise adds noise to imageDataPtr
 * 2D
 */
+/*
 void addMultiplicativeNoise(dataType ** imageDataPtr, const size_t imageHeight, const size_t imageWidth, dataType variance)
 {
 	size_t i, j;
@@ -335,26 +336,30 @@ void addMultiplicativeNoise(dataType ** imageDataPtr, const size_t imageHeight, 
 	double upper = 0.5 * upperBValue(variance);
 	double lower = -1.0 * upper;
 
-	size_t dim2D = imageLength * imageWidth;
+	size_t dim2D = imageHeight * imageWidth;
 
 	for (i = 0; i < imageHeight; i++)
 	{
-		for (j = 0; j < dim2D; j++)
+		for (j = 0; j < imageWidth; j++)
 		{
-			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)(randomUniformNumber(lower, upper)*imageDataPtr[i][j]);
+			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)(randomUniformNumber(lower, upper) * imageDataPtr[i][j]);
 			imageDataPtr[i][j] = (imageDataPtr[i][j] < fgMin) ? fgMin : imageDataPtr[i][j];
 			imageDataPtr[i][j] = (imageDataPtr[i][j] > bgMax) ? bgMax : imageDataPtr[i][j];
 		}
 	}
 }
+*/
+
 /*
 * Structural noise generate adds noise to imageDataPtr
 * 2D
 */
+
+/*
 void addStructuralNoise(dataType ** imageDataPtr, const size_t imageHeight, const size_t imageWidth)
 {
 	size_t i, j, k, xd;
-	size_t dim2D = imageLength * imageWidth;
+	size_t dim2D = imageHeight * imageWidth;
 	// Create a mesh grid for the height and width
 	dataType ** periodicNoise = (dataType **)malloc(imageHeight * sizeof(dataType*));
 
@@ -376,6 +381,7 @@ void addStructuralNoise(dataType ** imageDataPtr, const size_t imageHeight, cons
 		}
 	}
 }
+*/
 
 double upperBValue(double v)
 {
