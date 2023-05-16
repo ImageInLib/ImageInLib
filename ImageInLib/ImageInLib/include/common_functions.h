@@ -49,7 +49,8 @@ extern "C" {
 	// Generate Random Points
 	typedef struct {
 		size_t k, xd, p;
-	}RandomPoints;
+=======
+	}Random3dPoints;
 
 	typedef struct {
 		size_t xd, p;
