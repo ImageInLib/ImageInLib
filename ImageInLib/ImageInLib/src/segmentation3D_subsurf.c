@@ -129,7 +129,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	Storage_Flags flags = {false,false};
 
 	strcpy_s(name, sizeof name, outputPathPtr);
-	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.raw");
+	sprintf_s(name_ending, sizeof(name_ending), "_edgeEast.raw");
 	strcat_s(name, sizeof(name), name_ending);
 	store3dDataArrayD(GPtrs.GePtr, length, width, height, name, flags);
 
@@ -466,19 +466,25 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					size_t x_n = x_new(i, j, length);
 					// Set Value
 					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
-					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
+					//new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
+					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)));
 					if (s == 0)
 					{
-						if (norm_of_distance > R)
-							inputDataArrayPtr[k][x_n] = 0;
-						else
-							inputDataArrayPtr[k][x_n] = new_value;
+						//if (norm_of_distance > R) {
+						//	inputDataArrayPtr[k][x_n] = 0;
+						//}	
+						//else {
+						//	inputDataArrayPtr[k][x_n] = new_value;
+						//}
+						inputDataArrayPtr[k][x_n] = new_value;
 					}
 					else
 					{
-						if (norm_of_distance <= R)
-							if (inputDataArrayPtr[k][x_n] < new_value)
+						if (norm_of_distance <= R) {
+							if (inputDataArrayPtr[k][x_n] < new_value) {
 								inputDataArrayPtr[k][x_n] = new_value;
+							}
+						}
 					}
 				}
 			}
@@ -536,8 +542,8 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	//heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
-	heatImplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	//heatImplicitScheme(presmoothingData, explicit_lhe_Parameters);
 	//geodesicMeanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
 	//meanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
 

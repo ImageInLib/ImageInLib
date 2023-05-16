@@ -11,6 +11,8 @@ extern "C" {
 #include "heat_equation.h"
 #include "filter_params.h"
 
+
+	//3D function
 	bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 		Point3D* centers, size_t no_of_centers, unsigned char* outputPathPtr, dataType coef_conv, dataType coef_dif);
 	bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** edgeGradientPtr, Gradient_Pointers VPtrs,
