@@ -40,5 +40,3 @@ void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const s
 		}
 	}
 }
-
-
