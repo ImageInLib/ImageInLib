@@ -1,3 +1,8 @@
+/*
+* Author: Konan ALLALY
+* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
+* Language:  C/C++
+*/
 #pragma warning(disable : 6011)
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4477)
@@ -503,8 +508,7 @@ bool dilatation3dHeighteenNeigbours(dataType** imageDataPtr, const size_t xDim, 
 	return true;
 }
 
-
-//Compute gradient
+/* //Compute gradient
 bool imageGradient(dataType ** imageDataPtr, const char* pathSavePtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType h) {
 	
 	if (imageDataPtr == NULL)
@@ -700,8 +704,9 @@ bool imageGradient(dataType ** imageDataPtr, const char* pathSavePtr, const size
 
 	return true;
 }
+*/
 
-
+/*
 bool edgesDetector(dataType** imageDataPtr, const char* pathSavePtr, const size_t xDim, const size_t yDim, const size_t zDim, Filter_Parameters smoothParameters) {
 
 	if (imageDataPtr == NULL)
@@ -902,3 +907,4 @@ bool edgesDetector(dataType** imageDataPtr, const char* pathSavePtr, const size_
 
 	return true;
 }
+*/

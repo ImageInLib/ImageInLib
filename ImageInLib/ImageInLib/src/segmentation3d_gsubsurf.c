@@ -1,3 +1,8 @@
+/*
+* Author: Konan ALLALY
+* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
+* Language:  C
+*/
 #include <stdio.h> // Standard lib for input and output functions
 #include <stdlib.h>
 #include <time.h>
@@ -28,7 +33,7 @@
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr, dataType coef_conv, dataType coef_dif) {
 
-	size_t i, j, k;
+	size_t i, j, k, xd;
 	size_t height = inputImageData.height, length = inputImageData.length, width = inputImageData.width;
 	size_t dim2D = length * width;
 	size_t height_ext = height + 2;
@@ -136,6 +141,45 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	//compute coefficients from presmoothed image
 	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, explicit_lhe_Parameters, coef_conv);
 
+	//dataType** potential = (dataType**)malloc(sizeof(dataType*) * height);
+	//for (k = 0; k < height; k++) {
+	//	potential[k] = (dataType*)malloc(sizeof(dataType) * length * width);
+	//}
+	//size_t iSeed = (size_t)centers->x, jSeed = (size_t)centers->y, kSeed = (size_t)centers->z;
+	//dataType seedValue = inputImageData.imageDataPtr[kSeed][x_new(iSeed, jSeed, length)];
+	//for (k = 0; k < height; k++) {
+	//	for (i = 0; i < length; i++) {
+	//		for (j = 0; j < width; j++) {
+	//			xd = x_new(i, j, length);
+	//			potential[k][xd] = (dataType)(fabs(seedValue - inputImageData.imageDataPtr[k][xd]));
+	//		}
+	//	}
+	//}
+	//dataType maxPotential = -1 * INFINITY;
+	//for (k = 0; k < height; k++) {
+	//	for (i = 0; i < length; i++) {
+	//		for (j = 0; j < width; j++) {
+	//			xd = x_new(i, j, length);
+	//			if (potential[k][xd] > maxPotential) {
+	//				maxPotential = potential[k][xd];
+	//			}
+	//		}
+	//	}
+	//}
+	//for (k = 0; k < height; k++) {
+	//	for (i = 0; i < length; i++) {
+	//		for (j = 0; j < width; j++) {
+	//			xd = x_new(i, j, length);
+	//			edgeGradientPtr[k][xd] = (dataType)(0.01 + (potential[k][xd] / maxPotential) * (1.0 / edgeGradientPtr[k][xd]));
+	//		}
+	//	}
+	//}
+	//rescaleNewRange(edgeGradientPtr, length, width, height, 0.0, 1.0);
+	//for (k = 0; k < height; k++) {
+	//	free(potential[k]);
+	//}
+	//free(potential);
+
 	//Array for name construction
 	unsigned char  name[500];
 	unsigned char  name_ending[200];
@@ -147,8 +191,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	store3dDataArrayD(edgeGradientPtr, length, width, height, name, flags);
 
 	Storage_Flags storageFlags = { false, false };
-	manageFile(edgeGradientPtr, length, width, height, name,
-		STORE_DATA_RAW, BINARY_DATA, storageFlags);
+	manageFile(edgeGradientPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
 
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
@@ -187,12 +230,14 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 
 			Storage_Flags storageFlags = { false, false };
 			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
+			printf("Step is %zd\n", segParameters.numberOfTimeStep);
+			printf("Error = %lf\n", difference_btw_current_and_previous_sol);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
 
-	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	printf("GSUBSURF CPU time: %e secs\n", secondCpuTime - firstCpuTime);
+	//secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
+	//printf("GSUBSURF CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 	//printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
 
 	for (i = 0; i < height; i++)
@@ -649,7 +694,10 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 			}
 		}
 	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
-	printf("Step is %zd\n", segParameters.numberOfTimeStep);
+
+	/*if ((segParameters.maxNoOfTimeSteps % 10) == 0) {
+		printf("Step is %zd\n", segParameters.numberOfTimeStep);
+	}*/
 
 	if (no_of_centers == 1)
 	{
