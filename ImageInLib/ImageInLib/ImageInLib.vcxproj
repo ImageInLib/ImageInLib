@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="distanceForPathFinding.cpp" />
-    <ClCompile Include="Source.cpp" />
     <ClCompile Include="src\balls_on_cirlce.c" />
     <ClCompile Include="src\balls_on_helix.c" />
     <ClCompile Include="src\brute_force_algorithm.c" />

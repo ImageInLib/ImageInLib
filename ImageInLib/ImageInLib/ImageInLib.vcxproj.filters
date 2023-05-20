@@ -305,9 +305,6 @@
     <ClCompile Include="src\mean_hausdorff_distance.c">
       <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Labelling.cpp">
       <Filter>Source Files\Labelling</Filter>
     </ClCompile>

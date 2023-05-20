@@ -115,6 +115,7 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 				dataType tmp = array3DPtr[k][i];
 				revertBytes(&tmp, sizeof(dataType));
 				fwrite(&tmp, sizeof(dataType), dimXY, cfPtr);
+			}
 		}
 	}
 	else
