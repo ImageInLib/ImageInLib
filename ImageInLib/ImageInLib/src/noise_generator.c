@@ -220,10 +220,9 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 	const size_t zDim, dataType density, const dataType pepper)
 {
 	size_t i, j, k, l = 0, m, n, xd, s;
-	dataType K = density;
 
 	//checks for correctness of the density (ie: percent noise, on [0,1] of salt & pepper noise
-	if ((K < 0) && (K > 1))
+	if ((density < 0) && (density > 1))
 		return false;
 
 	//checks if the memory was allocated
@@ -231,14 +230,16 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 		return false;
 
 	//Number of voxels affected by noise
-	const size_t dim3DK = (size_t)((xDim * yDim * zDim * K) + 0.5);
+	const size_t dim3DK = (size_t)((xDim * yDim * zDim * density) + 0.5);
 	const size_t dim2D = xDim * yDim;
 
 	// Generate Random points
 	srand(time(NULL)); //seed for randon number generator
-	RandomPoints* generated_points = malloc(sizeof(RandomPoints) * dim3DK);
+
+	Random3dPoints* generated_points = malloc(sizeof(Random3dPoints) * dim3DK);
 	bool loop = true;
-	RandomPoints* tmpRdPts;
+	Random3dPoints* tmpRdPts;
+  
 	do
 	{
 		//Coordinates of the affected voxel
@@ -272,9 +273,8 @@ bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size
 	return true;
 }
 
-bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper)
+bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper)
 {
-	dataType K = density;
 	size_t i, j, l = 0, n, xd, s;
 
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
@@ -285,9 +285,9 @@ bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size
 	if (array2DPtr == NULL)
 		return false;
 
-	const size_t dim2DK = (size_t)((xDim * yDim * K) + 0.5);
+	const size_t dim2DK = (size_t)((xDim * yDim * density) + 0.5);
 	const size_t dim2D = xDim * yDim;
-	
+
 	// Generate Random points
 	srand(time(NULL)); //seed for randon number generator
 	Random2dPoints* generated_points = malloc(sizeof(Random2dPoints) * dim2DK);
