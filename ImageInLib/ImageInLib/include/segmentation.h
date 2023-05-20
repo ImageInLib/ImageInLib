@@ -9,6 +9,7 @@ extern "C" {
 	typedef enum
 	{
 		SUBSURF_MODEL = 1,
+		GSUBSURF_MODEL,
 		GSUBSURF_ATLAS_MODEL
 	} SegmentationMethod;
 

@@ -26,7 +26,7 @@
 // Local Function Prototype
 
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
-	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr, dataType coef_conv, dataType coef_dif) {
+	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
 	size_t i, j, k;
 	size_t height = inputImageData.height, length = inputImageData.length, width = inputImageData.width;
@@ -36,6 +36,9 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	size_t width_ext = width + 2;
 	size_t dim2D_ext = length_ext * width_ext;
 	dataType h = segParameters.h;
+
+	dataType coef_conv = segParameters.coef_conv;
+	dataType coef_dif = segParameters.coef_dif;
 
 	dataType firstCpuTime, secondCpuTime, difference_btw_current_and_previous_sol;
 
