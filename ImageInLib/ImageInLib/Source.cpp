@@ -35,6 +35,7 @@
 #include "distanceMaps.h"
 #include "../src/trajectories.h"
 #include "../src/segmentation3D_atlas.h"
+#include "segmentation.h"
 
 #define thresmin 995
 #define thresmax 1213
@@ -470,8 +471,9 @@ int main() {
 	rescaleNewRange(segment.imageDataPtr, lengthNew, widthNew, heightNew, 0.0, 1.0);
 
 	Segmentation_Parameters segmentParameters; segmentParameters.coef = 100000; segmentParameters.eps2 = 1e-6; segmentParameters.gauss_seidelTolerance = 1e-6;
-	segmentParameters.h = 1.0; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 10; segmentParameters.mod = 10;
-	segmentParameters.numberOfTimeStep = 10; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-10; segmentParameters.tau = 8.0;
+	segmentParameters.h = 1.0; segmentParameters.maxNoGSIteration = 100; segmentParameters.maxNoOfTimeSteps = 500; segmentParameters.mod = 10;
+	segmentParameters.numberOfTimeStep = 500; segmentParameters.omega_c = 1.5; segmentParameters.segTolerance = 1e-10; segmentParameters.tau = 8.0;
+	segmentParameters.coef_conv = 1.0; segmentParameters.coef_dif = 1.0;
 
 	Filter_Parameters filter_Parameters; filter_Parameters.coef = 1e-2; filter_Parameters.edge_detector_coefficient = 1; filter_Parameters.eps2 = 1e-4;
 	filter_Parameters.h = 1.0; filter_Parameters.maxNumberOfSolverIteration = 100; filter_Parameters.omega_c = 1.5; filter_Parameters.p = 1;
@@ -479,7 +481,10 @@ int main() {
 
 	unsigned char outputPathPtr[] = "C:/Users/Konan Allaly/Documents/Tests/output/segmentation/";
 	//subsurfSegmentation(segment, initialSegment, segmentParameters, filter_Parameters, centerSeg, numb_centers, outputPathPtr);
-	generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filter_Parameters, centerSeg, numb_centers, outputPathPtr, 1.0, 1.0);
+	//generalizedSubsurfSegmentation(segment, initialSegment, segmentParameters, filter_Parameters, centerSeg, numb_centers, outputPathPtr);
+
+	const SegmentationMethod model = SUBSURF_MODEL;
+	segmentImage(segment, initialSegment, segmentParameters, filter_Parameters, centerSeg, numb_centers, outputPathPtr, model);
 
 	//inputImagePath = outputPath + "segmentation/_seg_func_5000.raw";
 	//if (load3dArrayRAW<dataType>(croppedImage, lengthNew, widthNew, heightNew, inputImagePath.c_str()) == false)
