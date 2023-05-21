@@ -1,5 +1,7 @@
 #include <memory.h>
 #include "common_functions.h"
+
+# define BIG_VALUE 100000000
 //==============================================================================
 // Local Function Prototype
 //==============================================================================
@@ -161,8 +163,8 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 //==============================================================================
 void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew) {
 	size_t k, i, j, xd;
-	dataType maxData = -10000;
-	dataType minData = 10000;
+	dataType maxData = -1 * BIG_VALUE;
+	dataType minData = BIG_VALUE;
 
 	// Find the Min and Max Intensity
 	for (k = 0; k < imageHeight; k++) {
