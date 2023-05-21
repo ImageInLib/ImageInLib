@@ -15,6 +15,7 @@ The following image processing techniques have been implemented in the library:
 * [Noise generation](https://github.com/ImageInLib/ImageInLib/wiki/Noise%20Generation)
 * [Shape generation](https://github.com/ImageInLib/ImageInLib/wiki/Shape-Generation)
 * [Statistical shape analysis](https://github.com/ImageInLib/ImageInLib/wiki/Statistical%20Shape%20Analysis)
+* [Morphological operations](https://github.com/ImageInLib/ImageInLib/wiki/Morphological-filters-(changes))
 
 We also have a **[VTK Library](https://github.com/ImageInLib/ImageInLib/wiki/VTK-Library)** imaging library which offers support for reading and storing vtk files. Our chosen data format is vtk.
 
