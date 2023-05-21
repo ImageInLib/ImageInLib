@@ -40,12 +40,6 @@ extern "C" {
 	//Store 2D (.pgm) image ascii
 	bool save2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
 
-	//Store 2D (.vtk) image ascii
-	bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const char* pathPtr);
-
-	//Store 3D (.vtk) image binary
-	bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, dataType h);
-
 #ifdef __cplusplus
 }
 #endif
