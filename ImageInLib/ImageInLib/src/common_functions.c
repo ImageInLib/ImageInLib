@@ -161,10 +161,8 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)
 }
 //==============================================================================
-void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew) {
+void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew, dataType max_dta, dataType min_dta) {
 	size_t k, i, j, xd;
-	dataType maxData = 0;
-	dataType minData = BIG_VALUE;
 
 	// Find the Min and Max Intensity
 	for (k = 0; k < imageHeight; k++) {
@@ -173,17 +171,17 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 
 				// 1D Conversion of row and column
 				xd = x_new(i, j, imageLength);
-				if (imageDataPtr[k][xd] > maxData) {
-					maxData = imageDataPtr[k][xd];
+				if (imageDataPtr[k][xd] > max_dta) {
+					max_dta = imageDataPtr[k][xd];
 				}
-				if (imageDataPtr[k][xd] < minData) {
-					minData = imageDataPtr[k][xd];
+				if (imageDataPtr[k][xd] < min_dta) {
+					min_dta = imageDataPtr[k][xd];
 				}
 			}
 		}
 	}
 	// Rescale from min_new to max_new
-	dataType diffOld = maxData - minData;
+	dataType diffOld = max_dta - min_dta;
 	dataType diffNew = maxNew - minNew;
 	dataType scale_factor = (diffNew) / (diffOld);
 	for (k = 0; k < imageHeight; k++) {
@@ -191,7 +189,7 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 			for (j = 0; j < imageWidth; j++) {
 				// 1D Conversion of row and column
 				xd = x_new(i, j, imageLength);
-				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - maxData) + maxNew;
+				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - max_dta) + maxNew;
 				// Alternatively
 				//dta[k][xd] = scale_factor * (dta[k][xd] - min_dta) + min_new; }
 			}
