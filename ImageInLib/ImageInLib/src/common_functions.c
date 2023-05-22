@@ -163,7 +163,7 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 //==============================================================================
 void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew) {
 	size_t k, i, j, xd;
-	dataType maxData = -1 * BIG_VALUE;
+	dataType maxData = 0;
 	dataType minData = BIG_VALUE;
 
 	// Find the Min and Max Intensity
