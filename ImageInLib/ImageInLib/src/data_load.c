@@ -1,3 +1,8 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 6386)
+#pragma warning(disable : 6031)
+#pragma warning(disable : 6387)
+
 /*
 * Author: Markjoe Olunna UBA
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
@@ -5,6 +10,7 @@
 */
 #include "common_functions.h"
 #include "data_load.h"
+#include "endianity_bl.h"
 #include <stdio.h>
 #include <string.h>
 #include "endianity_bl.h"
@@ -146,16 +152,54 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 			}
 		}
 	}
+  
+	//change from little endian to big endian
+	for (k = 0; k < imageHeight; k++)
+	{
+		for (i = 0; i < imageLength * imageWidth; i++)
+		{
+			revertBytes(&imageDataPtr[k][i], sizeof(dataType));
+		}
+	}
+  
+	fclose(file);
+	return true;
+}
 
-	//switch the two first bytes if the computer is little endian
-	if (*(char*)&imageDataPtr[0][0] == imageDataPtr[0][0]) {
-		for (k = 0; k < imageHeight; k++) {
-			for (i = 0; i < imageLength * imageWidth; i++) {
-				reverBytes(&imageDataPtr[k][i], sizeof(dataType));
-			}
+//==================================
+//Load 2D .pgm (ascii) image
+bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	int intensity;
+	size_t i, j;
+
+	char line1[5];
+	char line2[80];
+
+	FILE* file;
+	if (fopen_s(&file, pathPtr, "r") != 0) {
+		printf("File not found");
+		return false;
+	}
+
+	fgets(line1, 10, file);
+
+	do {
+		fgets(line2, 80, file);
+	} while (line2[0] == '#');
+
+	sscanf(line2, "%d %d", &xDim, &yDim);
+
+	fgets(line2, 10, file);
+
+	for (i = 0; i < xDim; i++) {
+		for (j = 0;j < yDim; j++) {
+			fscanf(file, "%d", &intensity);
+			imageDataPtr[i][j] = (float)intensity;
 		}
 	}
 	
 	fclose(file);
+
 	return true;
 }

@@ -68,7 +68,7 @@ bool fastSweepingFunction_3D(dataType ** distance3DPtr, dataType ** curve3DPtr, 
 		}
 	}
 
-	//Main loop for eight sweeps
+	//Main loop for height sweeps
 	while (sweepNumber < 8)
 	{
 		sweepDirection = sweepNumber;

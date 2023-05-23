@@ -40,3 +40,14 @@ void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const s
 		}
 	}
 }
+
+void convertFromShortTodatatype(short** dataPtrSH, dataType** dataPtrF, const size_t dimXY, const size_t height)
+{
+	for (size_t k = 0; k < height; k++)
+	{
+		for (size_t i = 0; i < dimXY; i++)
+		{
+			dataPtrF[k][i] = (dataType)dataPtrSH[k][i];
+		}
+	}
+}

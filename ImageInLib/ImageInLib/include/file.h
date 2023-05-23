@@ -18,8 +18,11 @@ extern "C" {
 	bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
 		const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags);
 
-	/*Converts to doulbe*/
+	/*Converts to dataType = float*/
 	void convertTodataType(unsigned char ** dataPtrUC, dataType ** dataPtrD, const size_t dimXY, const size_t height);
+
+	/*Converts from short to dataType = float*/
+	void convertFromShortTodatatype(short** dataPtrSH, dataType** dataPtrF, const size_t dimXY, const size_t height);
 
 #ifdef __cplusplus
 }
