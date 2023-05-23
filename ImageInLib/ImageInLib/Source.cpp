@@ -76,9 +76,9 @@ int main() {
 	Operation operation = LOAD_DATA;
 	manageRAWFile3D<short>(image, Length, Width, Height, inputImagePath.c_str(), operation, true);
 
-	//std::string loadedImagePath = outputPath + "loadedFloat.raw";
-	//operation = STORE_DATA;
-	//manageRAWFile3D<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str(), operation, false);
+	std::string loadedImagePath = outputPath + "loadedFloat.raw";
+	operation = STORE_DATA;
+	manageRAWFile3D<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str(), operation, false);
 
 	//for (k = 0; k < Height; k++) {
 	//	delete[] image[k];
@@ -111,8 +111,11 @@ int main() {
 		}
 	}
 
-	std::string loadedImagePath = outputPath + "loaded.raw";
-	store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
+	//std::string loadedImagePath = outputPath + "loaded.raw";
+	//std::string filteredImagePath = outputPath + "filteredGMC.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
+	//manageRAWFile3D<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str(), operation, false);
+	//rescaleNewRange(imageData, Length, Width, Height, 0.0, 4000.0);
 
 	for (k = 0; k < Height; k++) {
 		delete[] image[k];
@@ -132,7 +135,7 @@ int main() {
 	filterImage(inputImageData, filterParameters, F_method);
 	std::string filteredImagePath = outputPath + "filteredGMC.raw";
 	store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
-	rescaleNewRange(imageData, Length, Width, Height, 0.0, 4000.0);
+	//rescaleNewRange(imageData, Length, Width, Height, 0.0, 4000.0);
 
 	//for (k = 0; k < Height; k++) {
 	//	delete[] imageData[k];
@@ -181,8 +184,10 @@ int main() {
 	point3d* seed = new point3d[2];
 
 	//Patient 2
-	seed[0].x = 261; seed[0].y = 257; seed[0].z = 151;
-	seed[1].x = 295; seed[1].y = 317; seed[1].z = 261;
+	seed[1].x = 279; seed[1].y = 278; seed[1].z = 118;
+	//seed[1].x = 261; seed[1].y = 257; seed[1].z = 151;
+	//seed[1].x = 295; seed[1].y = 317; seed[1].z = 261;
+	seed[0].x = 256; seed[0].y = 251; seed[0].z = 255;
 
 	////////Patient 1b
 	//////seed[0].x = 288; seed[0].y = 308; seed[0].z = 364;
@@ -198,12 +203,13 @@ int main() {
 				maskThreshold[k][xd] = imageData[k][xd];
 				distanceMap[k][xd] = 0.0;
 
-				//if (sqrt(pow(seed[0].x - j, 2) + pow(seed[0].y - i, 2) + pow(seed[0].z - k, 2)) <= 5) {
-				//	resultedPath[k][xd] = 1.0;
-				//}
-				//if (sqrt(pow(seed[1].x - j, 2) + pow(seed[1].y - i, 2) + pow(seed[1].z - k, 2)) <= 5) {
-				//	resultedPath[k][xd] = 1.0;
-				//}
+				if (sqrt(pow(seed[0].x - j, 2) + pow(seed[0].y - i, 2) + pow(seed[0].z - k, 2)) <= 5) {
+					resultedPath[k][xd] = 1.0;
+				}
+				if (sqrt(pow(seed[1].x - j, 2) + pow(seed[1].y - i, 2) + pow(seed[1].z - k, 2)) <= 5) {
+					resultedPath[k][xd] = 1.0;
+				}
+
 			}
 		}
 	}
@@ -245,7 +251,7 @@ int main() {
 	//store3dRawData<dataType>(potentialFunc, Length, Width, Height, distance.c_str());
 
 	shortestPath3d(distanceFunc, resultedPath, Length, Width, Height, 1.0, seed);
-	std::string resultedImagePath = outputPath + "minimalPath.raw";
+	std::string resultedImagePath = outputPath + "path.raw";
 	store3dRawData<dataType>(resultedPath, Length, Width, Height, resultedImagePath.c_str());
 
 	delete[] seed;
