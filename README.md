@@ -34,7 +34,7 @@ To use this library, you must have an **existing C/C++ solution!**
 
 ImageInLib is licensed under the **[BSD 3-Clause "New" or "Revised" License](https://github.com/ImageInLib/ImageInLib/blob/master/LICENSE)**
 
-**This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No. 721537**
+**This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 955576.**
 
 ![]( https://github.com/ImageInLib/ImageInLib/blob/master/ImageInLib/ImageInLib/data/horizon.jpg)
 
