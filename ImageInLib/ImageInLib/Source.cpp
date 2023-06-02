@@ -12,10 +12,8 @@
 #include <math.h>
 #include <time.h>
 
-#include "common_vtk.h"
 #include "file.h"
 #include "common_functions.h"
-#include "../src/data_initialization.h"
 #include "filtering.h"
 #include "../src/data_load.h"
 #include "../src/data_storage.h"
@@ -24,17 +22,13 @@
 #include "template_functions.h"
 #include "../src/endianity_bl.h"
 #include "../include/morphological_change.h"
-#include "../src/shape_registration.h"
 #include "../src/segmentation3D_subsurf.h"
 #include "../src/segmentation3d_gsubsurf.h"
 #include "../src/image_difference.h"
 #include "../src/noise_generator.h"
-#include "../src/image_norm.h"
 #include "../src/imageInterpolation.h"
 #include "distanceForPathFinding.h"
 #include "distanceMaps.h"
-#include "../src/trajectories.h"
-#include "../src/segmentation3D_atlas.h"
 #include "segmentation.h"
 
 #define thresmin 995
@@ -55,11 +49,9 @@ int main() {
 	
 	//Preparation of image data pointers
 	dataType** imageData = new dataType * [Height];
-	//dataType** distanceMap = new dataType * [Height];
 	short** image = new short * [Height];
 	for (k = 0; k < Height; k++) {
 		imageData[k] = new dataType [dim2D];
-		//distanceMap[k] = new dataType[dim2D];
 		image[k] = new short [dim2D];
 	}
 	if (imageData == NULL || image == NULL) {
@@ -69,24 +61,33 @@ int main() {
 	std::string inputPath = "C:/Users/Konan Allaly/Documents/Tests/input/";
 	std::string outputPath = "C:/Users/Konan Allaly/Documents/Tests/output/";
 
+	//short* image = new short[Width * Length];
+	//dataType* imageData = new dataType[Width * Length];
+	//dataType* reducedImage = new dataType[256 * 256];
+	//std::string inputImagePath = inputPath + "Slices304.raw";
+	//Operation operation = LOAD_DATA;
+	//manageRAWFile2D<short>(image, Length, Width, inputImagePath.c_str(), operation, true);
+	//for (i = 0; i < Width * Length; i++) {
+	//	imageData[i] = (dataType)image[i];
+	//}
+	//downSampling(imageData, reducedImage, Length, Width);
+	//std::string ImagePath = outputPath + "SLiceReduced.raw";
+	//operation = STORE_DATA;
+	//manageRAWFile2D<dataType>(reducedImage, 256, 256, ImagePath.c_str(), operation, true);
+	//delete[] image; 
+	//delete[] imageData;
+	//delete[] reducedImage;
+
 	std::string inputImagePath = inputPath + "patient2.raw";
+	//std::string inputImagePath = inputPath + "filteredHeatEQ.raw";
 	//std::string inputImagePath = inputPath + "patient2_downsampled.raw";
 	//std::string inputImagePath = inputPath + "patient2_down_down.raw";
+	//std::string inputImagePath = inputPath + "patient2_filtered.raw";
 
 	Operation operation = LOAD_DATA;
 	manageRAWFile3D<short>(image, Length, Width, Height, inputImagePath.c_str(), operation, true);
+	//manageRAWFile3D<dataType>(imageData, Length, Width, Height, inputImagePath.c_str(), operation, false);
 
-	std::string loadedImagePath = outputPath + "loadedFloat.raw";
-	operation = STORE_DATA;
-	manageRAWFile3D<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str(), operation, false);
-
-	//for (k = 0; k < Height; k++) {
-	//	delete[] image[k];
-	//	delete[] imageData[k];
-	//}
-	//delete[] image;
-
-	////std::string inputImagePath = inputPath + "patient2_filtered.raw";
 	////std::string inputImagePath = inputPath + "filteredK100.raw";
 	////std::string inputImagePath = inputPath + "filteredK1.raw"; filteredHeatEQ
 	//std::string inputImagePath = inputPath + "filteredHeatEQ.raw";
@@ -97,11 +98,6 @@ int main() {
 	//std::string inputImagePath = inputPath + "filteredMC.raw";
 	//std::string inputImagePath = inputPath + "slice175.raw";
 
-	//if (load3dArrayRAW<short>(image, Length, Width, Height, inputImagePath.c_str(), false) == false)
-	//{
-	//	printf("inputImagePath does not exist\n");
-	//}
-
 	for (k = 0; k < Height; k++) {
 		for (i = 0; i < Length; i++) {
 			for (j = 0; j < Width; j++) {
@@ -111,6 +107,25 @@ int main() {
 		}
 	}
 
+	dataType** reduceImage = new dataType * [203];
+	for (k = 0; k < 203; k++) {
+		reduceImage[k] = new dataType[256 * 256];
+	}
+
+	downSampling(imageData, reduceImage, Length, Width, Height);
+
+	for (k = 0; k < Height; k++) {
+		for (i = 0; i < Length * Width; i++) {
+			imageData[k][i] = 0.0;
+		}
+	}
+
+	upSampling(reduceImage, imageData, 256, 256, 203);
+
+	std::string loadedImagePath = outputPath + "enlarge4.raw";
+	operation = STORE_DATA;
+	manageRAWFile3D<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str(), operation, false);
+
 	//std::string loadedImagePath = outputPath + "loaded.raw";
 	//std::string filteredImagePath = outputPath + "filteredGMC.raw";
 	//store3dRawData<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str());
@@ -119,22 +134,22 @@ int main() {
 
 	for (k = 0; k < Height; k++) {
 		delete[] image[k];
-		//delete[] imageData[k];
+		delete[] imageData[k];
 	}
 	delete[] image;
-	//delete[] imageData;
+	delete[] imageData;
 
 	//------------------- Filtering --------------------------------
 
-	Filter_Parameters filterParameters; filterParameters.coef = 1e-4; filterParameters.edge_detector_coefficient = 1000; filterParameters.eps2 = 1e-4;
-	filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
-	filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 0.25; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
-	rescaleNewRange(imageData, Length, Width, Height, 0.0, 1.0);
-	Image_Data inputImageData; inputImageData.imageDataPtr = imageData; inputImageData.height = Height; inputImageData.length = Length; inputImageData.width = Width;
-	const FilterMethod F_method = GEODESIC_MEAN_CURVATURE_FILTER;
-	filterImage(inputImageData, filterParameters, F_method);
-	std::string filteredImagePath = outputPath + "filteredGMC.raw";
-	store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
+	//Filter_Parameters filterParameters; filterParameters.coef = 1e-4; filterParameters.edge_detector_coefficient = 1000; filterParameters.eps2 = 1e-4;
+	//filterParameters.h = 1.0; filterParameters.maxNumberOfSolverIteration = 100; filterParameters.omega_c = 1.5; filterParameters.p = 1;
+	//filterParameters.sigma = 1e-3; filterParameters.timeStepSize = 0.25; filterParameters.timeStepsNum = 1; filterParameters.tolerance = 1e-3;
+	//rescaleNewRange(imageData, Length, Width, Height, 0.0, 1.0);
+	//Image_Data inputImageData; inputImageData.imageDataPtr = imageData; inputImageData.height = Height; inputImageData.length = Length; inputImageData.width = Width;
+	//const FilterMethod F_method = GEODESIC_MEAN_CURVATURE_FILTER;
+	//filterImage(inputImageData, filterParameters, F_method);
+	//std::string filteredImagePath = outputPath + "filteredGMC.raw";
+	//store3dRawData<dataType>(imageData, Length, Width, Height, filteredImagePath.c_str());
 	//rescaleNewRange(imageData, Length, Width, Height, 0.0, 4000.0);
 
 	//for (k = 0; k < Height; k++) {
@@ -165,54 +180,74 @@ int main() {
 	//delete[] imageData;
 
 	//------------------- Fast Marching and Minimal path --------------------------------------------------
-	 
-	dataType** distanceFunc = new dataType * [Height];
-	dataType** potentialFunc = new dataType * [Height];
-	dataType** resultedPath = new dataType * [Height];
-	dataType** maskThreshold = new dataType * [Height];
-	dataType** distanceMap = new dataType * [Height];
-	for (k = 0; k < Height; k++) {
-		distanceFunc[k] = new dataType[dim2D];
-		potentialFunc[k] = new dataType[dim2D];
-		resultedPath[k] = new dataType[dim2D];
-		maskThreshold[k] = new dataType[dim2D];
-		distanceMap[k] = new dataType[dim2D];
-	}
-	if (distanceFunc == NULL || potentialFunc == NULL || resultedPath == NULL || maskThreshold == NULL || distanceMap == NULL)
-		return false;
 
-	point3d* seed = new point3d[2];
+	//std::string inputImagePath = inputPath + "Patient2_Resliced.raw";
+	//manageRAWFile3D<dataType>(imageData, Length, Width, Height, inputImagePath.c_str(), operation, false);
+
+	//std::string loadedImagePath = outputPath + "loadeded.raw";
+	//operation = STORE_DATA;
+	//manageRAWFile3D<dataType>(imageData, Length, Width, Height, loadedImagePath.c_str(), operation, false);
+	 
+	//dataType** distanceFunc = new dataType * [Height];
+	//dataType** potentialFunc = new dataType * [Height];
+	//dataType** resultedPath = new dataType * [Height];
+	//dataType** maskThreshold = new dataType * [Height];
+	//dataType** distanceMap = new dataType * [Height];
+	//for (k = 0; k < Height; k++) {
+	//	distanceFunc[k] = new dataType[dim2D];
+	//	potentialFunc[k] = new dataType[dim2D];
+	//	resultedPath[k] = new dataType[dim2D];
+	//	maskThreshold[k] = new dataType[dim2D];
+	//	distanceMap[k] = new dataType[dim2D];
+	//}
+	//if (distanceFunc == NULL || potentialFunc == NULL || resultedPath == NULL || maskThreshold == NULL || distanceMap == NULL)
+	//	return false;
+
+	//point3d* seed = new point3d[2];
 
 	//Patient 2
-	seed[1].x = 279; seed[1].y = 278; seed[1].z = 118;
+	 
+	//seed[0].x = 279; seed[0].y = 278; seed[0].z = 118;
 	//seed[1].x = 261; seed[1].y = 257; seed[1].z = 151;
 	//seed[1].x = 295; seed[1].y = 317; seed[1].z = 261;
-	seed[0].x = 256; seed[0].y = 251; seed[0].z = 255;
+	//seed[0].x = 256; seed[0].y = 251; seed[0].z = 255;
+	//seed[0].x = 266; seed[0].y = 255; seed[0].z = 246;
+
+	//seed[0].x = 263; seed[0].y = 256; seed[0].z = 149;
+	//seed[0].x = 266; seed[0].y = 260; seed[0].z = 244;
+	//seed[1].x = 252; seed[1].y = 254; seed[1].z = 259;
+	//seed[1].x = 292; seed[1].y = 313; seed[1].z = 259;
 
 	////////Patient 1b
 	//////seed[0].x = 288; seed[0].y = 308; seed[0].z = 364;
 	//////seed[1].x = 259; seed[1].y = 256; seed[1].z = 244;
 
-	for (k = 0; k < Height; k++) {
-		for (i = 0; i < Length; i++) {
-			for (j = 0; j < Width; j++) {
-				xd = x_new(j, i, Width);
-				distanceFunc[k][xd] = 0.0;
-				potentialFunc[k][xd] = 0.0;
-				resultedPath[k][xd] = 0.0;
-				maskThreshold[k][xd] = imageData[k][xd];
-				distanceMap[k][xd] = 0.0;
+	//Patient 2 Resliced
 
-				if (sqrt(pow(seed[0].x - j, 2) + pow(seed[0].y - i, 2) + pow(seed[0].z - k, 2)) <= 5) {
-					resultedPath[k][xd] = 1.0;
-				}
-				if (sqrt(pow(seed[1].x - j, 2) + pow(seed[1].y - i, 2) + pow(seed[1].z - k, 2)) <= 5) {
-					resultedPath[k][xd] = 1.0;
-				}
+	//seed[0].x = 259; seed[0].y = 250; seed[0].z = 537; // Top
+	//seed[1].x = 292; seed[1].y = 309; seed[1].z = 569; // Middle
+	////seed[1].x = 268; seed[1].y = 260; seed[1].z = 300; // Bottom
 
-			}
-		}
-	}
+	//for (k = 0; k < Height; k++) {
+	//	for (i = 0; i < Length; i++) {
+	//		for (j = 0; j < Width; j++) {
+	//			xd = x_new(j, i, Width);
+	//			distanceFunc[k][xd] = 0.0;
+	//			potentialFunc[k][xd] = 0.0;
+	//			resultedPath[k][xd] = 0.0;
+	//			maskThreshold[k][xd] = imageData[k][xd];
+	//			distanceMap[k][xd] = 0.0;
+
+	//			if (sqrt(pow(seed[0].x - j, 2) + pow(seed[0].y - i, 2) + pow(seed[0].z - k, 2)) <= 2) {
+	//				resultedPath[k][xd] = 1.0;
+	//			}
+	//			if (sqrt(pow(seed[1].x - j, 2) + pow(seed[1].y - i, 2) + pow(seed[1].z - k, 2)) <= 2) {
+	//				resultedPath[k][xd] = 1.0;
+	//			}
+
+	//		}
+	//	}
+	//}
 
 	//thresholding3dFunctionN(maskThreshold, Length, Width, Height, thresmin, thresmax, 0.0, 1.0);
 	//std::string thresholded = outputPath + "threshold.raw";
@@ -240,9 +275,9 @@ int main() {
 	//seed[0].y = seed[1].y = i_max;
 	//seed[1].z = seed[1].z = k_max;
 
-	fastMarching3D_N(imageData, distanceFunc, potentialFunc, Length, Width, Height, seed);
-	std::string distance = outputPath + "distanceMarch.raw";
-	store3dRawData<dataType>(distanceFunc, Length, Width, Height, distance.c_str());
+	//fastMarching3D_N(imageData, distanceFunc, potentialFunc, Length, Width, Height, seed);
+	//std::string distance = outputPath + "distance2.raw";
+	//store3dRawData<dataType>(distanceFunc, Length, Width, Height, distance.c_str());
 
 	//distance = outputPath + "distanceSweep.raw";
 	//store3dRawData<dataType>(distanceMap, Length, Width, Height, distance.c_str());
@@ -250,25 +285,25 @@ int main() {
 	//distance = outputPath + "potential.raw";
 	//store3dRawData<dataType>(potentialFunc, Length, Width, Height, distance.c_str());
 
-	shortestPath3d(distanceFunc, resultedPath, Length, Width, Height, 1.0, seed);
-	std::string resultedImagePath = outputPath + "path.raw";
-	store3dRawData<dataType>(resultedPath, Length, Width, Height, resultedImagePath.c_str());
+	//shortestPath3d(distanceFunc, resultedPath, Length, Width, Height, 1.0, seed);
+	//std::string resultedImagePath = outputPath + "path2.raw";
+	//store3dRawData<dataType>(resultedPath, Length, Width, Height, resultedImagePath.c_str());
 
-	delete[] seed;
-	for (k = 0; k < Height; k++) {
-		delete[] imageData[k];
-		delete[] distanceFunc[k];
-		delete[] potentialFunc[k];
-		delete[] resultedPath[k];
-		delete[] distanceMap[k];
-		delete[] maskThreshold[k];
-	}
-	delete[] imageData;
-	delete[] distanceFunc;
-	delete[] potentialFunc;
-	delete[] resultedPath;
-	delete[] distanceMap;
-	delete[] maskThreshold;
+	//delete[] seed;
+	//for (k = 0; k < Height; k++) {
+	//	delete[] imageData[k];
+	//	delete[] distanceFunc[k];
+	//	delete[] potentialFunc[k];
+	//	delete[] resultedPath[k];
+	//	delete[] distanceMap[k];
+	//	delete[] maskThreshold[k];
+	//}
+	//delete[] imageData;
+	//delete[] distanceFunc;
+	//delete[] potentialFunc;
+	//delete[] resultedPath;
+	//delete[] distanceMap;
+	//delete[] maskThreshold;
 
 	//for (k = 0; k < Height; k++) {
 	//	delete[] imageData[k];
