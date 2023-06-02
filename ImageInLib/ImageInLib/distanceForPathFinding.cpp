@@ -893,7 +893,9 @@ bool compute3dPotential(dataType** imageDataPtr, dataType** potentialFuncPtr, co
 				ux = gradientVectorX[k][currentIndx];
 				uy = gradientVectorY[k][currentIndx];
 				uz = gradientVectorZ[k][currentIndx];
-				potentialFuncPtr[k][currentIndx] = epsilon + (potentialFuncPtr[k][currentIndx] / max_potential) * (1 + K * (ux * ux + uy * uy + uz * uz));
+				potentialFuncPtr[k][currentIndx] = epsilon + (potentialFuncPtr[k][currentIndx] / max_potential);//*(1 + K * (ux * ux + uy * uy + uz * uz));
+				//potentialFuncPtr[k][currentIndx] = (dataType)(1./ (1 + sqrt(ux * ux + uy * uy + uz * uz)));
+				//potentialFuncPtr[k][currentIndx] = (dataType)(1.0 / (10 + abs(seedVal - imageDataPtr[k][currentIndx])));
 			}
 		}
 	}
