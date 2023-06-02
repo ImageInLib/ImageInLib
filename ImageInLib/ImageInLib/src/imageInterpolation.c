@@ -67,3 +67,54 @@ bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t
 
     return true;
 }
+
+bool downSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height) {
+
+    if (originalImage == NULL || newImage == NULL)
+        return false;
+
+    size_t lengthNew = (length / 2), widthNew = (width / 2), heightNew = (height / 2);
+
+    size_t i, j, k;
+
+    for (k = 0; k < heightNew; k++) {
+        for (i = 0; i < lengthNew; i++) {
+            for (j = 0; j < widthNew; j++) {
+                newImage[k][x_new(i, j, lengthNew)] = originalImage[k * 2][x_new(i * 2, j * 2, length)];
+            }
+        }
+    }
+    return true;
+}
+
+bool upSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height) {
+
+    if (originalImage == NULL || newImage == NULL)
+        return false;
+
+    size_t i, j, k, in, jn, kn, indx;
+
+    size_t lengthNew = length * 2, widthNew = width * 2, heightNew = height * 2;
+
+    for (k = 0; k < height; k++) {
+        for (i = 0; i < length; i++) {
+            for (j = 0; j < width; j++) {
+
+                indx = x_new(i, j, length);
+                in = 2 * i; jn = j * 2; kn = k * 2;
+
+                newImage[kn][x_new(in, jn, lengthNew)] = originalImage[k][indx];
+                newImage[kn][x_new(in + 1, jn, lengthNew)] = originalImage[k][indx];
+                newImage[kn][x_new(in, jn + 1, lengthNew)] = originalImage[k][indx];
+                newImage[kn][x_new(in + 1, jn + 1, lengthNew)] = originalImage[k][indx];
+
+                newImage[kn + 1][x_new(in, jn, lengthNew)] = originalImage[k][indx];
+                newImage[kn + 1][x_new(in + 1, jn, lengthNew)] = originalImage[k][indx];
+                newImage[kn + 1][x_new(in, jn + 1, lengthNew)] = originalImage[k][indx];
+                newImage[kn + 1][x_new(in + 1, jn + 1, lengthNew)] = originalImage[k][indx];
+            }
+        }
+    }
+
+    return true;
+}
