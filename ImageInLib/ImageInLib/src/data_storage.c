@@ -1,3 +1,9 @@
+#pragma warning(disable : 4996)
+#pragma warning(disable : 6386)
+#pragma warning(disable : 6031)
+#pragma warning(disable : 6387)
+
+
 #include <stdio.h>
 #include "data_storage.h"
 #include "endianity_bl.h"
@@ -79,6 +85,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
+	size_t i, j, k;
 	const size_t dimXY = xDim * yDim;
 	FILE *cfPtr;
 
@@ -101,21 +108,23 @@ bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t y
 
 	if (flags.revertDataBytes)
 	{
-		for (size_t k = 0; k < zDim; k++)
+		for (k = 0; k < zDim; k++)
 		{
-			for (size_t j = 0; j < dimXY; j++)
+			for (i = 0; i < dimXY; i++)
 			{
-				double tmp = array3DPtr[k][j];
-				revertBytes(&tmp, sizeof(double));
-				fwrite(&tmp, sizeof(double), 1, cfPtr);
+				dataType tmp = array3DPtr[k][i];
+				revertBytes(&tmp, sizeof(dataType));
+				fwrite(&tmp, sizeof(dataType), dimXY, cfPtr);
 			}
 		}
 	}
 	else
 	{
-		for (size_t k = 0; k < zDim; k++)
+		const size_t pointsInSlice = xDim * yDim;
+
+		for (k = 0; k < zDim; k++)
 		{
-			fwrite(array3DPtr[k], sizeof(double), dimXY, cfPtr);
+			fwrite(array3DPtr[k], sizeof(dataType), pointsInSlice, cfPtr);
 		}
 	}
 
@@ -200,7 +209,8 @@ bool store3dDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDi
 		fprintf(outputfile, "DATASET STRUCTURED_POINTS\n");
 		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
 
-		fprintf(outputfile, "ORIGIN %f %f %f\n", (-1.25 + h / 2.), (-1.25 + h / 2.), (-1.25 + h / 2.));
+		//fprintf(outputfile, "ORIGIN %f %f %f\n", (-1.25 + h / 2.), (-1.25 + h / 2.), (-1.25 + h / 2.));
+		fprintf(outputfile, "ORIGIN %f %f %f\n", 0, 0, 0);
 		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
 		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
 		fprintf(outputfile, "SCALARS scalars double\n");
@@ -281,3 +291,4 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	store3dDataArrayUC(array3DPtr, imageLength, imageWidth, imageHeight, pathPtr, true);
 	return true;
 }
+

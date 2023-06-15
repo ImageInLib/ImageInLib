@@ -35,6 +35,10 @@ extern "C" {
 		/* h is the Grid size, tau is time step for the segmentation process,
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
+
+		//gsubsurf parameters
+		dataType coef_conv;
+		dataType coef_dif;
 	} Segmentation_Parameters;
 
 	// Structure that holds the coefficients for PM function G calculated from the image
@@ -104,7 +108,7 @@ extern "C" {
 	- Finally, it also generates initial segmentation function
 	- no_of_centers is no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+	bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr);
 
 	/* gFunctionForImageToBeSegmented manages computation of norm of presmoothed image to be segmented
@@ -135,7 +139,6 @@ extern "C" {
 	-center_x, center_y, center_z are the center coordinates*/
 	bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, size_t height,
 		dataType center_x, dataType center_y, dataType center_z, dataType R, size_t counter);
-
 #ifdef __cplusplus
 }
 #endif

@@ -25,7 +25,7 @@ double randomUniformNumber(double lowerValue, double upperValue);
 
 // Function for introduction of additive noise to data(3D)
 bool additive3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, const int C)
+	const size_t zDim, dataType C)
 {
 	size_t i, k;
 	const size_t dim2D = xDim * yDim;
@@ -60,7 +60,7 @@ bool additive3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const si
 	return true;
 }
 
-bool additive2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, const int C, bool flag)
+bool additive2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, dataType C, bool flag)
 {
 	const size_t dim2D = xDim * yDim;
 	size_t i;
@@ -128,7 +128,7 @@ bool additive3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t y
 	return true;
 }
 
-bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, const int C, bool flag)
+bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType C, bool flag)
 {
 	const size_t dim2D = xDim * yDim;
 	size_t i, j;
@@ -163,7 +163,7 @@ bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yD
 
 // Function for addition of salt and pepper noise to data
 bool saltAndPepper3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, double K)
+	const size_t zDim, dataType K)
 {
 	size_t i, k, s;
 	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
@@ -190,7 +190,7 @@ bool saltAndPepper3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, con
 	return true;
 }
 
-bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, double K, bool flag)
+bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag)
 {
 	//checks to make sure the density is in an allowable range(ie: percent noise, on [0,1])
 	if ((K < 0) && (K > 1))
@@ -216,93 +216,150 @@ bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, cons
 	return true;
 }
 
-bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-	const size_t zDim, float K)
+bool saltAndPepper3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim,
+	const size_t zDim, dataType density, const dataType pepper)
 {
-	size_t i, k, s;
-	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
-	const size_t dim2D = xDim * yDim;
+	size_t i, j, k, l = 0, m, n, xd, s;
+
+	//checks for correctness of the density (ie: percent noise, on [0,1] of salt & pepper noise
+	if ((density < 0) && (density > 1))
+		return false;
 
 	//checks if the memory was allocated
 	if (array3DPtr == NULL)
 		return false;
 
-	srand((unsigned)time(NULL)); //seed for randon number generator
+	//Number of voxels affected by noise
+	const size_t dim3DK = (size_t)((xDim * yDim * zDim * density) + 0.5);
+	const size_t dim2D = xDim * yDim;
 
-	//checks for correctness of the density (ie: percent of noise, on [0,1] of salt & pepper noise
-	if ((K < 0) && (K > 1))
-		return false;
+	// Generate Random points
+	srand(time(NULL)); //seed for randon number generator
+
+	Random3dPoints* generated_points = malloc(sizeof(Random3dPoints) * dim3DK);
+	bool loop = true;
+	Random3dPoints* tmpRdPts;
+  
+	do
+	{
+		//Coordinates of the affected voxel
+		i = (rand() % (xDim));
+		j = (rand() % (yDim));
+		k = (rand() % (zDim));
+
+		//intensity of the affected voxel
+		n = (rand() % 2) * pepper;
+
+		xd = x_new(i, j, xDim);
+		tmpRdPts = &generated_points[l];
+		tmpRdPts->xd = xd;
+		tmpRdPts->k = k;
+		tmpRdPts->p = n;
+		//========================
+		l = l + 1;
+		if (l == dim3DK)
+		{
+			loop = false;
+		}
+	} while ((loop) && (l <= dim3DK));
 
 	// Addition of salt and pepper noise to 3D image
-	for (k = 0; k < zDim; k++)
-	{
-		for (s = 0; s < dim2DK; s++) {
-			i = rand() % (dim2D + 1);
-			array3DPtr[k][i] = (dataType)(rand() % 2) * 255;
-		}
+	for (s = 0; s < dim3DK; s++) {
+		size_t dx = generated_points[s].xd;
+		size_t dk = generated_points[s].k;
+		dataType res = (dataType)generated_points[s].p;
+		array3DPtr[dk][dx] = res;
 	}
-
 	return true;
 }
 
-bool saltAndPepper2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag)
+bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper)
 {
+	size_t i, j, l = 0, n, xd, s;
+
 	//checks to make sure the density is in an allowable range(ie: percent of noise, on [0,1])
-	if ((K < 0) && (K > 1))
+	if ((density < 0) && (density > 1))
 		return false;
-
-	if (flag == true)
-		srand((unsigned)time(NULL)); //seed for randon number generator
-
-	const size_t dim2DK = (int)((xDim * yDim * K) + 0.5);
-	const size_t dim2D = xDim * yDim;
-	size_t i, k;
-	srand((unsigned)time(NULL)); //seed for randon number generator
 
 	//checks if the memory was allocated
 	if (array2DPtr == NULL)
 		return false;
 
+	const size_t dim2DK = (size_t)((xDim * yDim * density) + 0.5);
+	const size_t dim2D = xDim * yDim;
+
+	// Generate Random points
+	srand(time(NULL)); //seed for randon number generator
+	Random2dPoints* generated_points = malloc(sizeof(Random2dPoints) * dim2DK);
+	bool loop = true;
+	Random2dPoints* tmpRdPts;
+
+	do {
+		//Coordinates of the affected voxel
+		i = (rand() % (xDim));
+		j = (rand() % (yDim));
+
+		//intensity of the affected voxel
+		n = (rand() % 2) * pepper;
+
+		xd = x_new(i, j, xDim);
+		tmpRdPts = &generated_points[l];
+		tmpRdPts->xd = xd;
+		tmpRdPts->p = n;
+		//========================
+		l = l + 1;
+		if (l == dim2DK)
+		{
+			loop = false;
+		}
+
+	} while ((loop) && (l < dim2DK));
+
 	// Addition of salt and pepper noise to 2D image
-	for (k = 0; k < dim2DK; k++) {
-		i = rand() % (dim2D + 1);
-		array2DPtr[i] = (dataType)(rand() % 2) * 255;
+	for (s = 0; s < dim2DK; s++) {
+		size_t dx = generated_points[s].xd;
+		dataType res = (dataType)generated_points[s].p;
+		array2DPtr[dx] = res;
 	}
 	return true;
 }
-
 
 /*
 * Multiplicative noise adds noise to imageDataPtr
 * 2D
 */
-void addMultiplicativeNoise(dataType ** imageDataPtr, size_t imageHeight, size_t imageLength, size_t imageWidth, float variance, dataType fgMin, dataType bgMax)
+/*
+void addMultiplicativeNoise(dataType ** imageDataPtr, const size_t imageHeight, const size_t imageWidth, dataType variance)
 {
 	size_t i, j;
 	// a, b values
 	double upper = 0.5 * upperBValue(variance);
 	double lower = -1.0 * upper;
 
-	size_t dim2D = imageLength * imageWidth;
+	size_t dim2D = imageHeight * imageWidth;
 
 	for (i = 0; i < imageHeight; i++)
 	{
-		for (j = 0; j < dim2D; j++)
+		for (j = 0; j < imageWidth; j++)
 		{
-			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)(randomUniformNumber(lower, upper)*imageDataPtr[i][j]);
+			imageDataPtr[i][j] = imageDataPtr[i][j] + (dataType)(randomUniformNumber(lower, upper) * imageDataPtr[i][j]);
 			imageDataPtr[i][j] = (imageDataPtr[i][j] < fgMin) ? fgMin : imageDataPtr[i][j];
 			imageDataPtr[i][j] = (imageDataPtr[i][j] > bgMax) ? bgMax : imageDataPtr[i][j];
 		}
 	}
 }
+*/
+
 /*
 * Structural noise generate adds noise to imageDataPtr
 * 2D
 */
-void addStructuralNoise(dataType ** imageDataPtr, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType fgMin, dataType bgMax)
+
+/*
+void addStructuralNoise(dataType ** imageDataPtr, const size_t imageHeight, const size_t imageWidth)
 {
 	size_t i, j, k, xd;
-	size_t dim2D = imageLength * imageWidth;
+	size_t dim2D = imageHeight * imageWidth;
 	// Create a mesh grid for the height and width
 	dataType ** periodicNoise = (dataType **)malloc(imageHeight * sizeof(dataType*));
 
@@ -324,6 +381,7 @@ void addStructuralNoise(dataType ** imageDataPtr, size_t imageHeight, size_t ima
 		}
 	}
 }
+*/
 
 double upperBValue(double v)
 {
