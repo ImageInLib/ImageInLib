@@ -13,6 +13,10 @@ extern "C" {
 	bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
 						  dataType originalSpacing, dataType newSpacing);
 
+	bool downSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
+
+	bool upSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
+
 #ifdef __cplusplus
 }
 #endif
