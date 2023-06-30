@@ -311,9 +311,10 @@ bool store2dPGMASCII(dataType** imageDataPtr, const size_t xDim, const size_t yD
 	for (size_t i = 0; i < xDim; i++) {
 		for (size_t j = 0; j < yDim; j++) {
 			// Writing the gray values in the 2D array to the file
-			fprintf(pgmimg, "%d ", (unsigned char)imageDataPtr[i][j]);
+			fprintf(pgmimg, "%d \n", (unsigned char)imageDataPtr[i][j]);
 		}
-		fprintf(pgmimg, "\n");
 	}
 	fclose(pgmimg);
+
+	return true;
 }

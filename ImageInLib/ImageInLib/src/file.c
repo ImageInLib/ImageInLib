@@ -12,17 +12,7 @@ bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t wid
             status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
             break;
         case LOAD_2D_DATA_PGM:
-            switch (dType)
-            {
-                case BINARY_DATA:
-                    //TODO:I want to be able to read 2D image (PGM raw, RAW)
-                    break;
-                case ASCII_DATA:
-                    status = load2dPGMASCII(imageDataPtr, width, height, pathPtr);
-                    break;
-                default:
-                    break;
-            }
+            status = load2dPGM(imageDataPtr, width, height, pathPtr);
             break;
         case STORE_DATA_RAW:
             switch (dType)

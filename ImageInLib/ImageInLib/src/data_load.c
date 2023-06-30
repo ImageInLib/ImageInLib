@@ -168,45 +168,57 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 
 //==================================
 //Load 2D .pgm (ascii) image
-bool load2dPGMASCII(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
 {
-	int intensity;
-	size_t i, j;
+    int intensity;
+    size_t i, j;
 
-	char line1[5];
-	char line2[80];
+    char line1[4];
+    char line2[80];
 
-	FILE* file;
-	if (fopen_s(&file, pathPtr, "r") != 0) {
-		printf("File not found");
-		return false;
-	}
+    FILE* file;
+    if (fopen_s(&file, pathPtr, "r") != 0) {
+        printf("File not found");
+        return false;
+    }
 
-	fgets(line1, 10, file);
+    int pgmVersion;
+    fgets(line1, 4, file);
+    sscanf(line1, "P%d\n", &pgmVersion);
 
-	do {
-		fgets(line2, 80, file);
-	} while (line2[0] == '#');
 
-	size_t tmpX, tmpY;
-	sscanf(line2, "%zu %zu", &tmpX, &tmpY);
+    if (pgmVersion == 2) //ascii
+	{
+		//filtering out potential comment
+        do {
+            fgets(line2, 80, file);
+        } while (line2[0] == '#');
 
-	if (xDim != tmpX || yDim != tmpY) {
-		//dimensions of used array is not compatible with loaded image
-		fclose(file);
-		return false;
-	}
+        size_t tmpX, tmpY;
+        sscanf(line2, "%zu %zu", &tmpX, &tmpY);
 
-	fgets(line2, 10, file);
+        if (xDim != tmpX || yDim != tmpY) {
+            //dimensions of used array is not compatible with loaded image
+            fclose(file);
+            return false;
+        }
 
-	for (i = 0; i < xDim; i++) {
-		for (j = 0;j < yDim; j++) {
-			fscanf(file, "%d", &intensity);
-			imageDataPtr[i][j] = (dataType)intensity;
-		}
-	}
-	
-	fclose(file);
+        fgets(line2, 10, file);
 
-	return true;
+        for (i = 0; i < xDim; i++) {
+            for (j = 0; j < yDim; j++) {
+                fscanf(file, "%d", &intensity);
+                imageDataPtr[i][j] = (dataType)intensity;
+            }
+        }
+    }
+    else
+    {
+        fclose(file);
+        return false;
+    }
+
+    fclose(file);
+
+    return true;
 }

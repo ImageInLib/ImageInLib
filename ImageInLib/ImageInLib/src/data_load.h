@@ -24,7 +24,11 @@ extern "C" {
 
 	//==================================
 	//Load 2D .pgm (ascii) image
-	bool load2dPGMASCII(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+	bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	//==================================
+	//Load 2D .pgm (raw) image
+	bool load2dPGMRAW(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
 
 #ifdef __cplusplus
 }
