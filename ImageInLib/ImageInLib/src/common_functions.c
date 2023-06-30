@@ -197,8 +197,16 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 }
 //==============================================================================
 
-
-
+//2D function
+void copyDataToAnother2dArray(dataType* source, dataType* destination, size_t imageHeight, size_t imageWidth) {
+	size_t i, j, xd;
+	for (i = 0; i < imageHeight; i++) {
+		for (j = 0; j < imageWidth; j++) {
+			xd = x_new(i, j, imageHeight);
+			destination[xd] = source[xd];
+		}
+	}
+}
 //==============================================================================
 void copyDataTo2dExtendedArea(dataType * originalDataPtr, dataType * extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
 {

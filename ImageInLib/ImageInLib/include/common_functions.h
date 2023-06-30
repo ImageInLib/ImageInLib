@@ -46,6 +46,12 @@ extern "C" {
 		dataType ** imageDataPtr; // Image Data Containers
 	} Image_Data;
 
+	typedef struct {
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+	} Image_Data2D;
+
 	// Generate Random Points
 	typedef struct {
 		size_t k, xd, p;
@@ -129,6 +135,8 @@ extern "C" {
 	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
 
+	//==============================================================================
+	void copyDataToAnother2dArray(dataType* source, dataType* destination, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
 	//==============================================================================

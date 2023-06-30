@@ -8,6 +8,7 @@
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
 * Language:  C
 */
+
 #include "common_functions.h"
 #include "data_load.h"
 #include "endianity_bl.h"
@@ -113,6 +114,8 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	FILE *file;
 	char rmode[4];
 
+	const size_t pointsInSlice = imageLength * imageWidth;
+
 	if (dType == BINARY_DATA)
 	{
 		strcpy_s(rmode, sizeof(rmode), "rb");
@@ -131,24 +134,24 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 		return false;
 	}
 	else {
-		for (k = 0; k < imageHeight; k++)
-		{
-			for (i = 0; i < imageLength; i++)
-			{
-				for (j = 0; j < imageWidth; j++)
+		if (dType == BINARY_DATA) {
+			for (k = 0; k < imageHeight; k++) {
+				fread(imageDataPtr[k], sizeof(dataType), pointsInSlice, file);
+			}
+		}
+		else {
+			if (dType == ASCII_DATA) {
+				for (k = 0; k < imageHeight; k++)
 				{
-					// 2D to 1D representation for i, j
-					xd = x_new(i, j, imageLength);
-
-					if (dType == BINARY_DATA)
+					for (i = 0; i < imageLength; i++)
 					{
-						fread(&value, sizeof(dataType), 1, file);
-						imageDataPtr[k][xd] = (dataType)value;
-					}
-					else if (dType == ASCII_DATA)
-					{
-						fscanf_s(file, "%f", &value);
-						imageDataPtr[k][xd] = (dataType)value;
+						for (j = 0; j < imageWidth; j++)
+						{
+							// 2D to 1D representation for i, j
+							xd = x_new(i, j, imageLength);
+							fscanf_s(file, "%f", &value);
+							imageDataPtr[k][xd] = (dataType)value;
+						}
 					}
 				}
 			}

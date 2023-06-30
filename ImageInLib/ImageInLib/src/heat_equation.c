@@ -7,6 +7,8 @@
 
 // Local Function Prototype
 
+// Functions for 3D images
+
 void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
 {
 	size_t k, i, j;
@@ -175,4 +177,106 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	}
 	free(tempPtr);
 	free(currentPtr);
+}
+
+// Functions for 2D images
+
+void heat2dExplicitScheme(Image_Data2D imageData, const Filter_Parameters explicitParameters)
+{
+	size_t i, j, n, i_ext, j_ext;
+	const size_t height = imageData.height, width = imageData.width;
+	const size_t height_ext = height + 2, width_ext = width + 2;
+	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
+
+	dataType tau = explicitParameters.timeStepSize, hh = explicitParameters.h;
+	dataType coef_tau = tau / hh;
+
+	dataType* temporaryPtr = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
+	initialize2dArrayD(temporaryPtr, height_ext, width_ext, 0.0);
+
+	copyDataTo2dExtendedArea(imageData.imageDataPtr, temporaryPtr, height, width);
+	reflection2D(temporaryPtr, height_ext, width_ext);
+
+	for (n = 0; n < explicitParameters.timeStepsNum; n++) {
+
+		for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+			for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+				imageData.imageDataPtr[x_new(i, j, height)] = (1 - 4 * coef_tau) * temporaryPtr[x_new(i_ext, j_ext, height_ext)] + coef_tau * (temporaryPtr[x_new(i_ext - 1, j_ext, height_ext)] +
+					temporaryPtr[x_new(i_ext + 1, j_ext, height_ext)] + temporaryPtr[x_new(i_ext, j_ext - 1, height_ext)] + temporaryPtr[x_new(i_ext, j_ext + 1, height_ext)]);
+			}
+		}
+
+		initialize2dArrayD(temporaryPtr, height_ext, width_ext, 0.0);
+		copyDataTo2dExtendedArea(imageData.imageDataPtr, temporaryPtr, height, width);
+		reflection2D(temporaryPtr, height_ext, width_ext);
+	}
+
+	free(temporaryPtr);
+}
+
+void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implicitParameters)
+{
+	size_t i, j, n, i_ext, j_ext, currentIndx;
+	const size_t height = imageData.height, width = imageData.width;
+	const size_t height_ext = height + 2, width_ext = width + 2;
+	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
+
+	dataType tau = implicitParameters.timeStepSize, hh = implicitParameters.h * implicitParameters.h;
+	dataType tol = implicitParameters.tolerance, omega = implicitParameters.omega_c;
+	dataType coeff = tau / hh;
+	size_t maxIteration = implicitParameters.maxNumberOfSolverIteration;
+
+	dataType* previous_solution = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
+	dataType* gauss_seidel_solution = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
+
+	initialize2dArrayD(previous_solution, height_ext, width_ext, 0.0);
+	initialize2dArrayD(gauss_seidel_solution, height_ext, width_ext, 0.0);
+
+	copyDataTo2dExtendedArea(imageData.imageDataPtr, previous_solution, height, width);
+	copyDataTo2dExtendedArea(imageData.imageDataPtr, gauss_seidel_solution, height, width);
+	reflection2D(previous_solution, height_ext, width_ext);
+	reflection2D(gauss_seidel_solution, height_ext, width_ext);
+
+	size_t cpt = 0;
+	dataType error = 0.0, gauss_seidel_coef = 0.0;
+	for (n = 0; n < implicitParameters.timeStepsNum; n++) {
+
+		cpt = 0;
+		do {
+			cpt = cpt + 1;
+
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+					currentIndx = x_new(i_ext, j_ext, height_ext);
+					gauss_seidel_coef = (previous_solution[x_new(i_ext, j_ext, height_ext)] + coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] +
+						gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext - 1, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext + 1, height_ext)])) /
+						(1 + 4 * coeff);
+					gauss_seidel_solution[currentIndx] = gauss_seidel_solution[currentIndx] + omega * (gauss_seidel_coef - gauss_seidel_solution[currentIndx]);
+				}
+			}
+
+			error = 0.0;
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+					currentIndx = x_new(i_ext, j_ext, height_ext);
+					error += (float)(pow(gauss_seidel_solution[x_new(i_ext, j_ext, height_ext)] * (1 + 4.0 * coeff) - coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] +
+						gauss_seidel_solution[x_new(i_ext, j_ext - 1, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext + 1, height_ext)]) - previous_solution[currentIndx], 2) * hh);
+				}
+			}
+
+		} while (cpt < maxIteration && error > tol);
+
+		printf("The number of iterations is %zd for timeStep %zd\n", cpt, n);
+		printf("Error is %e for timeStep %zd\n", error, n);
+
+		copyDataToAnother2dArray(gauss_seidel_solution, previous_solution, height_ext, width_ext);
+
+	}
+
+	//Copy back
+	copyDataTo2dReducedArea(gauss_seidel_solution, imageData.imageDataPtr, height, width);
+	
+	free(previous_solution);
+	free(gauss_seidel_solution);
+
 }
