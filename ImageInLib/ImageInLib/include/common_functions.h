@@ -124,7 +124,7 @@ extern "C" {
 	// Copy from one pointer to another pointer
 	void copyDataToAnotherArray(dataType** source, dataType** destination, size_t height, size_t length, size_t width);
 	//==============================================================================
-	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew);
+	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew, dataType max_dta, dataType min_dta);
 	//==============================================================================
 	typedef struct {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
