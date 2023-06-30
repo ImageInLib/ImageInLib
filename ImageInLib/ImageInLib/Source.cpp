@@ -110,7 +110,7 @@ int main() {
 		}
 	}
 
-	rescaleNewRange(imageData, Length, Width, Height, 0.0, 1.0);
+	rescaleNewRange(imageData, Length, Width, Height, 0.0, 1.0, 0, 4000);
 	//rescaleToIntervalZeroOne(imageData, Length, Width, Height);
 
 	//operation = STORE_DATA;
