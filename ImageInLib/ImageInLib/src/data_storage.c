@@ -292,3 +292,28 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	return true;
 }
 
+//==================================
+//function for storage of data in 2D PGM ASCII format.
+bool store2dPGMASCII(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	FILE* pgmimg;
+	pgmimg = fopen(pathPtr, "w");
+
+	// Writing Magic Number to the File
+	fprintf(pgmimg, "P2\n");
+
+	// Writing Width and Height
+	fprintf(pgmimg, "%zu %zu\n", xDim, yDim);
+
+	// Writing the maximum gray value
+	fprintf(pgmimg, "255\n");
+	int count = 0;
+	for (size_t i = 0; i < xDim; i++) {
+		for (size_t j = 0; j < yDim; j++) {
+			// Writing the gray values in the 2D array to the file
+			fprintf(pgmimg, "%d ", (unsigned char)imageDataPtr[i][j]);
+		}
+		fprintf(pgmimg, "\n");
+	}
+	fclose(pgmimg);
+}
