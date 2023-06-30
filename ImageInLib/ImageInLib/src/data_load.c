@@ -176,7 +176,6 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
     size_t i, j;
 
     char line1[4];
-    //char line2[80];
 	const int dataSize = (int)(xDim * yDim);
 	unsigned char* line2 = malloc(dataSize);
 

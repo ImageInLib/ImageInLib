@@ -28,17 +28,7 @@ bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t wid
             }
             break;
         case STORE_2D_DATA_PGM:
-            switch (dType)
-            {
-            case BINARY_DATA:
-                //TODO: I want to be able to store 2D image (PGM raw, RAW)
-                break;
-            case ASCII_DATA:
-                status = store2dPGMASCII(imageDataPtr, width, height, pathPtr);
-                break;
-            default:
-                break;
-            }
+            status = store2dPGM(imageDataPtr, width, height, pathPtr, dType == BINARY_DATA);
             break;
         default:
             break;
