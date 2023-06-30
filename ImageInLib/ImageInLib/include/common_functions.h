@@ -6,8 +6,8 @@ extern "C" {
 #pragma once
 #ifndef COMMON_FUNCTIONS
 #define COMMON_FUNCTIONS
-//==============================================================================
-//debug constants
+	//==============================================================================
+	//debug constants
 #ifndef MEASURE_TIME
 #define MEASURE_TIME
 #endif
@@ -43,13 +43,19 @@ extern "C" {
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
-		dataType ** imageDataPtr; // Image Data Containers
+		dataType** imageDataPtr; // Image Data Containers
 	} Image_Data;
+
+	typedef struct {
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+	} Image_Data2D;
 
 	// Generate Random Points
 	typedef struct {
 		size_t k, xd, p;
-	}RandomPoints;
+	}Random3dPoints;
 
 	typedef struct {
 		size_t xd, p;
@@ -58,7 +64,7 @@ extern "C" {
 	// Shapes Container
 	typedef struct {
 		// Shapes
-		dataType **shp;
+		dataType** shp;
 		size_t num; // shape number
 	} Shapes;
 	//==============================================================================
@@ -89,14 +95,14 @@ extern "C" {
 	* Reflection does not include the current point but only its adjacent neighbor
 	* Preserves Neumann Boundary condition - Target is for those methods
 	*/
-	void reflection3DB(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p);
+	void reflection3DB(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p);
 	//==============================================================================
 	/*
 	* Reflection Function Jozef
 	* Reflection includes the current point together with its adjacent neighbor
 	* Targets Distance Function types
 	*/
-	void reflection3D(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
+	void reflection3D(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
 	/*
 	* Gradient Calculation function
@@ -111,24 +117,26 @@ extern "C" {
 	to an array extendedDataPtr representing enlarged data (by 1 vx in each direction)
 	of dimensions originalHeight + 2, originalLength + 2 and originalWidth + 2
 	*/
-	void copyDataToExtendedArea(dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
+	void copyDataToExtendedArea(dataType** originalDataPtr, dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	void copyDataToReducedArea(dataType** originalDataPtr, const dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 	//==============================================================================
 	// Copy from one pointer to another pointer
 	void copyDataToAnotherArray(dataType** source, dataType** destination, size_t height, size_t length, size_t width);
 	//==============================================================================
-	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew);
+	void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew, dataType max_dta, dataType min_dta);
 	//==============================================================================
 	typedef struct {
 		size_t k_min, i_min, j_min, k_max, i_max, j_max;
 	} ClipBox;
 	//==============================================================================
 	// Calc. centroid of image data
-	void centroidImage(dataType ** imageDataPtr, dataType *centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
-	void centroidClipBox(dataType *centroid, ClipBox coord, dataType ** imageDataPtr, size_t imageLength, dataType imageBackground);
+	void centroidImage(dataType** imageDataPtr, dataType* centroid, size_t imageHeight, size_t imageLength, size_t imageWidth, dataType imageBackground);
+	void centroidClipBox(dataType* centroid, ClipBox coord, dataType** imageDataPtr, size_t imageLength, dataType imageBackground);
 	//==============================================================================
 
+	//==============================================================================
+	void copyDataToAnother2dArray(dataType* source, dataType* destination, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
 	//==============================================================================
