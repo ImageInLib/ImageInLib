@@ -1,5 +1,6 @@
 #include <memory.h>
 #include "common_functions.h"
+
 //==============================================================================
 // Local Function Prototype
 //==============================================================================
@@ -103,7 +104,7 @@ void copyDataToExtendedArea(dataType** originalDataPtr, dataType** extendedDataP
 	const size_t length_ext = originalLength + 2;
 	const size_t width_ext = originalWidth + 2;
 
-	size_t sliceBound = (length_ext - 1)* width_ext;
+	size_t sliceBound = (length_ext - 1) * width_ext;
 	size_t i, k, k_ext, i_d = 0;
 
 	for (k = 0, k_ext = 1; k < originalHeight; k++, k_ext++)
@@ -123,7 +124,7 @@ void copyDataToReducedArea(dataType** originalDataPtr, const dataType** extended
 	const size_t length_ext = originalLength + 2;
 	const size_t width_ext = originalWidth + 2;
 
-	size_t sliceBound = (length_ext - 1)* width_ext;
+	size_t sliceBound = (length_ext - 1) * width_ext;
 	size_t i, k, k_ext, i_d = 0;
 
 	for (k = 0, k_ext = 1; k < originalHeight; k++, k_ext++)
@@ -159,10 +160,8 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)
 }
 //==============================================================================
-void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew) {
+void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew, dataType max_dta, dataType min_dta) {
 	size_t k, i, j, xd;
-	dataType maxData = -10000;
-	dataType minData = 10000;
 
 	// Find the Min and Max Intensity
 	for (k = 0; k < imageHeight; k++) {
@@ -171,17 +170,17 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 
 				// 1D Conversion of row and column
 				xd = x_new(i, j, imageLength);
-				if (imageDataPtr[k][xd] > maxData) {
-					maxData = imageDataPtr[k][xd];
+				if (imageDataPtr[k][xd] > max_dta) {
+					max_dta = imageDataPtr[k][xd];
 				}
-				if (imageDataPtr[k][xd] < minData) {
-					minData = imageDataPtr[k][xd];
+				if (imageDataPtr[k][xd] < min_dta) {
+					min_dta = imageDataPtr[k][xd];
 				}
 			}
 		}
 	}
 	// Rescale from min_new to max_new
-	dataType diffOld = maxData - minData;
+	dataType diffOld = max_dta - min_dta;
 	dataType diffNew = maxNew - minNew;
 	dataType scale_factor = (diffNew) / (diffOld);
 	for (k = 0; k < imageHeight; k++) {
@@ -189,7 +188,7 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 			for (j = 0; j < imageWidth; j++) {
 				// 1D Conversion of row and column
 				xd = x_new(i, j, imageLength);
-				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - maxData) + maxNew;
+				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - max_dta) + maxNew;
 				// Alternatively
 				//dta[k][xd] = scale_factor * (dta[k][xd] - min_dta) + min_new; }
 			}
@@ -198,10 +197,18 @@ void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWi
 }
 //==============================================================================
 
-
-
+//2D function
+void copyDataToAnother2dArray(dataType* source, dataType* destination, size_t imageHeight, size_t imageWidth) {
+	size_t i, j, xd;
+	for (i = 0; i < imageHeight; i++) {
+		for (j = 0; j < imageWidth; j++) {
+			xd = x_new(i, j, imageHeight);
+			destination[xd] = source[xd];
+		}
+	}
+}
 //==============================================================================
-void copyDataTo2dExtendedArea(dataType * originalDataPtr, dataType * extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t width_ext = originalWidth + 2;
@@ -213,11 +220,11 @@ void copyDataTo2dExtendedArea(dataType * originalDataPtr, dataType * extendedDat
 	for (i = 1; i < sliceBound; i++)
 	{
 		memcpy(&(extendedDataPtr[i]), &(originalDataPtr[i_d]), sizeof(dataType));
-		i_d ++;
+		i_d++;
 	}
 }
 //==============================================================================
-void copyDataTo2dReducedArea(dataType * originalDataPtr, const dataType * extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t width_ext = originalWidth + 2;
@@ -233,7 +240,7 @@ void copyDataTo2dReducedArea(dataType * originalDataPtr, const dataType * extend
 	}
 }
 //==============================================================================
-void reflection2D(dataType * toReflectImage, size_t imageHeight, size_t imageWidth)
+void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth)
 {
 	size_t i, j;
 	size_t height = imageHeight, width = imageWidth;
