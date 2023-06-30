@@ -412,9 +412,6 @@
     <ClInclude Include="src\linked_list.h">
       <Filter>Header Files\Data Structures</Filter>
     </ClInclude>
-    <ClInclude Include="src\common_functions.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="src\edgedetection.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
@@ -477,6 +474,9 @@
     </ClInclude>
     <ClInclude Include="distanceForPathFinding.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_functions.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
