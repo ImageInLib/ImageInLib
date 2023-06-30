@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "endianity_bl.h"
+#include <stdlib.h>
+
 
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines)
@@ -174,7 +176,9 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
     size_t i, j;
 
     char line1[4];
-    char line2[80];
+    //char line2[80];
+	const int dataSize = (int)(xDim * yDim);
+	unsigned char* line2 = malloc(dataSize);
 
     FILE* file;
     if (fopen_s(&file, pathPtr, "r") != 0) {
@@ -186,24 +190,25 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
     fgets(line1, 4, file);
     sscanf(line1, "P%d\n", &pgmVersion);
 
+	//filtering out potential comment
+	do {
+		fgets(line2, dataSize, file);
+	} while (line2[0] == '#');
+
+	size_t tmpX, tmpY;
+	sscanf(line2, "%zu %zu", &tmpX, &tmpY);
+
+	if (xDim != tmpX || yDim != tmpY) {
+		//dimensions of used array is not compatible with loaded image
+		fclose(file);
+		return false;
+	}
+
+	fgets(line2, dataSize, file);
 
     if (pgmVersion == 2) //ascii
 	{
-		//filtering out potential comment
-        do {
-            fgets(line2, 80, file);
-        } while (line2[0] == '#');
 
-        size_t tmpX, tmpY;
-        sscanf(line2, "%zu %zu", &tmpX, &tmpY);
-
-        if (xDim != tmpX || yDim != tmpY) {
-            //dimensions of used array is not compatible with loaded image
-            fclose(file);
-            return false;
-        }
-
-        fgets(line2, 10, file);
 
         for (i = 0; i < xDim; i++) {
             for (j = 0; j < yDim; j++) {
@@ -211,14 +216,24 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
                 imageDataPtr[i][j] = (dataType)intensity;
             }
         }
-    }
+    }     
+	if (pgmVersion == 5) //raw
+	{
+		fgets(line2, dataSize, file);
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
+				imageDataPtr[i][j] = (dataType)line2[x_new(j,i,yDim)];
+			}
+		}
+	}
     else
     {
+		free(line2);
         fclose(file);
         return false;
     }
 
+	free(line2);
     fclose(file);
-
     return true;
 }
