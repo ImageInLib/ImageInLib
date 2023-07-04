@@ -18,6 +18,8 @@ extern "C" {
 
 	bool generateInitialSegmentationFunction(dataType* imageDataPtr, const size_t height, const size_t width, point2D* center, dataType v, dataType R);
 
+	bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width);
+
 #ifdef __cplusplus
 }
 #endif

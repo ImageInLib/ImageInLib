@@ -1,3 +1,8 @@
+/*
+* Author : Konan Allaly
+* Purpose : Updates for the INFLANET Project
+*/
+
 #include <string>
 #include "segmentation2d.h"
 
@@ -63,3 +68,13 @@ bool generateInitialSegmentationFunction(dataType* imageDataPtr, const size_t he
 	rescaleToZeroOne2d(imageDataPtr, height, width);
 }
 
+bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width) {
+	size_t i, j;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
+				imageDataPtr[x_new(i, j, height)] = 0.0;
+			}
+		}
+	}
+}
