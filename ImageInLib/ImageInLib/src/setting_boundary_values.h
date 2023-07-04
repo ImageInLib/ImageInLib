@@ -17,15 +17,6 @@ extern "C" {
 
 	bool setBoundaryToZeroDirichletBC(dataType **inputDataArrayPtr, size_t length, size_t width, size_t height);
 
-	// 2D functions
-	/*
-	* Author : Konan Allaly
-	* Purpose : Updates for the INFLANET Project
-	*/
-
-	bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width);
-
-
 #ifdef __cplusplus
 }
 #endif

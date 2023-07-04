@@ -106,20 +106,3 @@ bool setBoundaryToZeroDirichletBC(dataType **inputDataArrayPtr, size_t length, s
 	}
 	return true;
 }
-
-// 2D functions
-/* 
-* Author : Konan Allaly
-* Purpose : Updates for the INFLANET Project
-*/
-
-bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width) {
-	size_t i, j;
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-				imageDataPtr[x_new(i, j, height)] = 0.0;
-			}
-		}
-	}
-}
