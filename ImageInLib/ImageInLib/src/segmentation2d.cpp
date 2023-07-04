@@ -20,6 +20,20 @@ dataType min(dataType a, dataType b) {
 	}
 }
 
+dataType l2norm(dataType* arrayPtr1, dataType* arrayPtr2, const size_t height, const size_t width, dataType h) {
+	size_t i;
+
+	dataType sumPower = 0.0, norm = 0.0;
+	dataType hh = h * h;
+
+	for (i = 0; i < height * width; i++) {
+		sumPower += (dataType)((pow(arrayPtr1[i] - arrayPtr2[i], 2) * hh));
+	}
+	norm = sqrt(sumPower);
+
+	return norm;
+}
+
 bool rescaleToZeroOne2d(dataType* imageDataPtr, const size_t height, const size_t width)
 {
 	//check if the memory was allocated successfully
@@ -169,5 +183,463 @@ bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size
 			neighbours.South[currentIndx] = (dataType)(sqrt(current * current + epsilon));
 		}
 	}
+	return true;
+}
+
+bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+{
+	size_t i, j, i_ext, j_ext;
+	size_t height = imageData.height, width = imageData.width;
+	dataType* imageDataPtr = imageData.imageDataPtr;
+	const size_t height_ext = height + 2, width_ext = width + 2;
+	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
+
+	dataType tau = seg_parms.tau, h = seg_parms.h;
+	dataType tol = seg_parms.segTolerance, omega = seg_parms.omega_c;
+	dataType coef_edge_detector = seg_parms.coef, eps = seg_parms.eps2;
+	dataType coef_tau = tau / (h * h), gauss_seidel_coef = 0.0;
+
+	size_t maxIter = seg_parms.maxNoGSIteration;
+
+	dataType* segmentationPtr = new dataType[dim2D];
+
+	dataType* gaussSeidelPtr = new dataType[dim2D_ext];
+	dataType* previousSolPtr = new dataType[dim2D_ext];
+
+	if (segmentationPtr == NULL || gaussSeidelPtr == NULL || previousSolPtr == NULL)
+		return false;
+
+	heatImplicit2dScheme(imageData, smooth_parms);
+
+	dataType* uNorth = new dataType[dim2D];
+	dataType* uSouth = new dataType[dim2D];
+	dataType* uEast = new dataType[dim2D];
+	dataType* uWest = new dataType[dim2D];
+	if (uNorth == NULL || uSouth == NULL || uEast == NULL || uWest == NULL)
+		return false;
+
+	neighPtrs  U;
+	U.West = uWest;
+	U.East = uEast;
+	U.North = uNorth;
+	U.South = uSouth;
+
+	dataType* gNorth = new dataType[dim2D];
+	dataType* gSouth = new dataType[dim2D];
+	dataType* gEast = new dataType[dim2D];
+	dataType* gWest = new dataType[dim2D];
+	dataType* gAverage = new dataType[dim2D];
+	if (gNorth == NULL || gSouth == NULL || gEast == NULL || gWest == NULL || gAverage == NULL)
+		return false;
+
+	computeNormOfGradientDiamondCells(imageDataPtr, U, height, width, h);
+
+	dataType current = 0.0;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+
+			size_t currentIndx = x_new(i, j, height);
+
+			gEast[currentIndx] = gradientFunction(pow(U.East[currentIndx],2), coef_edge_detector);
+			gWest[currentIndx] = gradientFunction(pow(U.West[currentIndx],2), coef_edge_detector);
+			gNorth[currentIndx] = gradientFunction(pow(U.North[currentIndx],2), coef_edge_detector);
+			gSouth[currentIndx] = gradientFunction(pow(U.South[currentIndx],2), coef_edge_detector);
+
+			current = (dataType)(((gEast[currentIndx] + gWest[currentIndx] + gNorth[currentIndx] + gSouth[currentIndx]) / 4.0));
+			gAverage[currentIndx] = current;
+		}
+	}
+	
+	std::string savingPath; // = segmentPath + "_edgeDetector.raw";
+	//store2dRawData<dataType>(gAverage, height, width, savingPath);
+
+	dataType* coefNorth = new dataType[dim2D];
+	dataType* coefSouth = new dataType[dim2D];
+	dataType* coefEast = new dataType[dim2D];
+	dataType* coefWest = new dataType[dim2D];
+	if (coefNorth == NULL || coefSouth == NULL || coefEast == NULL || coefWest == NULL)
+		return false;
+
+	dataType average_norm_gradient, u_average;
+
+	copyDataToAnother2dArray(initialSegment, segmentationPtr, height, width);
+
+	copyDataTo2dExtendedArea(initialSegment, previousSolPtr, height, width);
+	set2dDirichletBoundaryCondition(previousSolPtr, height_ext, width_ext);
+	copyDataTo2dExtendedArea(initialSegment, gaussSeidelPtr, height, width);
+	set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
+
+	//segmentation loop
+	size_t number_time_step = 0;
+	dataType error_segmentation = 0.0;
+	//std::string savingPath;
+	do {
+		number_time_step++;
+
+		//compute the coefficents
+		computeNormOfGradientDiamondCells(segmentationPtr, U, height, width, h);
+		epsilonRegularization(U, height, width, eps);
+		for (i = 0; i < height; i++) {
+			for (j = 0; j < width; j++) {
+				size_t currentIndx = x_new(i, j, height);
+
+				average_norm_gradient = (dataType)((U.East[currentIndx] + U.West[currentIndx] + U.North[currentIndx] + U.South[currentIndx]) / 4.0);
+				u_average = sqrt(average_norm_gradient * average_norm_gradient + eps * eps);
+
+				coefEast[currentIndx] = coef_tau * u_average * gEast[currentIndx] * (1.0 / U.East[currentIndx]);
+				coefNorth[currentIndx] = coef_tau * u_average * gNorth[currentIndx] * (1.0 / U.North[currentIndx]);
+				coefWest[currentIndx] = coef_tau * u_average * gWest[currentIndx] * (1.0 / U.West[currentIndx]);
+				coefSouth[currentIndx] = coef_tau * u_average * gSouth[currentIndx] * (1.0 / U.South[currentIndx]);
+			}
+		}
+
+		//gauss seidel for segmentation function
+		size_t cpt = 0;
+		dataType error_gauss_seidel = 0.0;
+		do {
+			cpt++;
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+
+					size_t currentIndx = x_new(i, j, height);
+					size_t currentIndx_ext = x_new(i_ext, j_ext, height_ext);
+
+					gauss_seidel_coef = (dataType)((previousSolPtr[currentIndx_ext] + coefEast[currentIndx] * gaussSeidelPtr[x_new(i_ext + 1, j_ext, height_ext)] + coefNorth[currentIndx] * gaussSeidelPtr[x_new(i_ext, j_ext - 1, height_ext)]
+						+ coefWest[currentIndx] * gaussSeidelPtr[x_new(i_ext - 1, j_ext, height_ext)] + coefSouth[currentIndx] * gaussSeidelPtr[x_new(i_ext, j_ext + 1, height_ext)])
+						/ (1 + coefEast[currentIndx] + coefNorth[currentIndx] + coefWest[currentIndx] + coefSouth[currentIndx]));
+
+					gaussSeidelPtr[currentIndx_ext] = gaussSeidelPtr[currentIndx_ext] + omega * (gauss_seidel_coef - gaussSeidelPtr[currentIndx_ext]);
+				}
+			}
+
+			error_gauss_seidel = 0.0;
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+
+					size_t currentIndx = x_new(i, j, height);
+					size_t currentIndx_ext = x_new(i_ext, j_ext, height_ext);
+
+					error_gauss_seidel += (dataType)(pow((1 + coefEast[currentIndx] + coefNorth[currentIndx] + coefWest[currentIndx] + coefSouth[currentIndx]) * gaussSeidelPtr[currentIndx_ext]
+						- (coefEast[currentIndx] * gaussSeidelPtr[x_new(i_ext + 1, j_ext, height_ext)] + coefNorth[currentIndx] * gaussSeidelPtr[x_new(i_ext, j_ext - 1, height_ext)]
+							+ coefWest[currentIndx] * gaussSeidelPtr[x_new(i_ext - 1, j_ext, height_ext)] + coefSouth[currentIndx] * gaussSeidelPtr[x_new(i_ext, j_ext + 1, height_ext)]) - previousSolPtr[currentIndx_ext], 2) * h * h);
+				}
+			}
+		} while (cpt < maxIter && error_gauss_seidel > tol);
+
+		//rescall to data range 0-1
+		rescaleToZeroOne2d(gaussSeidelPtr, height_ext, width_ext);
+
+		//compute L2-norm
+		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
+
+		//std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
+
+		//Dirichlet Boundary condition
+		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
+
+		//copy
+		copyDataToAnother2dArray(gaussSeidelPtr, previousSolPtr, height_ext, width_ext);
+
+		//copy to reduce array
+		copyDataTo2dReducedArea(gaussSeidelPtr, segmentationPtr, height, width);
+
+		//save the solution
+		if (number_time_step % 10 == 0) {
+			if (number_time_step < 10) {
+				savingPath = segmentPath + "_seg_func_000" + std::to_string(number_time_step) + ".raw";
+				store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+			}
+			else {
+				if (number_time_step < 100) {
+					savingPath = segmentPath + "_seg_func_00" + std::to_string(number_time_step) + ".raw";
+					store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+				}
+				else {
+					if (number_time_step < 1000) {
+						savingPath = segmentPath + "_seg_func_0" + std::to_string(number_time_step) + ".raw";
+						store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+					}
+					else {
+						savingPath = segmentPath + "_seg_func_" + std::to_string(number_time_step) + ".raw";
+						store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+					}
+				}
+			}
+		}
+	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > tol);
+	std::cout << number_time_step << " steps, the final error is : " << error_segmentation << std::endl;
+
+	delete[] uNorth;
+	delete[] uSouth;
+	delete[] uEast;
+	delete[] uWest;
+
+	delete[] gNorth;
+	delete[] gSouth;
+	delete[] gEast;
+	delete[] gWest;
+	delete[] gAverage;
+
+	delete[] coefNorth;
+	delete[] coefSouth;
+	delete[] coefEast;
+	delete[] coefWest;
+
+	delete[] segmentationPtr;
+	delete[] gaussSeidelPtr;
+	delete[] previousSolPtr;
+
+	return true;
+}
+
+bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+{
+	size_t i, j, i_ext, j_ext;
+	const size_t height = imageData.height, width = imageData.width;
+	dataType* imageDataPtr = imageData.imageDataPtr;
+	const size_t height_ext = height + 2, width_ext = width + 2;
+	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
+
+	dataType tau = seg_parms.tau, h = seg_parms.h;
+	dataType tol = seg_parms.segTolerance, omega = seg_parms.omega_c;
+	dataType coef_edge_detector = seg_parms.coef, eps = seg_parms.eps2;
+	dataType coef_tau = tau / (h * h), gauss_seidel_coef = 0.0;
+	dataType diff = seg_parms.coef_dif, adv = seg_parms.coef_conv;
+	size_t maxIter = seg_parms.maxNoGSIteration;
+
+	dataType* segmentationPtr = new dataType[dim2D];
+	dataType* gaussSeidelPtr = new dataType[dim2D_ext];
+	dataType* previousSolPtr = new dataType[dim2D_ext];
+
+	if (segmentationPtr == NULL || gaussSeidelPtr == NULL || previousSolPtr == NULL)
+		return false;
+
+	std::string savingPath;
+
+	dataType* uNorth = new dataType[dim2D];
+	dataType* uSouth = new dataType[dim2D];
+	dataType* uEast = new dataType[dim2D];
+	dataType* uWest = new dataType[dim2D];
+	if (uNorth == NULL || uSouth == NULL || uEast == NULL || uWest == NULL)
+		return false;
+
+	dataType* edgeDetectorPtr = new dataType[dim2D];
+	if (edgeDetectorPtr == NULL)
+		return false;
+
+	neighPtrs  uCoef;
+	uCoef.West = uWest;
+	uCoef.East = uEast;
+	uCoef.North = uNorth;
+	uCoef.South = uSouth;
+
+	dataType* vNorth = new dataType[dim2D];
+	dataType* vSouth = new dataType[dim2D];
+	dataType* vEast = new dataType[dim2D];
+	dataType* vWest = new dataType[dim2D];
+	if (vNorth == NULL || vSouth == NULL || vEast == NULL || vWest == NULL)
+		return false;
+
+	dataType* coefNorth = new dataType[dim2D];
+	dataType* coefSouth = new dataType[dim2D];
+	dataType* coefEast = new dataType[dim2D];
+	dataType* coefWest = new dataType[dim2D];
+	if (coefNorth == NULL || coefSouth == NULL || coefEast == NULL || coefWest == NULL)
+		return false;
+
+	dataType current, average_norm_gradient, average_gFunction;
+	dataType u_average;
+
+	heatImplicit2dScheme(imageData, smooth_parms);
+
+	//compute g function
+	computeNormOfGradientDiamondCells(imageDataPtr, uCoef, height, width, h);
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			size_t currentIndx = x_new(i, j, height);
+			average_gFunction = (dataType)((uCoef.East[currentIndx] + uCoef.West[currentIndx] + uCoef.North[currentIndx] + uCoef.South[currentIndx]) / 4.0);
+			edgeDetectorPtr[currentIndx] = gradientFunction(pow(average_gFunction,2), coef_edge_detector);
+		}
+	}
+
+	savingPath = segmentPath + "_edgeDetector.raw";
+	store2dRawData<dataType>(edgeDetectorPtr, height, width, savingPath.c_str());
+
+	//compute gradient of edge detector function
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			size_t currentIndx = x_new(i, j, height);
+
+			if (i == 0) {
+				vEast[currentIndx] = - adv * ((edgeDetectorPtr[x_new(i + 1, j, height)] - edgeDetectorPtr[currentIndx]) / (2 * h));
+				vWest[currentIndx] = - vEast[currentIndx];
+			}
+			else {
+				if (i == height - 1) {
+					vEast[currentIndx] = - adv * ((edgeDetectorPtr[currentIndx] - edgeDetectorPtr[x_new(i - 1, j, height)]) / (2 * h));
+					vWest[currentIndx] = - vEast[currentIndx];
+				}
+				else {
+					vEast[currentIndx] = - adv * ((edgeDetectorPtr[x_new(i + 1, j, height)] - edgeDetectorPtr[x_new(i - 1, j, height)]) / (2 * h));
+					vWest[currentIndx] = - vEast[currentIndx];
+				}
+			}
+			if (j == 0) {
+				vSouth[currentIndx] = - adv * ((edgeDetectorPtr[x_new(i, j + 1, height)] - edgeDetectorPtr[currentIndx]) / (2 * h));
+				vNorth[currentIndx] = - vSouth[currentIndx];
+			}
+			else {
+				if (j == width - 1) {
+					vSouth[currentIndx] = - adv * ((edgeDetectorPtr[currentIndx] - edgeDetectorPtr[x_new(i, j - 1, height)]) / (2 * h));
+					vNorth[currentIndx] = - vSouth[currentIndx];
+				}
+				else {
+					vSouth[currentIndx] = - adv * ((edgeDetectorPtr[x_new(i, j + 1, height)] - edgeDetectorPtr[x_new(i, j - 1, height)]) / (2 * h));
+					vNorth[currentIndx] = - vSouth[currentIndx];
+				}
+			}
+		}
+	}
+
+	copyDataToAnother2dArray(initialSegment, segmentationPtr, height, width);
+	copyDataTo2dExtendedArea(initialSegment, gaussSeidelPtr, height, width);
+	copyDataTo2dExtendedArea(initialSegment, previousSolPtr, height, width);
+
+	set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
+	set2dDirichletBoundaryCondition(previousSolPtr, height_ext, width_ext);
+
+	//segmentation loop
+	size_t number_time_step = 0;
+	dataType error_segmentation = 0.0;
+	do {
+		number_time_step++;
+
+		computeNormOfGradientDiamondCells(segmentationPtr, uCoef, height, width, h);
+		epsilonRegularization(uCoef, height, width, eps);
+
+		for (i = 0; i < height; i++) {
+			for (j = 0; j < width; j++) {
+				size_t currentIndx = x_new(i, j, height);
+				average_norm_gradient = (dataType)((uCoef.East[currentIndx] + uCoef.West[currentIndx] + uCoef.North[currentIndx] + uCoef.South[currentIndx]) / 4.0);
+				u_average = sqrt(average_norm_gradient * average_norm_gradient + eps * eps);
+
+				//Explicit for advection
+				coefEast[currentIndx] = (dataType)(coef_tau * (-min(vEast[currentIndx], 0) + diff * edgeDetectorPtr[currentIndx] * u_average * (1.0 / uCoef.East[currentIndx])));
+				coefNorth[currentIndx] = (dataType)(coef_tau * (-min(vNorth[currentIndx], 0) + diff * edgeDetectorPtr[currentIndx] * u_average * (1.0 / uCoef.North[currentIndx])));
+				coefWest[currentIndx] = (dataType)(coef_tau * (-min(vWest[currentIndx], 0) + diff * edgeDetectorPtr[currentIndx] * u_average * (1.0 / uCoef.West[currentIndx])));
+				coefSouth[currentIndx] = (dataType)(coef_tau * (-min(vSouth[currentIndx], 0) + diff * edgeDetectorPtr[currentIndx] * u_average * (1.0 / uCoef.South[currentIndx])));
+			}
+		}
+
+		//gauss seidel for segmentation function
+		size_t cpt = 0;
+		dataType error_gauss_seidel = 0.0;
+		do {
+			cpt++;
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+
+					size_t iplus = i_ext + 1;
+					size_t iminus = i_ext - 1;
+					size_t jplus = j_ext + 1;
+					size_t jminus = j_ext - 1;
+
+					size_t currentIndx = x_new(i, j, height);
+					size_t currentIndx_ext = x_new(i_ext, j_ext, height_ext);
+
+					//explicit for advection term
+					gauss_seidel_coef = (dataType)((previousSolPtr[currentIndx_ext] + coefEast[currentIndx] * gaussSeidelPtr[x_new(iplus, j_ext, height_ext)]
+						+ coefWest[currentIndx] * gaussSeidelPtr[x_new(iminus, j_ext, height_ext)] + coefNorth[currentIndx] * gaussSeidelPtr[x_new(i_ext, jminus, height_ext)]
+						+ coefSouth[currentIndx] * gaussSeidelPtr[x_new(i_ext, jplus, height_ext)]) / (1 + coefEast[currentIndx] + coefWest[currentIndx] +
+							coefNorth[currentIndx] + coefSouth[currentIndx]));
+					gaussSeidelPtr[currentIndx_ext] = gaussSeidelPtr[currentIndx_ext] + omega * (gauss_seidel_coef - gaussSeidelPtr[currentIndx_ext]);
+				}
+			}
+
+			error_gauss_seidel = 0.0;
+			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+
+					size_t iplus = i_ext + 1;
+					size_t iminus = i_ext - 1;
+					size_t jplus = j_ext + 1;
+					size_t jminus = j_ext - 1;
+
+					size_t currentIndx = x_new(i, j, height);
+					size_t currentIndx_ext = x_new(i_ext, j_ext, height_ext);
+
+					//Explicit for advection term
+					error_gauss_seidel += (dataType)(pow((1 + coefEast[currentIndx] + coefWest[currentIndx] + coefNorth[currentIndx] + coefSouth[currentIndx]) * gaussSeidelPtr[currentIndx_ext]
+						- (coefEast[currentIndx] * gaussSeidelPtr[x_new(iplus, j_ext, height_ext)]
+							+ coefWest[currentIndx] * gaussSeidelPtr[x_new(iminus, j_ext, height_ext)] + coefNorth[currentIndx] * gaussSeidelPtr[x_new(i_ext, jminus, height_ext)]
+							+ coefSouth[currentIndx] * gaussSeidelPtr[x_new(i_ext, jplus, height_ext)]) - previousSolPtr[currentIndx_ext], 2) * h * h);
+				}
+			}
+
+		} while (cpt < maxIter && error_gauss_seidel > 0.000001);
+
+		//rescall to data range 0-1
+		rescaleToZeroOne2d(gaussSeidelPtr, height_ext, width_ext);
+
+		//compute L2-norm
+		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
+
+		//std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
+
+		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
+
+		copyDataToAnother2dArray(gaussSeidelPtr, previousSolPtr, height_ext, width_ext);
+
+		//copy to reduce array
+		copyDataTo2dReducedArea(gaussSeidelPtr, segmentationPtr, height, width);
+
+		//save the solution
+		if (number_time_step % 10 == 0) {
+			if (number_time_step < 10) {
+				savingPath = segmentPath + "_seg_func_000" + std::to_string(number_time_step) + ".raw";
+				store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+			}
+			else {
+				if (number_time_step < 100) {
+					savingPath = segmentPath + "_seg_func_00" + std::to_string(number_time_step) + ".raw";
+					store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+				}
+				else {
+					if (number_time_step < 1000) {
+						savingPath = segmentPath + "_seg_func_0" + std::to_string(number_time_step) + ".raw";
+						store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+					}
+					else {
+						savingPath = segmentPath + "_seg_func_" + std::to_string(number_time_step) + ".raw";
+						store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
+					}
+				}
+			}
+		}
+
+	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > seg_parms.segTolerance);
+	std::cout << number_time_step << " steps, the final error is : " << error_segmentation << std::endl;
+
+	delete[] uNorth;
+	delete[] uSouth;
+	delete[] uEast;
+	delete[] uWest;
+
+	delete[] edgeDetectorPtr;
+
+	delete[] vNorth;
+	delete[] vSouth;
+	delete[] vEast;
+	delete[] vWest;
+
+	delete[] coefNorth;
+	delete[] coefSouth;
+	delete[] coefEast;
+	delete[] coefWest;
+
+	delete[] segmentationPtr;
+	delete[] gaussSeidelPtr;
+	delete[] previousSolPtr;
+
 	return true;
 }
