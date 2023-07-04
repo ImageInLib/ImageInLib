@@ -52,6 +52,7 @@
     <ClCompile Include="src\registration.c" />
     <ClCompile Include="src\rouy_tourin_function.c" />
     <ClCompile Include="src\segmentation.c" />
+    <ClCompile Include="src\segmentation2d.cpp" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
     <ClCompile Include="src\segmentation3D_common.c" />
     <ClCompile Include="src\segmentation3d_gsubsurf.c" />
@@ -80,6 +81,7 @@
     <ClInclude Include="include\noiseGeneration.h" />
     <ClInclude Include="include\registration.h" />
     <ClInclude Include="include\segmentation.h" />
+    <ClInclude Include="include\segmentation2d.h" />
     <ClInclude Include="include\shapeGeneration.h" />
     <ClInclude Include="include\statistics.h" />
     <ClInclude Include="include\template_functions.h" />
