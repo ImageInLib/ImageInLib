@@ -1,16 +1,24 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 #pragma once
-#include <stdbool.h>
-#include <stddef.h>
+#include<iostream>
 #include <stdio.h>
+#include <string>
 
 #include "common_functions.h"
 #include "../src/heat_equation.h"
 #include "../src/filter_params.h"
 #include "../distanceForPathFinding.h"
+
+	typedef struct
+	{
+		dataType* East;
+		dataType* West;
+		dataType* North;
+		dataType* South;
+	} neighPtrs;
 
 	dataType min(dataType a, dataType b);
 
@@ -20,6 +28,8 @@ extern "C" {
 
 	bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width);
 
-#ifdef __cplusplus
-}
-#endif
+	bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, const size_t height, const size_t width, dataType h);
+
+//#ifdef __cplusplus
+//}
+//#endif

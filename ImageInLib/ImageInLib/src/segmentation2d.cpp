@@ -3,7 +3,12 @@
 * Purpose : Updates for the INFLANET Project
 */
 
-#include <string>
+#include <iostream>
+#include <climits>
+#include <crtdbg.h>
+#include <corecrt_malloc.h>
+#include <cmath>
+
 #include "segmentation2d.h"
 
 dataType min(dataType a, dataType b) {
@@ -49,7 +54,7 @@ bool generateInitialSegmentationFunction(dataType* imageDataPtr, const size_t he
 	dataType norm_of_distance = 0.0, new_value = 0.0;
 
 	if (imageDataPtr == NULL)
-		return;
+		return false;
 
 	for (i = 0; i < height; i++) {
 		dx = i - center->x;
@@ -66,6 +71,8 @@ bool generateInitialSegmentationFunction(dataType* imageDataPtr, const size_t he
 		}
 	}
 	rescaleToZeroOne2d(imageDataPtr, height, width);
+
+	return true;
 }
 
 bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height, const size_t width) {
@@ -77,4 +84,67 @@ bool set2dDirichletBoundaryCondition(dataType* imageDataPtr, const size_t height
 			}
 		}
 	}
+	return true;
+}
+
+bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, const size_t height, const size_t width, dataType h) {
+
+	size_t i, j, i_ext, j_ext, currentIndx;
+	const size_t height_ext = height + 2, width_ext = width + 2;
+	size_t dim2D_ext = height_ext * width_ext;
+
+	dataType* extendedArray = new dataType[dim2D_ext];
+	if (extendedArray == NULL)
+		return false;
+
+	copyDataTo2dExtendedArea(arrayPtr, extendedArray, height, width);
+	reflection2D(extendedArray, height_ext, width_ext);
+
+	dataType uP, uN, uNW, uNE, uS, uSW, uSE, uW, uE;
+	dataType ux, uy;
+
+	for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
+
+			size_t iplus = i_ext + 1;
+			size_t iminus = i_ext - 1;
+			size_t jplus = j_ext + 1;
+			size_t jminus = j_ext - 1;
+
+			currentIndx = x_new(i, j, height);
+			uP = extendedArray[x_new(i_ext, j_ext, height_ext)];
+			uE = extendedArray[x_new(iplus, j_ext, height_ext)];
+			uW = extendedArray[x_new(iminus, j_ext, height_ext)];
+			uN = extendedArray[x_new(i_ext, jminus, height_ext)];
+			uS = extendedArray[x_new(i_ext, jplus, height_ext)];
+			uNE = extendedArray[x_new(iplus, jminus, height_ext)];
+			uNW = extendedArray[x_new(iminus, jminus, height_ext)];
+			uSE = extendedArray[x_new(iplus, jplus, height_ext)];
+			uSW = extendedArray[x_new(iminus, jplus, height_ext)];
+
+			//East
+			ux = (uE - uP) / h;
+			uy = (uNE + uN - uS - uSE) / (4.0 * h);
+			neigbours.East[currentIndx] = sqrt(ux * ux + uy * uy);
+
+			//West
+			ux = (uP - uW) / h;
+			uy = (uNW + uN - uSW - uS) / (4.0 * h);
+			neigbours.West[currentIndx] = sqrt(ux * ux + uy * uy);
+
+			//North
+			ux = (uNE + uE - uNW - uW) / (4.0 * h);
+			uy = (uN - uP) / h;
+			neigbours.North[currentIndx] = sqrt(ux * ux + uy * uy);
+
+			//South
+			ux = (uSE + uE - uSW - uW) / (4.0 * h);
+			uy = (uP - uS) / h;
+			neigbours.South[currentIndx] = sqrt(ux * ux + uy * uy);
+		}
+	}
+
+	delete[] extendedArray;
+
+	return true;
 }
