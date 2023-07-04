@@ -14,12 +14,12 @@ void addNoiseToImage(dataType** array3DPtr, const size_t xDim, const size_t yDim
 	case ADDITIVE_NOISE:
 		additive3dNoise_D(array3DPtr, xDim, yDim, zDim, parameters.additive_value, parameters.fgMin, parameters.bgMax);
 		break;
-	case MULTIPLICATIVE_NOISE:
+	/*case MULTIPLICATIVE_NOISE:
 		addMultiplicativeNoise(array3DPtr, zDim, xDim, yDim, parameters.multiplicative_variance, parameters.fgMin, parameters.bgMax);
 		break;
 	case STRUCTURAL_NOISE:
 		addStructuralNoise(array3DPtr, zDim, xDim, yDim, parameters.fgMin, parameters.bgMax);
-		break;
+		break;*/
 	default:
 		break;
 	}

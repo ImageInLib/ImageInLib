@@ -19,7 +19,7 @@ extern "C" {
 
 	bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag);
 
-	bool additive3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType C);
+	bool additive3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, int C, dataType fgMin, dataType bgMax);
 
 	bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType C, bool flag);
 
@@ -35,14 +35,14 @@ extern "C" {
 	* Variance is used to evaluate b, then be and a used to generate random number n
 	* N is used to add multiplicative noise to the original image
 	*/
-	void addMultiplicativeNoise(dataType **imageDataPtr, const size_t imageHeight, const size_t imageWidth, dataType variance);
+	/*void addMultiplicativeNoise(dataType** imageDataPtr, const size_t imageHeight, const size_t imageWidth, dataType variance);*/
 	/*
 	* Structural noise generate adds noise to imageDataPtr
 	* imageDataPtr contains points that we will add noise to
 	* imageHeight represent the Z coordinate, imageWidth is the X*Y coordinate - 2D representation of 3D
 	* Uses a sinusoid function to generate regular noise
 	*/
-	void addStructuralNoise(dataType **imageDataPtr, const size_t imageHeight, const size_t imageWidth);
+	/*void addStructuralNoise(dataType** imageDataPtr, const size_t imageHeight, const size_t imageWidth);*/
 
 #ifdef __cplusplus
 }

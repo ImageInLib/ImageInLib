@@ -92,6 +92,14 @@ int readVtkFile(const char * inputFilePath, Vtk_File_Info * vtkMetaInfo)
 		fillPtr(ptr_ui, vtkMetaInfo);
 		break;
 	}
+	case VTK_SHORT: 
+	{
+		vtkMetaInfo->vDataType = dta_Short;
+		// Assign the Data Pointer
+		short* ptr_ui = (short *)imageData->GetScalarPointer();
+		fillPtr(ptr_ui, vtkMetaInfo);
+		break;
+	}
 	default:
 		break;
 	}

@@ -1,6 +1,8 @@
-# ImageInLife Image Processing Library
+# ImageInLife and INFLANET Image Processing Library
 
-ImageInLib is an image processing library created by the [ImageInLife](http://imageinlife.eu) teams from [TatraMed Software s.r.o](https://tatramed.sk) and [Slovak University of Technology](https://www.stuba.sk) for the **Training European Experts in Multilevel Bioimaging, Analysis and Modelling of Vertebrate Development and Disease**
+ImageInLib is an image processing library created by the [ImageInLife](http://imageinlife.eu) teams from [TatraMed Software s.r.o](https://tatramed.sk) and [Slovak University of Technology](https://www.stuba.sk) for the **Training European Experts in Multilevel Bioimaging, Analysis and Modelling of Vertebrate Development and Disease**  
+
+INFLANET : **Training European Experts in Inflammation : from the molecular players to animal models and the bedside**. With the INFLANET project, our team from [TatraMed Software s.r.o](https://tatramed.sk) is extending the functionalities of the Library.
 
 ## Features of the **ImageInLib**
 
@@ -15,10 +17,12 @@ The following image processing techniques have been implemented in the library:
 * [Noise generation](https://github.com/ImageInLib/ImageInLib/wiki/Noise%20Generation)
 * [Shape generation](https://github.com/ImageInLib/ImageInLib/wiki/Shape-Generation)
 * [Statistical shape analysis](https://github.com/ImageInLib/ImageInLib/wiki/Statistical%20Shape%20Analysis)
+* [Connected Component Labeling](https://github.com/ImageInLib/ImageInLib/wiki/Connected-component-Labelling)
+* [Morphological filters](https://github.com/ImageInLib/ImageInLib/wiki/Morphological-filters-(changes))
 
 We also have a **[VTK Library](https://github.com/ImageInLib/ImageInLib/wiki/VTK-Library)** imaging library which offers support for reading and storing vtk files. Our chosen data format is vtk.
 
-All the implementations are for **3D data** and uses the **C/C++** language. To use various functionalities please visit their respective pages.
+All the implementations are for **2D/3D data** and uses the **C/C++** language. To use various functionalities please visit their respective pages.
 
 ### How To Use
 
@@ -33,7 +37,7 @@ To use this library, you must have an **existing C/C++ solution!**
 
 ImageInLib is licensed under the **[BSD 3-Clause "New" or "Revised" License](https://github.com/ImageInLib/ImageInLib/blob/master/LICENSE)**
 
-**This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No. 721537**
+**This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No. 721537 and No. 955576**
 
 ![]( https://github.com/ImageInLib/ImageInLib/blob/master/ImageInLib/ImageInLib/data/horizon.jpg)
 

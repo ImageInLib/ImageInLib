@@ -99,7 +99,7 @@ bool manageRAWFile3D(T** imageDataPtr, const size_t length, const size_t width, 
 
 template <typename T>
 inline bool manageRAWFile3D(T** imageDataPtr, const size_t length, const size_t width, const size_t height, const char* pathPtr, Operation operation, bool revert) {
-	
+
 	bool status = false; // Initial Status, only changed to true if the operation is successful
 
 	switch (operation)

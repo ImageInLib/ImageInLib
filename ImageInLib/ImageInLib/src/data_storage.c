@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "data_storage.h"
 #include "endianity_bl.h"
+#include <stdlib.h>
 
 //function for storage of data to 3D array.
 //xDim is the x dimension, yDim is the y dimension and zDim is the z dimension
@@ -292,110 +293,53 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	return true;
 }
 
-//
-//Store 2D (.pgm) image ascii
-bool save2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+//==================================
+//function for storage of data in 2D PGM. Used format is defined by a flag writeRawData (true = raw, false = ascii).
+bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData)
 {
-	if (imageDataPtr == NULL)
-		return false;
+	FILE* pgmimg;
+	pgmimg = fopen(pathPtr, "w");
 
-	size_t i, j;
-
-	FILE* file;
-	if (fopen_s(&file, pathPtr, "w") != 0) {
-		printf("Unable to open the file");
-		return false;
-	}
-
-	fprintf(file, "P2\n");
-	fprintf(file, "%d %d\n%d\n", xDim, yDim, 255);
-
-	for (i = 0; i < xDim; i++) {
-		for (j = 0; j < yDim; j++) {
-			fprintf(file, "%d ", (int)imageDataPtr[i][j]);
-		}
-	}
-	fclose(file);
-
-	return true;
-}
-
-//Sotore 2D (.vtk) image ascii
-bool storeVTK2d(int** imageData, const size_t xDim, const size_t yDim, const char* pathPtr)
-{
-	if (imageData == NULL)
-		return false;
-
-	double sx = 1., sy = 1.;
-	int i, j;
-
-	FILE* f;
-	if (fopen_s(&f, pathPtr, "w") != 0) {
-		printf("Unable to open the file");
-		return false;
-	}
-
-	fprintf(f, "# vtk DataFile Version 3.0\n");
-	fprintf(f, "file in ascii format\n");
-	fprintf(f, "ASCII\n");
-	fprintf(f, "DATASET STRUCTURED_POINTS\n");
-	fprintf(f, "DIMENSIONS %d %d 1\n", xDim, yDim);
-	fprintf(f, "ORIGIN 0 0  0\n");
-	fprintf(f, "SPACING %f %f 1\n", sx, sy);
-	fprintf(f, "POINT_DATA %d\n", (xDim) * (yDim));
-	fprintf(f, "SCALARS scalars float\n");
-	fprintf(f, "LOOKUP_TABLE default\n");
-
-	for (i = 0; i < xDim; i++) {
-		for (j = 0; j < yDim; j++) {
-			fprintf(f, "%d ", imageData[i][j]);
-			fprintf(f, "\n");
-		}
-	}
-	fclose(f);
-
-	return true;
-}
-
-bool storeVTK3D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, unsigned char* pathPtr, dataType h)
-{
-	FILE* outputfile; //file stream
-	size_t i, j, k, dimXYZ = xDim * yDim * zDim;
-	dataType sx = h, sy = h, sz = h;
-	//checks if the memory was allocated
-	if (array3DPtr == NULL)
-		return false;
-
-	//checks if the file was sucessfully opened
-	if ((fopen_s(&outputfile, pathPtr, "w")) != 0) {
-		return false;
+	if (writeRawData) //pgm format
+	{
+		fprintf(pgmimg, "P5\n");
 	}
 	else
 	{
-		fprintf(outputfile, "# vtk DataFile Version 3.0\n");
-		fprintf(outputfile, "file in binary format\n");
-		fprintf(outputfile, "BINARY\n");
-		fprintf(outputfile, "DATASET STRUCTURED_POINTS\n");
-		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
-		fprintf(outputfile, "ORIGIN  0 0 0\n");
-		//fprintf(outputfile, "ORIGIN %f %f %f\n", (h - 1), (h - 1), (h - 1));
-		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
-		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
-		fprintf(outputfile, "SCALARS scalars float\n");
-		fprintf(outputfile, "LOOKUP_TABLE default\n");
+		fprintf(pgmimg, "P2\n");
 	}
-	
-	// writing data to vtk file
-	for (k = 0; k < zDim; k++) {
-		for (i = 0; i < xDim; i++) {
-			for (j = 0; j < yDim; j++) {
-				dataType tmp = array3DPtr[k][x_new(i, j, xDim)];
-				//revertBytes(&tmp, sizeof(dataType));
-				fwrite(&tmp, sizeof(dataType), 1, outputfile);
+
+	// Writing Width and Height
+	fprintf(pgmimg, "%zu %zu\n", xDim, yDim);
+
+	// Writing the maximum gray value
+	fprintf(pgmimg, "255\n");
+
+	if (writeRawData)
+	{
+		const int dataSize = (int)(xDim * yDim);
+		unsigned char * rawData = (unsigned char *)malloc(dataSize);
+		
+		for (size_t i = 0; i < xDim; i++) {
+			for (size_t j = 0; j < yDim; j++) {
+				const size_t index = x_new(j, i, yDim);
+				rawData[index] = (unsigned char)imageDataPtr[i][j];
+			}
+		}
+
+		fwrite(rawData, sizeof(unsigned char), dataSize, pgmimg);
+		free(rawData);
+	}
+	else
+	{
+		for (size_t i = 0; i < xDim; i++) {
+			for (size_t j = 0; j < yDim; j++) {
+				// Writing the gray values in the 2D array to the file
+				fprintf(pgmimg, "%d \n", (unsigned char)imageDataPtr[i][j]);
 			}
 		}
 	}
-	fclose(outputfile);
-	
+
+	fclose(pgmimg);
 	return true;
 }

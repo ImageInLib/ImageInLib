@@ -36,7 +36,7 @@ extern "C" {
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
 
-		//gsubsurf control parameters
+		//gsubsurf parameters
 		dataType coef_conv;
 		dataType coef_dif;
 	} Segmentation_Parameters;

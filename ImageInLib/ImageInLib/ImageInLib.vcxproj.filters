@@ -305,9 +305,6 @@
     <ClCompile Include="src\mean_hausdorff_distance.c">
       <Filter>Source Files\Distance Function</Filter>
     </ClCompile>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Labelling.cpp">
       <Filter>Source Files\Labelling</Filter>
     </ClCompile>
@@ -322,6 +319,9 @@
     </ClCompile>
     <ClCompile Include="distanceForPathFinding.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation2d.cpp">
+      <Filter>Source Files\Segmentation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -415,9 +415,6 @@
     <ClInclude Include="src\linked_list.h">
       <Filter>Header Files\Data Structures</Filter>
     </ClInclude>
-    <ClInclude Include="src\common_functions.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="src\edgedetection.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
@@ -480,6 +477,12 @@
     </ClInclude>
     <ClInclude Include="distanceForPathFinding.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_functions.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\segmentation2d.h">
+      <Filter>Header Files\Segmentation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

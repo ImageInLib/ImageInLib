@@ -123,6 +123,14 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	//compute coefficients from presmoothed image
 	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
 
+	Vtk_File_Info* vtkInfo = (Vtk_File_Info*)malloc(sizeof(Vtk_File_Info));
+	if (vtkInfo == NULL) return false;
+	vtkInfo->spacing[0] = 1.0; vtkInfo->spacing[1] = 1.0; vtkInfo->spacing[2] = 1.0;
+	vtkInfo->origin[0] = 0; vtkInfo->origin[1] = 0; vtkInfo->origin[2] = 0;
+	vtkInfo->dimensions[0] = length; vtkInfo->dimensions[1] = width; vtkInfo->dimensions[2] = height;
+	vtkInfo->vDataType = dta_Flt; vtkInfo->operation = copyTo; vtkDataForm dataForm = dta_binary;
+	const char* pathsaveVTK;
+
 	//Array for name construction
 	unsigned char name[350];
 	unsigned char name_ending[100];
@@ -208,6 +216,8 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	}
 	free(prevSol_extPtr);
 	free(gauss_seidelPtr);
+
+	free(vtkInfo);
 
 	return true;
 }
@@ -798,4 +808,5 @@ bool gaussSeidelCoefficients(dataType **extendedCoefPtr, Segment_Image_Data inpu
 
 	return true;
 }
+
 

@@ -30,6 +30,8 @@
 
 // Local Function Prototype
 
+// Functions for 3D Images
+
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
@@ -719,3 +721,5 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	return true;
 }
+
+// // Functions for 2D Images

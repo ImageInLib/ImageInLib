@@ -8,11 +8,15 @@
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
 * Language:  C
 */
+
 #include "common_functions.h"
 #include "data_load.h"
 #include "endianity_bl.h"
 #include <stdio.h>
 #include <string.h>
+#include "endianity_bl.h"
+#include <stdlib.h>
+
 
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
 	const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines * lines)
@@ -110,6 +114,8 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 	FILE *file;
 	char rmode[4];
 
+	const size_t pointsInSlice = imageLength * imageWidth;
+
 	if (dType == BINARY_DATA)
 	{
 		strcpy_s(rmode, sizeof(rmode), "rb");
@@ -128,31 +134,30 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 		return false;
 	}
 	else {
-		for (k = 0; k < imageHeight; k++)
-		{
-			for (i = 0; i < imageLength; i++)
-			{
-				for (j = 0; j < imageWidth; j++)
+		if (dType == BINARY_DATA) {
+			for (k = 0; k < imageHeight; k++) {
+				fread(imageDataPtr[k], sizeof(dataType), pointsInSlice, file);
+			}
+		}
+		else {
+			if (dType == ASCII_DATA) {
+				for (k = 0; k < imageHeight; k++)
 				{
-					// 2D to 1D representation for i, j
-					xd = x_new(i, j, imageLength);
-
-					if (dType == BINARY_DATA)
+					for (i = 0; i < imageLength; i++)
 					{
-						fread(&value, sizeof(dataType), 1, file);
-						imageDataPtr[k][xd] = (dataType)value;
-					}
-					else if (dType == ASCII_DATA)
-					{
-						fscanf_s(file, "%f", &value);
-						imageDataPtr[k][xd] = (dataType)value;
+						for (j = 0; j < imageWidth; j++)
+						{
+							// 2D to 1D representation for i, j
+							xd = x_new(i, j, imageLength);
+							fscanf_s(file, "%f", &value);
+							imageDataPtr[k][xd] = (dataType)value;
+						}
 					}
 				}
 			}
 		}
 	}
-	//----
-
+  
 	//change from little endian to big endian
 	for (k = 0; k < imageHeight; k++)
 	{
@@ -161,7 +166,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 			revertBytes(&imageDataPtr[k][i], sizeof(dataType));
 		}
 	}
-
+  
 	fclose(file);
 	return true;
 }
@@ -170,35 +175,67 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 //Load 2D .pgm (ascii) image
 bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
 {
-	int intensity;
-	size_t i, j;
+    int intensity;
+    size_t i, j;
 
-	char line1[5];
-	char line2[80];
+    char line1[4];
+	const int dataSize = (int)(xDim * yDim);
+	unsigned char* line2 = malloc(dataSize);
 
-	FILE* file;
-	if (fopen_s(&file, pathPtr, "r") != 0) {
-		printf("File not found");
+    FILE* file;
+    if (fopen_s(&file, pathPtr, "r") != 0) {
+        printf("File not found");
+        return false;
+    }
+
+    int pgmVersion;
+    fgets(line1, 4, file);
+    sscanf(line1, "P%d\n", &pgmVersion);
+
+	//filtering out potential comment
+	do {
+		fgets(line2, dataSize, file);
+	} while (line2[0] == '#');
+
+	size_t tmpX, tmpY;
+	sscanf(line2, "%zu %zu", &tmpX, &tmpY);
+
+	if (xDim != tmpX || yDim != tmpY) {
+		//dimensions of used array is not compatible with loaded image
+		fclose(file);
 		return false;
 	}
 
-	fgets(line1, 10, file);
+	fgets(line2, dataSize, file);
 
-	do {
-		fgets(line2, 80, file);
-	} while (line2[0] == '#');
+    if (pgmVersion == 2) //ascii
+	{
 
-	sscanf(line2, "%d %d", &xDim, &yDim);
 
-	fgets(line2, 10, file);
-
-	for (i = 0; i < xDim; i++) {
-		for (j = 0;j < yDim; j++) {
-			fscanf(file, "%d", &intensity);
-			imageDataPtr[i][j] = (float)intensity;
+        for (i = 0; i < xDim; i++) {
+            for (j = 0; j < yDim; j++) {
+                fscanf(file, "%d", &intensity);
+                imageDataPtr[i][j] = (dataType)intensity;
+            }
+        }
+    }     
+	if (pgmVersion == 5) //raw
+	{
+		fgets(line2, dataSize, file);
+		for (i = 0; i < xDim; i++) {
+			for (j = 0; j < yDim; j++) {
+				imageDataPtr[i][j] = (dataType)line2[x_new(j,i,yDim)];
+			}
 		}
 	}
-	fclose(file);
+    else
+    {
+		free(line2);
+        fclose(file);
+        return false;
+    }
 
-	return true;
+	free(line2);
+    fclose(file);
+    return true;
 }
