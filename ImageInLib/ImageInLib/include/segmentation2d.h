@@ -30,6 +30,8 @@
 
 	bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, const size_t height, const size_t width, dataType h);
 
+	bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size_t width, dataType epsilon);
+
 //#ifdef __cplusplus
 //}
 //#endif

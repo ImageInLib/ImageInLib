@@ -148,3 +148,26 @@ bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, 
 
 	return true;
 }
+
+bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size_t width, dataType epsilon) {
+	size_t i, j, currentIndx;
+	dataType current = 0.0;
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < width; j++) {
+			currentIndx = x_new(i, j, height);
+
+			current = neighbours.East[currentIndx];
+			neighbours.East[currentIndx] = (dataType)(sqrt(current * current + epsilon));
+
+			current = neighbours.West[currentIndx];
+			neighbours.West[currentIndx] = (dataType)(sqrt(current * current + epsilon));
+
+			current = neighbours.North[currentIndx];
+			neighbours.North[currentIndx] = (dataType)(sqrt(current * current + epsilon));
+
+			current = neighbours.South[currentIndx];
+			neighbours.South[currentIndx] = (dataType)(sqrt(current * current + epsilon));
+		}
+	}
+	return true;
+}
