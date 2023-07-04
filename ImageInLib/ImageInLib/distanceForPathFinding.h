@@ -1,6 +1,6 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 #pragma once
 
@@ -102,6 +102,6 @@ using namespace std;
 
 	//================================================================
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
