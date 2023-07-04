@@ -8,8 +8,8 @@ extern "C" {
 #include <stdio.h>
 
 #include "common_functions.h"
-#include "heat_equation.h"
-#include "filter_params.h"
+#include "../src/heat_equation.h"
+#include "../src/filter_params.h"
 
 	dataType min(dataType a, dataType b);
 
