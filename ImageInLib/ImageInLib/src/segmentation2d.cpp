@@ -84,6 +84,7 @@ bool generateInitialSegmentationFunction(dataType* imageDataPtr, const size_t he
 			}
 		}
 	}
+
 	rescaleToZeroOne2d(imageDataPtr, height, width);
 
 	return true;
@@ -190,7 +191,6 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 {
 	size_t i, j, i_ext, j_ext;
 	size_t height = imageData.height, width = imageData.width;
-	dataType* imageDataPtr = imageData.imageDataPtr;
 	const size_t height_ext = height + 2, width_ext = width + 2;
 	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
 
@@ -232,7 +232,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 	if (gNorth == NULL || gSouth == NULL || gEast == NULL || gWest == NULL || gAverage == NULL)
 		return false;
 
-	computeNormOfGradientDiamondCells(imageDataPtr, U, height, width, h);
+	computeNormOfGradientDiamondCells(imageData.imageDataPtr, U, height, width, h);
 
 	dataType current = 0.0;
 	for (i = 0; i < height; i++) {
@@ -332,7 +332,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 		//compute L2-norm
 		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
 
-		//std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
+		std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
 
 		//Dirichlet Boundary condition
 		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
@@ -341,10 +341,10 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 		copyDataToAnother2dArray(gaussSeidelPtr, previousSolPtr, height_ext, width_ext);
 
 		//copy to reduce array
-		copyDataTo2dReducedArea(gaussSeidelPtr, segmentationPtr, height, width);
+		copyDataTo2dReducedArea(segmentationPtr, gaussSeidelPtr, height, width);
 
 		//save the solution
-		if (number_time_step % 10 == 0) {
+		if (number_time_step % seg_parms.mod == 0) {
 			if (number_time_step < 10) {
 				savingPath = segmentPath + "_seg_func_000" + std::to_string(number_time_step) + ".raw";
 				store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
@@ -396,7 +396,6 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 {
 	size_t i, j, i_ext, j_ext;
 	const size_t height = imageData.height, width = imageData.width;
-	dataType* imageDataPtr = imageData.imageDataPtr;
 	const size_t height_ext = height + 2, width_ext = width + 2;
 	size_t dim2D = height * width, dim2D_ext = height_ext * width_ext;
 
@@ -453,7 +452,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 	heatImplicit2dScheme(imageData, smooth_parms);
 
 	//compute g function
-	computeNormOfGradientDiamondCells(imageDataPtr, uCoef, height, width, h);
+	computeNormOfGradientDiamondCells(imageData.imageDataPtr, uCoef, height, width, h);
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			size_t currentIndx = x_new(i, j, height);
@@ -533,6 +532,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 
 		//gauss seidel for segmentation function
 		size_t cpt = 0;
+
 		dataType error_gauss_seidel = 0.0;
 		do {
 			cpt++;
@@ -584,17 +584,17 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 		//compute L2-norm
 		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
 
-		//std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
+		std::cout << "Step " << number_time_step << " : error = " << error_segmentation << std::endl;
 
 		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
 
 		copyDataToAnother2dArray(gaussSeidelPtr, previousSolPtr, height_ext, width_ext);
 
 		//copy to reduce array
-		copyDataTo2dReducedArea(gaussSeidelPtr, segmentationPtr, height, width);
+		copyDataTo2dReducedArea(segmentationPtr, gaussSeidelPtr, height, width);
 
 		//save the solution
-		if (number_time_step % 10 == 0) {
+		if (number_time_step % seg_parms.mod == 0) {
 			if (number_time_step < 10) {
 				savingPath = segmentPath + "_seg_func_000" + std::to_string(number_time_step) + ".raw";
 				store2dRawData<dataType>(segmentationPtr, height, width, savingPath.c_str());
