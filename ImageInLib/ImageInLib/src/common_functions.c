@@ -214,14 +214,21 @@ void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataP
 	const size_t width_ext = originalWidth + 2;
 
 	size_t sliceBound = (height_ext - 1) * width_ext;
-	size_t i, i_d = 0;
+	size_t i, j, i_ext, j_ext, i_d = 0;
 
-	i_d = 0;
-	for (i = 1; i < sliceBound; i++)
-	{
-		memcpy(&(extendedDataPtr[i]), &(originalDataPtr[i_d]), sizeof(dataType));
-		i_d++;
+	//i_d = 0;
+	//for (i = 1; i < sliceBound; i++)
+	//{
+	//	memcpy(&(extendedDataPtr[i]), &(originalDataPtr[i_d]), sizeof(dataType));
+	//	i_d++;
+	//}
+
+	for (i = 0, i_ext = 1; i < originalHeight; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < originalWidth; j++, j_ext++) {
+			extendedDataPtr[x_new(i_ext, j_ext, height_ext)] = originalDataPtr[x_new(i, j, originalHeight)];
+		}
 	}
+
 }
 //==============================================================================
 void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
@@ -230,14 +237,21 @@ void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extended
 	const size_t width_ext = originalWidth + 2;
 
 	size_t sliceBound = (height_ext - 1) * width_ext;
-	size_t i, i_d = 0;
+	size_t i, j, i_ext, j_ext, i_d = 0;
 
-	i_d = 0;
-	for (i = 1; i < sliceBound; i++)
-	{
-		memcpy(&(originalDataPtr[i_d]), &(extendedDataPtr[i]), sizeof(dataType));
-		i_d++;
+	//i_d = 0;
+	//for (i = 1; i < sliceBound; i++)
+	//{
+	//	memcpy(&(originalDataPtr[i_d]), &(extendedDataPtr[i]), sizeof(dataType));
+	//	i_d++;
+	//}
+
+	for (i = 0, i_ext = 1; i < originalHeight; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < originalWidth; j++, j_ext++) {
+			originalDataPtr[x_new(i, j, originalHeight)] = extendedDataPtr[x_new(i_ext, j_ext, height_ext)];
+		}
 	}
+
 }
 //==============================================================================
 void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth)
