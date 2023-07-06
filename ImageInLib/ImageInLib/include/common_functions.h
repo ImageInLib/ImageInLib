@@ -34,6 +34,11 @@ extern "C" {
 // MACROs
 //==============================================================================
 // STRUCTs
+// Common 2D Points - {x,y}
+	typedef struct {
+		dataType x, y;
+	} Point2D;
+
 // Common 3D Points - {x,y,z}
 	typedef struct {
 		dataType x, y, z;
