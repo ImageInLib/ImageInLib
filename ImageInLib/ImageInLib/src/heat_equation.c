@@ -248,9 +248,9 @@ void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implic
 			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
 				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
 					currentIndx = x_new(i_ext, j_ext, height_ext);
-					gauss_seidel_coef = (previous_solution[x_new(i_ext, j_ext, height_ext)] + coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] +
+					gauss_seidel_coef = (dataType)((previous_solution[x_new(i_ext, j_ext, height_ext)] + coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] +
 						gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext - 1, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext + 1, height_ext)])) /
-						(1 + 4 * coeff);
+						(1 + 4 * coeff));
 					gauss_seidel_solution[currentIndx] = gauss_seidel_solution[currentIndx] + omega * (gauss_seidel_coef - gauss_seidel_solution[currentIndx]);
 				}
 			}
@@ -259,22 +259,23 @@ void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implic
 			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
 				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
 					currentIndx = x_new(i_ext, j_ext, height_ext);
-					error += (float)(pow(gauss_seidel_solution[x_new(i_ext, j_ext, height_ext)] * (1 + 4.0 * coeff) - coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] +
+					error += (dataType)(pow(gauss_seidel_solution[currentIndx] * (1 + 4.0 * coeff) - coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] +
 						gauss_seidel_solution[x_new(i_ext, j_ext - 1, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext + 1, height_ext)]) - previous_solution[currentIndx], 2) * hh);
 				}
 			}
 
 		} while (cpt < maxIteration && error > tol);
 
-		printf("The number of iterations is %zd for timeStep %zd\n", cpt, n);
-		printf("Error is %e for timeStep %zd\n", error, n);
+		//printf("The number of iterations is %zd for timeStep %zd\n", cpt, n + 1);
+		//printf("Error is %e for timeStep %zd\n", error, n + 1);
+		//printf("###########################################\n");
 
 		copyDataToAnother2dArray(gauss_seidel_solution, previous_solution, height_ext, width_ext);
 
 	}
 
 	//Copy back
-	copyDataTo2dReducedArea(gauss_seidel_solution, imageData.imageDataPtr, height, width);
+	copyDataTo2dReducedArea(imageData.imageDataPtr, gauss_seidel_solution, height, width);
 	
 	free(previous_solution);
 	free(gauss_seidel_solution);
