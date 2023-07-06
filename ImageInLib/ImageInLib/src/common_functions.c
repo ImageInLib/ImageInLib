@@ -260,3 +260,8 @@ void reflection2D(dataType * toReflectImage, size_t imageHeight, size_t imageWid
 	}
 
 }
+//==============================================================================
+double getPoint2DDistance(const Point2D a, const Point2D b)
+{
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}

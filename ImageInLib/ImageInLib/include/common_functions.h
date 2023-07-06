@@ -140,7 +140,8 @@ extern "C" {
 	void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
 	//==============================================================================
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
-
+	//==============================================================================
+	double getPoint2DDistance(const Point2D a, const Point2D b);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus
