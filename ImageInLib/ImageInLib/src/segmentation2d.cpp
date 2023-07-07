@@ -4,6 +4,8 @@
 */
 
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <climits>
 #include <crtdbg.h>
 #include <corecrt_malloc.h>
@@ -107,7 +109,7 @@ bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, 
 	const size_t height_ext = height + 2, width_ext = width + 2;
 	size_t dim2D_ext = height_ext * width_ext;
 
-	dataType* extendedArray = new dataType[dim2D_ext];
+	dataType* extendedArray = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
 	if (extendedArray == NULL)
 		return false;
 
@@ -158,7 +160,7 @@ bool computeNormOfGradientDiamondCells(dataType* arrayPtr, neighPtrs neigbours, 
 		}
 	}
 
-	delete[] extendedArray;
+	free(extendedArray);
 
 	return true;
 }
@@ -200,20 +202,20 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 
 	size_t maxIter = seg_parms.maxNoGSIteration;
 
-	dataType* segmentationPtr = new dataType[dim2D];
+	dataType* segmentationPtr = (dataType*)malloc(sizeof(dataType) * dim2D);
 
-	dataType* gaussSeidelPtr = new dataType[dim2D_ext];
-	dataType* previousSolPtr = new dataType[dim2D_ext];
+	dataType* gaussSeidelPtr = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
+	dataType* previousSolPtr = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
 
 	if (segmentationPtr == NULL || gaussSeidelPtr == NULL || previousSolPtr == NULL)
 		return false;
 
 	heatImplicit2dScheme(imageData, smooth_parms);
 
-	dataType* uNorth = new dataType[dim2D];
-	dataType* uSouth = new dataType[dim2D];
-	dataType* uEast = new dataType[dim2D];
-	dataType* uWest = new dataType[dim2D];
+	dataType* uNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uWest = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (uNorth == NULL || uSouth == NULL || uEast == NULL || uWest == NULL)
 		return false;
 
@@ -223,11 +225,11 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 	U.North = uNorth;
 	U.South = uSouth;
 
-	dataType* gNorth = new dataType[dim2D];
-	dataType* gSouth = new dataType[dim2D];
-	dataType* gEast = new dataType[dim2D];
-	dataType* gWest = new dataType[dim2D];
-	dataType* gAverage = new dataType[dim2D];
+	dataType* gNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* gSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* gEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* gWest = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* gAverage = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (gNorth == NULL || gSouth == NULL || gEast == NULL || gWest == NULL || gAverage == NULL)
 		return false;
 
@@ -252,10 +254,10 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 	std::string savingPath; // = segmentPath + "_edgeDetector.raw";
 	//store2dRawData<dataType>(gAverage, height, width, savingPath);
 
-	dataType* coefNorth = new dataType[dim2D];
-	dataType* coefSouth = new dataType[dim2D];
-	dataType* coefEast = new dataType[dim2D];
-	dataType* coefWest = new dataType[dim2D];
+	dataType* coefNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefWest = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (coefNorth == NULL || coefSouth == NULL || coefEast == NULL || coefWest == NULL)
 		return false;
 
@@ -368,25 +370,25 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segme
 	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > tol);
 	std::cout << number_time_step << " steps, the final error is : " << error_segmentation << std::endl;
 
-	delete[] uNorth;
-	delete[] uSouth;
-	delete[] uEast;
-	delete[] uWest;
+	free(uNorth);
+	free(uSouth);
+	free(uEast);
+	free(uWest);
 
-	delete[] gNorth;
-	delete[] gSouth;
-	delete[] gEast;
-	delete[] gWest;
-	delete[] gAverage;
+	free(gNorth);
+	free(gSouth);
+	free(gEast);
+	free(gWest);
+	free(gAverage);
 
-	delete[] coefNorth;
-	delete[] coefSouth;
-	delete[] coefEast;
-	delete[] coefWest;
+	free(coefNorth);
+	free(coefSouth);
+	free(coefEast);
+	free(coefWest);
 
-	delete[] segmentationPtr;
-	delete[] gaussSeidelPtr;
-	delete[] previousSolPtr;
+	free(segmentationPtr);
+	free(gaussSeidelPtr);
+	free(previousSolPtr);
 
 	return true;
 }
@@ -405,23 +407,23 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 	dataType diff = seg_parms.coef_dif, adv = seg_parms.coef_conv;
 	size_t maxIter = seg_parms.maxNoGSIteration;
 
-	dataType* segmentationPtr = new dataType[dim2D];
-	dataType* gaussSeidelPtr = new dataType[dim2D_ext];
-	dataType* previousSolPtr = new dataType[dim2D_ext];
+	dataType* segmentationPtr = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* gaussSeidelPtr = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
+	dataType* previousSolPtr = (dataType*)malloc(sizeof(dataType) * dim2D_ext);
 
 	if (segmentationPtr == NULL || gaussSeidelPtr == NULL || previousSolPtr == NULL)
 		return false;
 
 	std::string savingPath;
 
-	dataType* uNorth = new dataType[dim2D];
-	dataType* uSouth = new dataType[dim2D];
-	dataType* uEast = new dataType[dim2D];
-	dataType* uWest = new dataType[dim2D];
+	dataType* uNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* uWest = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (uNorth == NULL || uSouth == NULL || uEast == NULL || uWest == NULL)
 		return false;
 
-	dataType* edgeDetectorPtr = new dataType[dim2D];
+	dataType* edgeDetectorPtr = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (edgeDetectorPtr == NULL)
 		return false;
 
@@ -431,17 +433,17 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 	uCoef.North = uNorth;
 	uCoef.South = uSouth;
 
-	dataType* vNorth = new dataType[dim2D];
-	dataType* vSouth = new dataType[dim2D];
-	dataType* vEast = new dataType[dim2D];
-	dataType* vWest = new dataType[dim2D];
+	dataType* vNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* vSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* vEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* vWest = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (vNorth == NULL || vSouth == NULL || vEast == NULL || vWest == NULL)
 		return false;
 
-	dataType* coefNorth = new dataType[dim2D];
-	dataType* coefSouth = new dataType[dim2D];
-	dataType* coefEast = new dataType[dim2D];
-	dataType* coefWest = new dataType[dim2D];
+	dataType* coefNorth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefSouth = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefEast = (dataType*)malloc(sizeof(dataType) * dim2D);
+	dataType* coefWest = (dataType*)malloc(sizeof(dataType) * dim2D);
 	if (coefNorth == NULL || coefSouth == NULL || coefEast == NULL || coefWest == NULL)
 		return false;
 
@@ -618,26 +620,26 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segm
 	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > seg_parms.segTolerance);
 	std::cout << number_time_step << " steps, the final error is : " << error_segmentation << std::endl;
 
-	delete[] uNorth;
-	delete[] uSouth;
-	delete[] uEast;
-	delete[] uWest;
+	free(uNorth);
+	free(uSouth);
+	free(uEast);
+	free(uWest);
 
-	delete[] edgeDetectorPtr;
+	free(edgeDetectorPtr);
 
-	delete[] vNorth;
-	delete[] vSouth;
-	delete[] vEast;
-	delete[] vWest;
+	free(vNorth);
+	free(vSouth);
+	free(vEast);
+	free(vWest);
 
-	delete[] coefNorth;
-	delete[] coefSouth;
-	delete[] coefEast;
-	delete[] coefWest;
+	free(coefNorth);
+	free(coefSouth);
+	free(coefEast);
+	free(coefWest);
 
-	delete[] segmentationPtr;
-	delete[] gaussSeidelPtr;
-	delete[] previousSolPtr;
+	free(segmentationPtr);
+	free(gaussSeidelPtr);
+	free(previousSolPtr);
 
 	return true;
 }
