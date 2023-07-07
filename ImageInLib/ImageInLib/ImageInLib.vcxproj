@@ -52,7 +52,6 @@
     <ClCompile Include="src\registration.c" />
     <ClCompile Include="src\rouy_tourin_function.c" />
     <ClCompile Include="src\segmentation.c" />
-    <ClCompile Include="src\segmentation2d.cpp" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
     <ClCompile Include="src\segmentation3D_common.c" />
     <ClCompile Include="src\segmentation3d_gsubsurf.c" />

@@ -1,9 +1,9 @@
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #pragma once
-#include<iostream>
+//#include<iostream>
 #include <stdio.h>
 #include <string>
 
@@ -36,10 +36,10 @@
 
 	bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size_t width, dataType epsilon);
 
-	bool subsurf(Image_Data2D imageData, dataType* initialSegment, std::string segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms);
+	bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms);
 
-	bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, std::string segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms);
+	bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char * segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms);
 
-//#ifdef __cplusplus
-//}
-//#endif
+#ifdef __cplusplus
+}
+#endif

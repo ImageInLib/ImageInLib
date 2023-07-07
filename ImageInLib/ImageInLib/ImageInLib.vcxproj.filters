@@ -320,9 +320,6 @@
     <ClCompile Include="distanceForPathFinding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\segmentation2d.cpp">
-      <Filter>Source Files\Segmentation</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
