@@ -1,5 +1,6 @@
 #include <memory.h>
 #include "common_functions.h"
+#include <math.h>
 
 //==============================================================================
 // Local Function Prototype
