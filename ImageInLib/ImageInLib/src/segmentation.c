@@ -1,5 +1,6 @@
 #include "segmentation.h"
 #include "segmentation3D_subsurf.h"
+#include "segmentation3d_gsubsurf.h"
 #include "segmentation3D_atlas.h"
 #include "segmentation3d_gsubsurf.h"
 

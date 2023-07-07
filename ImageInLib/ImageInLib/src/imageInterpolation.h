@@ -1,3 +1,8 @@
+/*
+* Author: Konan ALLALY
+* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
+* Language:  C
+*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6,6 +11,7 @@ extern "C" {
 #include <stdbool.h>
 #include "common_functions.h"
 #include "transformation.h"
+
 
 	bool nearestNeighborInterpolation(dataType ** originalImage, dataType ** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
 		                  dataType originalSpacing, dataType newSpacing);

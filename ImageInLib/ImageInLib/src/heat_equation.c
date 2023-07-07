@@ -34,7 +34,7 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	initialize3dArrayD(tempPtr, length_ext, width_ext, height_ext, 0.0);
 
 	size_t k_ext, j_ext, i_ext;
-	size_t sliceBound = (length_ext - 1)* width_ext;
+	size_t sliceBound = (length_ext - 1) * width_ext;
 	size_t i_d = 0;
 
 	copyDataToExtendedArea(toExplicitImage.imageDataPtr, tempPtr, height, length, width);
@@ -46,17 +46,17 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	const dataType coeff = tau / hhh;
 
 	// The Explicit Scheme Evaluation
-	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++){
-		for (k = 0, k_ext = 1; k < height; k++, k_ext++){
-			for (i = 0, i_ext = 1; i < length; i++, i_ext++){
-				for (j = 0, j_ext = 1; j < width; j++, j_ext++){
+	for (size_t t = 0; t < explicitParameters.timeStepsNum; t++) {
+		for (k = 0, k_ext = 1; k < height; k++, k_ext++) {
+			for (i = 0, i_ext = 1; i < length; i++, i_ext++) {
+				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
 
 					// 2D to 1D representation for i, j
 					x_ext = x_new(i_ext, j_ext, length_ext);
 					x = x_new(i, j, length);
 
 					// Explicit formula
-					toExplicitImage.imageDataPtr[k][x] = (dataType)((1.0 - 6.0 * coeff)*tempPtr[k_ext][x_ext]
+					toExplicitImage.imageDataPtr[k][x] = (dataType)((1.0 - 6.0 * coeff) * tempPtr[k_ext][x_ext]
 						+ coeff * (tempPtr[k_ext][x_new(i_ext - 1, j, length_ext)]
 							+ tempPtr[k_ext][x_new(i_ext + 1, j, length_ext)]
 							+ tempPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
@@ -99,8 +99,8 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	dataType** currentPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext)); // holds current
 	for (i = 0; i < height_ext; i++)
 	{
-		tempPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
-		currentPtr[i] = malloc(sizeof(dataType)*(length_ext)*(width_ext));
+		tempPtr[i] = malloc(sizeof(dataType) * (length_ext) * (width_ext));
+		currentPtr[i] = malloc(sizeof(dataType) * (length_ext) * (width_ext));
 	}
 	// Preparation
 	copyDataToExtendedArea(toImplicitImage.imageDataPtr, tempPtr, height, length, width);
@@ -159,9 +159,9 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 		copyDataToAnotherArray(currentPtr, tempPtr, height_ext, length_ext, width_ext);
 	}
 	// Copy back to original after filter
-	for (k = 0, k_ext = 1; k < height; k++, k_ext++){
-		for (i = 0, i_ext = 1; i < length; i++, i_ext++){
-			for (j = 0, j_ext = 1; j < width; j++, j_ext++){
+	for (k = 0, k_ext = 1; k < height; k++, k_ext++) {
+		for (i = 0, i_ext = 1; i < length; i++, i_ext++) {
+			for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
 				// 2D to 1D representation for i, j
 				x_ext = x_new(i_ext, j_ext, length_ext);
 				x = x_new(i, j, length);
@@ -259,15 +259,16 @@ void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implic
 			for (i = 0, i_ext = 1; i < height; i++, i_ext++) {
 				for (j = 0, j_ext = 1; j < width; j++, j_ext++) {
 					currentIndx = x_new(i_ext, j_ext, height_ext);
-					error += (dataType)(pow(gauss_seidel_solution[x_new(i_ext, j_ext, height_ext)] * (1 + 4.0 * coeff) - coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] +
+					error += (dataType)(pow(gauss_seidel_solution[currentIndx] * (1 + 4.0 * coeff) - coeff * (gauss_seidel_solution[x_new(i_ext - 1, j_ext, height_ext)] + gauss_seidel_solution[x_new(i_ext + 1, j_ext, height_ext)] +
 						gauss_seidel_solution[x_new(i_ext, j_ext - 1, height_ext)] + gauss_seidel_solution[x_new(i_ext, j_ext + 1, height_ext)]) - previous_solution[currentIndx], 2) * hh);
 				}
 			}
 
 		} while (cpt < maxIteration && error > tol);
 
-		printf("The number of iterations is %zd for timeStep %zd\n", cpt, n);
-		printf("Error is %e for timeStep %zd\n", error, n);
+		//printf("The number of iterations is %zd for timeStep %zd\n", cpt, n + 1);
+		//printf("Error is %e for timeStep %zd\n", error, n + 1);
+		//printf("###########################################\n");
 
 		copyDataToAnother2dArray(gauss_seidel_solution, previous_solution, height_ext, width_ext);
 
