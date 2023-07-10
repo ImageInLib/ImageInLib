@@ -176,7 +176,7 @@ bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size
 	return true;
 }
 
-bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
 {
 	size_t i, j, i_ext, j_ext;
 	size_t height = imageData.height, width = imageData.width;
@@ -268,7 +268,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segm
 	//segmentation loop
 	size_t number_time_step = 0;
 	dataType error_segmentation = 0.0;
-	
+
 	do {
 		number_time_step++;
 
@@ -328,7 +328,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segm
 		//compute L2-norm
 		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
 
-		printf("Step , %zd : residu = %e", number_time_step, error_segmentation);
+		printf("Step  %zd : residu = %e \n", number_time_step, error_segmentation);
 
 		//Dirichlet Boundary condition
 		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
@@ -342,9 +342,9 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segm
 		//save the solution
 		if (number_time_step % seg_parms.mod == 0) {
 			strcpy_s(name, sizeof name, segmentPath);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", number_time_step);
 			strcat_s(name, sizeof(name), name_ending);
-			store2dRawData(imageData.imageDataPtr, height, width, name, flags);
+			store2dRawData(segmentationPtr, height, width, name, flags);
 		}
 
 	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > tol);
@@ -372,7 +372,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char * segm
 	return true;
 }
 
-bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char * segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
 {
 	size_t i, j, i_ext, j_ext;
 	const size_t height = imageData.height, width = imageData.width;
@@ -570,7 +570,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char * seg
 		//compute L2-norm
 		error_segmentation = l2norm(gaussSeidelPtr, previousSolPtr, height_ext, width_ext, h);
 
-		printf("Step %zd , residual = %e", number_time_step, error_segmentation);
+		printf("Step %zd , residual = %e \n", number_time_step, error_segmentation);
 
 		set2dDirichletBoundaryCondition(gaussSeidelPtr, height_ext, width_ext);
 
@@ -582,9 +582,9 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char * seg
 		//save the solution
 		if (number_time_step % seg_parms.mod == 0) {
 			strcpy_s(name, sizeof name, segmentPath);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", number_time_step);
 			strcat_s(name, sizeof(name), name_ending);
-			store2dRawData(imageData.imageDataPtr, height, width, name, flags);
+			store2dRawData(segmentationPtr, height, width, name, flags);
 		}
 
 	} while (number_time_step <= seg_parms.maxNoOfTimeSteps && error_segmentation > seg_parms.segTolerance);
