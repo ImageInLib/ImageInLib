@@ -31,8 +31,10 @@ bool generate2DCurve(Point2D* pCurve, const size_t curvePointsCount, const Point
 {
 	switch (method)
 	{
-	case CIRCLE_CURVE:
+	case CIRCLE_2D_CURVE:
 		return generateCircleCurve(pCurve, curvePointsCount,pInitialPoints, initialPointsCount, pointsDistance);
+	case LINE_2D_CURVE:
+		return generateStraightLineCurve(pCurve, curvePointsCount, pInitialPoints, initialPointsCount, pointsDistance);
 	default:
 		return false;
 	}
@@ -42,8 +44,10 @@ size_t getNumberOfExpected2DCurvePoints(const Point2D* pInitialPoints, const siz
 {
 	switch (method)
 	{
-	case CIRCLE_CURVE:
+	case CIRCLE_2D_CURVE:
 		return howManyPointsForCircleCurve(pInitialPoints, initialPointsCount, pointsDistance);
+	case LINE_2D_CURVE:
+		return howManyPointsForStraightLineCurve(pInitialPoints, initialPointsCount, pointsDistance);
 	default:
 		return 0;
 	}
