@@ -34,6 +34,11 @@ extern "C" {
 // MACROs
 //==============================================================================
 // STRUCTs
+// Common 2D Points - {x,y}
+	typedef struct {
+		dataType x, y;
+	} Point2D;
+
 // Common 3D Points - {x,y,z}
 	typedef struct {
 		dataType x, y, z;
@@ -143,7 +148,8 @@ extern "C" {
 	void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth);
 	//==============================================================================
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
-
+	//==============================================================================
+	double getPoint2DDistance(const Point2D a, const Point2D b);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

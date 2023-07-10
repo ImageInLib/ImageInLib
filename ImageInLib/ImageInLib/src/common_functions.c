@@ -1,5 +1,6 @@
 #include <memory.h>
 #include "common_functions.h"
+#include <math.h>
 
 //==============================================================================
 // Local Function Prototype
@@ -281,4 +282,9 @@ void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidt
 		toReflectImage[x] = toReflectImage[x - 1];
 	}
 
+}
+//==============================================================================
+double getPoint2DDistance(const Point2D a, const Point2D b)
+{
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
