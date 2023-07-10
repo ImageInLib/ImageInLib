@@ -2,6 +2,7 @@
 * Author: Markjoe Olunna UBA
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
 * Language:  C
+* Update : Konan ALLALY (OTSU Threshold and Threshold according range)
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -137,7 +138,8 @@ bool thresholdingOTSU(dataType** image3DPtr, const size_t xDim, const size_t yDi
 	//Compute histogram
 	size_t totalClass = (size_t)(max_data - min_data + 1);
 	size_t* histogram = (size_t*)malloc(totalClass * sizeof(size_t));
-	for (i = 0; i < totalClass; i++) histogram[i] = 0;
+	for (i = 0; i < totalClass; i++) 
+		histogram[i] = 0;
 	for (k = 0; k < zDim; k++) {
 		for (i = 0; i < xDim; i++) {
 			for (j = 0; j < yDim; j++) {

@@ -10,6 +10,7 @@ extern "C" {
 	{
 		SUBSURF_MODEL = 1,
 		GSUBSURF_MODEL,
+		LABELING,
 		GSUBSURF_ATLAS_MODEL
 	} SegmentationMethod;
 

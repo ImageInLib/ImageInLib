@@ -1,3 +1,8 @@
+/*
+* Author: Konan ALLALY
+* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
+* Language:  C/C++
+*/
 #include <iostream>
 #include <climits>
 #include <crtdbg.h>
@@ -653,6 +658,7 @@ bool regionGrowing(dataType** imageDataPtr, dataType** segmentedImage, bool** st
 	return true;
 }
 
+/*
 bool new_labelling2D(dataType* imageDataPtr, dataType* segmentedImage, const size_t xDim, const size_t yDim, int object) {
 
 	if (imageDataPtr == NULL || segmentedImage == NULL)
@@ -826,3 +832,4 @@ bool new_labelling2D(dataType* imageDataPtr, dataType* segmentedImage, const siz
 	delete[] statusArray;
 	return true;
 }
+*/

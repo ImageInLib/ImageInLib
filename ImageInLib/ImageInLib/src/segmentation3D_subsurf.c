@@ -137,7 +137,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	Storage_Flags flags = {false,false};
 
 	strcpy_s(name, sizeof name, outputPathPtr);
-	sprintf_s(name_ending, sizeof(name_ending), "_edgeFunction.raw");
+	sprintf_s(name_ending, sizeof(name_ending), "_edgeEast.raw");
 	strcat_s(name, sizeof(name), name_ending);
 	store3dDataArrayD(GPtrs.GePtr, length, width, height, name, flags);
 
@@ -159,7 +159,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 		//Compute the L2 norm of the difference between the current and previous solutions
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length, width, height, segParameters.h);
 
-		printf("mass is %e\n", difference_btw_current_and_previous_sol);
+		//printf("mass is %e\n", difference_btw_current_and_previous_sol);
 		//printf("segTolerance is %e\n", segParameters.segTolerance);
 		//printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
@@ -170,11 +170,12 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
 			strcat_s(name, sizeof(name), name_ending);
 			store3dDataArrayD(imageData.segmentationFuntionPtr, length, width, height, name, flags);
+			printf("Step is %zd\n", segParameters.numberOfTimeStep);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
 
-	printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
+	//printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
 
 	for (i = 0; i < height; i++)
 	{
@@ -315,9 +316,9 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 			}
 		}
 	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
-	printf("The number of iterations is %zd\n", z);
+	//printf("The number of iterations is %zd\n", z);
 	//printf("Residuum is %e\n", mean_square_residue);
-	printf("Step is %zd\n", segParameters.numberOfTimeStep);
+	//printf("Step is %zd\n", segParameters.numberOfTimeStep);
 
 	//Copy the current time step to original data array after timeStepsNum
 	//copy gauss_seidelPtr ---> inputImageData.segmentationFunctionPtr
@@ -455,7 +456,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 	Point3D *centers, dataType v, dataType R, size_t no_of_centers)
 {
 	size_t i, j, k, s;//loop counter for z dimension
-	dataType dx, dy, dz, norm_of_distance, new_value;
+	dataType dx, dy, dz, norm_of_distance, new_value, value_outside = 0.0;
 	//checks if the memory was allocated
 	if (inputDataArrayPtr == NULL)
 		return false;
@@ -476,19 +477,29 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 					size_t x_n = x_new(i, j, length);
 					// Set Value
 					norm_of_distance = (dataType)sqrt((dx * dx) + (dy * dy) + (dz * dz));
+					//new_value = (dataType)((1.0 / (norm_of_distance + v)));
 					new_value = (dataType)((1.0 / (sqrt((dx * dx) + (dy * dy) + (dz * dz)) + v)) - (1. / (R + v)));
+					value_outside = (dataType)((1.0 / (R + v)));
 					if (s == 0)
 					{
-						if (norm_of_distance > R)
-							inputDataArrayPtr[k][x_n] = 0;
-						else
+						if (norm_of_distance > R) {
+							inputDataArrayPtr[k][x_n] = 0; //value_outside;
+						}	
+						else {
 							inputDataArrayPtr[k][x_n] = new_value;
+						}
+						//inputDataArrayPtr[k][x_n] = new_value;
 					}
 					else
 					{
-						if (norm_of_distance <= R)
-							if (inputDataArrayPtr[k][x_n] < new_value)
+						if (norm_of_distance <= R) {
+							if (inputDataArrayPtr[k][x_n] < new_value) {
 								inputDataArrayPtr[k][x_n] = new_value;
+							}
+							/*else {
+								inputDataArrayPtr[k][x_n] = value_outside;
+							}*/
+						}
 					}
 				}
 			}
@@ -546,8 +557,8 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	//heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
-	heatImplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	//heatImplicitScheme(presmoothingData, explicit_lhe_Parameters);
 	//geodesicMeanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
 	//meanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
 

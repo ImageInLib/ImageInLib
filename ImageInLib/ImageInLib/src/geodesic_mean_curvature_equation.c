@@ -169,6 +169,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters 
 	reflection3D(gauss_seidelPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
+	//heatExplicitScheme(presmoothingData, filterParameters);
 	heatExplicitScheme(presmoothingData, filterParameters);
 
 	//calculation of coefficients

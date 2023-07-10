@@ -483,6 +483,8 @@
     </ClInclude>
     <ClInclude Include="include\generate_2d_curves.h">
       <Filter>Header Files\Shape Generation</Filter>
+    <ClInclude Include="include\segmentation2d.h">
+      <Filter>Header Files\Segmentation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

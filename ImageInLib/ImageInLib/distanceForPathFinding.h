@@ -1,6 +1,11 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
+/*
+* Author: Konan ALLALY
+* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
+* * Language:  C and C++
+*/
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 #pragma once
 
@@ -102,6 +107,6 @@ using namespace std;
 
 	//================================================================
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
