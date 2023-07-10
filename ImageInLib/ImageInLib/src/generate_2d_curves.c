@@ -10,7 +10,7 @@ bool generateCircleCurve(Point2D* pCurve, const size_t circlePointsCount, const 
 
     const double radius = getPoint2DDistance(pInitialPoints[0], pInitialPoints[1]);
 
-    double anlgleStep = M_PI / (double)circlePointsCount;
+    double anlgleStep = 2 * M_PI / (double)circlePointsCount;
     Point2D center = pInitialPoints[0];
 
     for (size_t i = 0; i < circlePointsCount; i++)
