@@ -30,6 +30,9 @@ bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t wid
         case STORE_2D_DATA_PGM:
             status = store2dPGM(imageDataPtr, width, height, pathPtr, dType == BINARY_DATA);
             break;
+        case STORE_2D_DATA_CSV:
+            status = store2dCSV(imageDataPtr, width, height, pathPtr);
+            break;
         default:
             break;
     }

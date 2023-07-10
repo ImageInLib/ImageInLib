@@ -14,7 +14,8 @@ extern "C" {
 //		STORE_DATA_VTK,
 		STORE_DATA_RAW,
 		LOAD_2D_DATA_PGM,
-		STORE_2D_DATA_PGM
+		STORE_2D_DATA_PGM,
+		STORE_2D_DATA_CSV
 	} OperationType;
 
 	bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
