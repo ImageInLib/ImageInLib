@@ -156,7 +156,7 @@ inline bool load2dArrayRAW(T* imageDataPtr, const size_t length, const size_t wi
 			revertBytesEx(&imageDataPtr[i], dataSize, swapBuf);
 		}
 	}
-
+	
 	free(swapBuf);
 
 	fclose(file);
