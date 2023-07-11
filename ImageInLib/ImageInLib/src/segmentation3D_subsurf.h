@@ -36,6 +36,10 @@ extern "C" {
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
 
+		dataType** pInitialCondition;	//initial segmentation function
+		Point3D* pCenters;				//centers for initial segmentation
+		size_t no_of_centers;			//numer of centers
+
 		//gsubsurf parameters
 		dataType coef_conv;
 		dataType coef_dif;
