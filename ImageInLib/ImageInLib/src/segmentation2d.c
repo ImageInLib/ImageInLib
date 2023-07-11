@@ -1,8 +1,3 @@
-/*
-* Author : Konan Allaly
-* Purpose : Updates for the INFLANET Project
-*/
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h> 
