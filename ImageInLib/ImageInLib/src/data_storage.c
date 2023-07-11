@@ -370,3 +370,40 @@ bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, c
 	fclose(pgmimg);
 	return true;
 }
+
+//==================================
+bool store2dRawData(dataType* array2DPtr, const size_t xDim, const size_t yDim, const char * pathPtr, Storage_Flags flags) {
+
+	size_t i;
+
+	//checks if the memory was allocated
+	if (array2DPtr == NULL)
+		return false;
+
+	FILE* cfPtr;
+
+	if (flags.appendToFile == true) {
+		//writing binary data to file
+		if ((fopen_s(&cfPtr, pathPtr, "ab")) != 0)
+			return false;
+	}
+	else
+	{
+		//writing binary data to file
+		if ((fopen_s(&cfPtr, pathPtr, "wb")) != 0)
+			return false;
+	}
+
+	if (flags.revertDataBytes == true) {
+		for (i = 0; i < xDim * yDim; i++) {
+			dataType tmp = array2DPtr[i];
+			revertBytes(&tmp, sizeof(dataType));
+			fwrite(&tmp, sizeof(dataType), 1, cfPtr);
+		}
+	}
+	else {
+		fwrite(array2DPtr, sizeof(dataType), xDim * yDim, cfPtr);
+	}
+
+	return true;
+}

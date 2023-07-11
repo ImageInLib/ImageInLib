@@ -39,6 +39,8 @@ extern "C" {
 	bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData);
 
 	bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	bool store2dRawData(dataType* array2DPtr, const size_t xDim, const size_t yDim, const char* pathPtr, Storage_Flags flags);
 #ifdef __cplusplus
 }
 #endif

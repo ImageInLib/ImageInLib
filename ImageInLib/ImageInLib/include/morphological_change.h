@@ -17,9 +17,6 @@ extern "C" {
 
 	bool dilatation3dHeighteenNeigbours(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType object, dataType background);
 
-	bool imageGradient(dataType** imageDataPtr, const char* pathSavePtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType h);
-
-	bool edgesDetector(dataType** imageDataPtr, const char* pathSavePtr, const size_t xDim, const size_t yDim, const size_t zDim, Filter_Parameters smoothParameters);
 #ifdef __cplusplus
 }
 #endif

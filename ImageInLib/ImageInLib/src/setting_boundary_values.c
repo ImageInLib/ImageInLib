@@ -9,6 +9,8 @@
 #include "setting_boundary_values.h"
 #include "common_functions.h"
 
+// 3D functions
+
 bool setBoundaryExactValues3D(dataType **inputDataArrayPtr, size_t length, size_t width, size_t height, dataType sphereRadius, dataType t, dataType h)
 {
 	size_t i, j, k;//loop counter for z dimension

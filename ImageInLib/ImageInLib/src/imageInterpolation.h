@@ -7,6 +7,7 @@ extern "C" {
 #include "common_functions.h"
 #include "transformation.h"
 
+
 	bool nearestNeighborInterpolation(dataType ** originalImage, dataType ** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
 		                  dataType originalSpacing, dataType newSpacing);
 

@@ -11,20 +11,20 @@ extern "C" {
 #include <stdbool.h>
 #include "common_functions.h"
 
-	bool additive3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim,
-		const size_t zDim, dataType C);
+	bool additive3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType C);
+
 	bool additive2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, dataType C, bool flag);
 
-	bool saltAndPepper3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim,
-		const size_t zDim, dataType K);
+	bool saltAndPepper3dNoise_UC(unsigned char ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType K);
+
 	bool saltAndPepper2dNoise_UC(unsigned char * array2DPtr, const size_t xDim, const size_t yDim, dataType K, bool flag);
 
 	bool additive3dNoise_D(dataType** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, int C, dataType fgMin, dataType bgMax);
 
 	bool additive2dNoise_D(dataType * array2DPtr, const size_t xDim, const size_t yDim, dataType C, bool flag);
 
-	bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
-		const size_t zDim, dataType density, const dataType pepper);
+	bool saltAndPepper3dNoise_D(dataType ** array3DPtr, const size_t xDim, const size_t yDim, const size_t zDim, dataType density, const dataType pepper);
+
 	bool saltAndPepper2dNoise_D(dataType* array2DPtr, const size_t xDim, const size_t yDim, dataType density, const dataType pepper);
 
 	/*
