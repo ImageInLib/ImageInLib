@@ -671,3 +671,4 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	return true;
 }
+
