@@ -11,7 +11,8 @@ extern "C" {
 		SOLID_SPHERE = 2,
 		SPHERE_WITH_HOLES = 3,
 		CUBOID = 4,
-		CIRCLE_CURVE = 5
+		CIRCLE_2D_CURVE = 5,
+		LINE_2D_CURVE = 6
 	} ShapeType;
 
 	void generateShape(dataType **inputDataPtr, unsigned char *outputDataPtr, Point3D center, Point3D blockCorner, dataType *fillBlockDimension,

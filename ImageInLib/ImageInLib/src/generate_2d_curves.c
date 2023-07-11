@@ -16,8 +16,8 @@ bool generateCircleCurve(Point2D* pCurve, const size_t circlePointsCount, const 
     for (size_t i = 0; i < circlePointsCount; i++)
     {
         double phi = anlgleStep * (double)i;
-        pCurve[i].x = center.x + radius * cos(phi);
-        pCurve[i].y = center.y + radius * sin(phi);
+        pCurve[i].x = (dataType)(center.x + radius * cos(phi));
+        pCurve[i].y = (dataType)(center.y + radius * sin(phi));
     }
 
     return true;
@@ -43,4 +43,41 @@ double getCirclePerimeter(const double radius)
     }
 
     return 2 * M_PI * radius;
+}
+
+bool generateStraightLineCurve(Point2D* pCurve, const size_t linePointsCount, const Point2D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance)
+{
+    if (howManyPointsForStraightLineCurve(pInitialPoints, initialPointsCount, pointsDistance) != linePointsCount)
+    {
+        return false;
+    }
+
+    const double length = getPoint2DDistance(pInitialPoints[0], pInitialPoints[1]);
+
+    double lineStep = length / (double)(linePointsCount - 1);
+    Point2D firstPoint = pInitialPoints[0];
+    Point2D lastPoint = pInitialPoints[1];
+
+    Point2D tangentVector = { (dataType)((lastPoint.x - firstPoint.x)/ length), (dataType)((lastPoint.y - firstPoint.y)/ length) };
+
+
+    for (size_t i = 0; i < linePointsCount; i++)
+    {
+        double parameter = lineStep * (double)i;
+        pCurve[i].x = (dataType)(firstPoint.x + parameter * tangentVector.x);
+        pCurve[i].y = (dataType)(firstPoint.y + parameter * tangentVector.y);
+    }
+
+    return true;
+}
+
+size_t howManyPointsForStraightLineCurve(const Point2D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance)
+{
+    if (initialPointsCount != 2)
+    {
+        return 0;
+    }
+
+    const double length = getPoint2DDistance(pInitialPoints[0], pInitialPoints[1]);
+    return (size_t)((length / pointsDistance) + 1.5);
 }
