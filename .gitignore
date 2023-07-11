@@ -287,4 +287,3 @@ __pycache__/
 
 *.vtk
 /ImageInLib/ImageInLib/output/segmentation
-/ImageInLib/ImageInLib/ImageInLib.vcxproj
