@@ -30,6 +30,7 @@
     <ClCompile Include="src\fast_sweeping_method.c" />
     <ClCompile Include="src\file.c" />
     <ClCompile Include="src\filtering.c" />
+    <ClCompile Include="src\generate_2d_curves.c" />
     <ClCompile Include="src\generate_3d_shapes.c" />
     <ClCompile Include="src\geodesic_mean_curvature_equation.c" />
     <ClCompile Include="src\heat_equation.c" />
@@ -69,11 +70,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="distanceForPathFinding.h" />
+    <ClInclude Include="include\common_functions.h" />
     <ClInclude Include="include\common_math.h" />
     <ClInclude Include="include\common_vtk.h" />
     <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
     <ClInclude Include="include\filtering.h" />
+    <ClInclude Include="include\generate_2d_curves.h" />
     <ClInclude Include="include\Labelling.h" />
     <ClInclude Include="include\morphological_change.h" />
     <ClInclude Include="include\noiseGeneration.h" />
@@ -83,7 +86,6 @@
     <ClInclude Include="include\statistics.h" />
     <ClInclude Include="include\template_functions.h" />
     <ClInclude Include="include\transformation.h" />
-    <ClInclude Include="src\common_functions.h" />
     <ClInclude Include="src\data_initialization.h" />
     <ClInclude Include="src\data_load.h" />
     <ClInclude Include="src\data_storage.h" />

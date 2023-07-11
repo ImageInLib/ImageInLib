@@ -320,6 +320,9 @@
     <ClCompile Include="distanceForPathFinding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\generate_2d_curves.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -412,9 +415,6 @@
     <ClInclude Include="src\linked_list.h">
       <Filter>Header Files\Data Structures</Filter>
     </ClInclude>
-    <ClInclude Include="src\common_functions.h">
-      <Filter>Header Files\Common</Filter>
-    </ClInclude>
     <ClInclude Include="src\edgedetection.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
@@ -477,6 +477,12 @@
     </ClInclude>
     <ClInclude Include="distanceForPathFinding.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_functions.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\generate_2d_curves.h">
+      <Filter>Header Files\Shape Generation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

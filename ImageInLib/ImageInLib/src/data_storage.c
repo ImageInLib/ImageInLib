@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "data_storage.h"
 #include "endianity_bl.h"
+#include <stdlib.h>
 
 //function for storage of data to 3D array.
 //xDim is the x dimension, yDim is the y dimension and zDim is the z dimension
@@ -292,3 +293,80 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 	return true;
 }
 
+//==================================
+//function for storage of data in 2D PGM. Used format is defined by a flag writeRawData (true = raw, false = ascii).
+bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData)
+{
+	FILE* pgmimg;
+	pgmimg = fopen(pathPtr, "w");
+
+	if (writeRawData) //pgm format
+	{
+		fprintf(pgmimg, "P5\n");
+	}
+	else
+	{
+		fprintf(pgmimg, "P2\n");
+	}
+
+	// Writing Width and Height
+	fprintf(pgmimg, "%zu %zu\n", xDim, yDim);
+
+	// Writing the maximum gray value
+	fprintf(pgmimg, "255\n");
+
+	if (writeRawData)
+	{
+		const int dataSize = (int)(xDim * yDim);
+		unsigned char * rawData = (unsigned char *)malloc(dataSize);
+		
+		for (size_t i = 0; i < xDim; i++) {
+			for (size_t j = 0; j < yDim; j++) {
+				const size_t index = x_new(j, i, yDim);
+				rawData[index] = (unsigned char)imageDataPtr[i][j];
+			}
+		}
+
+		fwrite(rawData, sizeof(unsigned char), dataSize, pgmimg);
+		free(rawData);
+	}
+	else
+	{
+		for (size_t i = 0; i < xDim; i++) {
+			for (size_t j = 0; j < yDim; j++) {
+				// Writing the gray values in the 2D array to the file
+				fprintf(pgmimg, "%d \n", (unsigned char)imageDataPtr[i][j]);
+			}
+		}
+	}
+
+	fclose(pgmimg);
+	return true;
+}
+
+//==================================
+//function for storing of 2D data in CSV.
+bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	FILE* pgmimg;
+	pgmimg = fopen(pathPtr, "w");
+
+    for (size_t i = 0; i < xDim; i++) {
+        for (size_t j = 0; j < yDim; j++) {
+            // Writing the gray values in the 2D array to the file
+            fprintf(pgmimg, "%f", imageDataPtr[i][j]);
+
+			if (j == yDim - 1)
+			{
+				fprintf(pgmimg, "\n");
+			}
+			else
+			{
+				fprintf(pgmimg, ",");
+			}
+        }
+    }
+
+	fclose(pgmimg);
+	return true;
+}
