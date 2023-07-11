@@ -20,10 +20,6 @@ extern "C" {
 
 	bool regionGrowing(dataType** imageDataPtr, dataType** segmentedImage, bool** statusArray, const size_t xDim, const size_t yDim, const size_t zDim, dataType thres_min, dataType thres_max, Point3D* seedPoint);
 
-	/*
-	bool new_labelling2D(dataType* imageDataPtr, dataType* segmentedImage, const size_t xDim, const size_t yDim, int object);
-	*/
-
 #ifdef __cplusplus
 }
 #endif
