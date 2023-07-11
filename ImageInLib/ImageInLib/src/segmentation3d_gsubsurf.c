@@ -1,8 +1,3 @@
-/*
-* Author: Konan ALLALY
-* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
-* Language:  C
-*/
 #include <stdio.h> // Standard lib for input and output functions
 #include <stdlib.h>
 #include <time.h>
@@ -135,7 +130,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	VPtrs.GbPtr = VbPtr;
 
 	//generate initial segmentation function
-	//generateInitialSegmentationFunction(segmFuntionPtr, length, width, height, centers, 0.5, 15, no_of_centers);
 	copyDataToAnotherArray(segFunct, segmFuntionPtr, height, length, width);
 
 	copyDataToExtendedArea(segmFuntionPtr, gauss_seidelPtr, height, length, width);
@@ -145,45 +139,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 
 	//compute coefficients from presmoothed image
 	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, explicit_lhe_Parameters, coef_conv);
-
-	//dataType** potential = (dataType**)malloc(sizeof(dataType*) * height);
-	//for (k = 0; k < height; k++) {
-	//	potential[k] = (dataType*)malloc(sizeof(dataType) * length * width);
-	//}
-	//size_t iSeed = (size_t)centers->x, jSeed = (size_t)centers->y, kSeed = (size_t)centers->z;
-	//dataType seedValue = inputImageData.imageDataPtr[kSeed][x_new(iSeed, jSeed, length)];
-	//for (k = 0; k < height; k++) {
-	//	for (i = 0; i < length; i++) {
-	//		for (j = 0; j < width; j++) {
-	//			xd = x_new(i, j, length);
-	//			potential[k][xd] = (dataType)(fabs(seedValue - inputImageData.imageDataPtr[k][xd]));
-	//		}
-	//	}
-	//}
-	//dataType maxPotential = -1 * INFINITY;
-	//for (k = 0; k < height; k++) {
-	//	for (i = 0; i < length; i++) {
-	//		for (j = 0; j < width; j++) {
-	//			xd = x_new(i, j, length);
-	//			if (potential[k][xd] > maxPotential) {
-	//				maxPotential = potential[k][xd];
-	//			}
-	//		}
-	//	}
-	//}
-	//for (k = 0; k < height; k++) {
-	//	for (i = 0; i < length; i++) {
-	//		for (j = 0; j < width; j++) {
-	//			xd = x_new(i, j, length);
-	//			edgeGradientPtr[k][xd] = (dataType)(0.01 + (potential[k][xd] / maxPotential) * (1.0 / edgeGradientPtr[k][xd]));
-	//		}
-	//	}
-	//}
-	//rescaleNewRange(edgeGradientPtr, length, width, height, 0.0, 1.0);
-	//for (k = 0; k < height; k++) {
-	//	free(potential[k]);
-	//}
-	//free(potential);
 
 	//Array for name construction
 	unsigned char  name[500];
@@ -204,7 +159,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	do
 	{
 		segParameters.numberOfTimeStep = i;
-		//firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 		setBoundaryToZeroDirichletBC(gauss_seidelPtr, length_ext, width_ext, height_ext);
 		setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
@@ -215,14 +169,8 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		// Call to function that will evolve segmentation function in each discrete time step
 		generalizedSubsurfSegmentationTimeStep(prevSol_extPtr, gauss_seidelPtr, imageData, segParameters, CoefPtrs, centers, no_of_centers);
 
-		//secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-
 		//Compute the L2 norm of the difference between the current and previous solutions
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length_ext, width_ext, height_ext, h);
-
-		//printf("mass is %e\n", difference_btw_current_and_previous_sol);
-		//printf("segTolerance is %e\n", segParameters.segTolerance);
-		//printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
 		copyDataToAnotherArray(gauss_seidelPtr, prevSol_extPtr, height_ext, length_ext, width_ext);
 
@@ -240,10 +188,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
-
-	//secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	//printf("GSUBSURF CPU time: %e secs\n", secondCpuTime - firstCpuTime);
-	//printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
 
 	for (i = 0; i < height; i++)
 	{
@@ -721,5 +665,3 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	return true;
 }
-
-// // Functions for 2D Images

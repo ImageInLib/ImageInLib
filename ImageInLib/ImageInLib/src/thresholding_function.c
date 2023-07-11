@@ -2,7 +2,6 @@
 * Author: Markjoe Olunna UBA
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
 * Language:  C
-* Update : Konan ALLALY (OTSU Threshold and Threshold according range)
 */
 #include <stdio.h>
 #include <stdlib.h>
