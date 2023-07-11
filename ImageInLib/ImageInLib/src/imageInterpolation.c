@@ -148,7 +148,7 @@ bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPat
 
         dataType diffZ1 = abs(k_real - k);
         dataType diffZ2 = abs(k_real - (k + 1));
-        if (diffZ1 > diffZ2) {
+        if (diffZ1 < diffZ2) {
             k_int = k;
         }
         else {
@@ -160,7 +160,7 @@ bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPat
             i_real = i * imageSrc.toRealCoordinates.sx;
             dataType diffX1 = abs(i_real - i);
             dataType diffX2 = abs(i_real - (i + 1));
-            if (diffX1 > diffX2) {
+            if (diffX1 < diffX2) {
                 i_int = i;
             }
             else {
@@ -172,7 +172,7 @@ bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPat
                 j_real = j * imageSrc.toRealCoordinates.sy;
                 dataType diffY1 = abs(j_real - j);
                 dataType diffY2 = abs(j_real - (j + 1));
-                if (diffY1 > diffY2) {
+                if (diffY1 < diffY2) {
                     j_int = j;
                 }
                 else {
