@@ -311,20 +311,23 @@
     <ClCompile Include="src\morphological_change.c">
       <Filter>Source Files\morphology</Filter>
     </ClCompile>
-    <ClCompile Include="src\imageInterpolation.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\segmentation3d_gsubsurf.c">
       <Filter>Source Files\Segmentation</Filter>
-    </ClCompile>
-    <ClCompile Include="distanceForPathFinding.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\generate_2d_curves.c">
       <Filter>Source Files\Shape Generation</Filter>
     </ClCompile>
     <ClCompile Include="src\segmentation2D_lagrangean.c">
       <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation2d.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="distanceForPathFinding.cpp">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imageInterpolation.c">
+      <Filter>Source Files\Transformation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -472,14 +475,8 @@
     <ClInclude Include="include\morphological_change.h">
       <Filter>Header Files\morphology</Filter>
     </ClInclude>
-    <ClInclude Include="src\imageInterpolation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\segmentation3d_gsubsurf.h">
       <Filter>Header Files\Segmentation</Filter>
-    </ClInclude>
-    <ClInclude Include="distanceForPathFinding.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\common_functions.h">
       <Filter>Header Files\Common</Filter>
@@ -489,6 +486,15 @@
     </ClInclude>
     <ClInclude Include="include\segmentation2D_lagrangean.h">
       <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\segmentation2d.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="distanceForPathFinding.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imageInterpolation.h">
+      <Filter>Header Files\Transformation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

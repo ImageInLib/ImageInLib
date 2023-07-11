@@ -53,6 +53,7 @@
     <ClCompile Include="src\registration.c" />
     <ClCompile Include="src\rouy_tourin_function.c" />
     <ClCompile Include="src\segmentation.c" />
+    <ClCompile Include="src\segmentation2d.c" />
     <ClCompile Include="src\segmentation2D_lagrangean.c" />
     <ClCompile Include="src\segmentation3D_atlas.c" />
     <ClCompile Include="src\segmentation3D_common.c" />
@@ -83,6 +84,7 @@
     <ClInclude Include="include\noiseGeneration.h" />
     <ClInclude Include="include\registration.h" />
     <ClInclude Include="include\segmentation.h" />
+    <ClInclude Include="include\segmentation2d.h" />
     <ClInclude Include="include\segmentation2D_lagrangean.h" />
     <ClInclude Include="include\shapeGeneration.h" />
     <ClInclude Include="include\statistics.h" />

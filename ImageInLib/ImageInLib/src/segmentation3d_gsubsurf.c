@@ -25,10 +25,12 @@
 
 // Local Function Prototype
 
+// Functions for 3D Images
+
 bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
-	size_t i, j, k;
+	size_t i, j, k, xd;
 	size_t height = inputImageData.height, length = inputImageData.length, width = inputImageData.width;
 	size_t dim2D = length * width;
 	size_t height_ext = height + 2;
@@ -128,7 +130,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	VPtrs.GbPtr = VbPtr;
 
 	//generate initial segmentation function
-	//generateInitialSegmentationFunction(segmFuntionPtr, length, width, height, centers, 0.5, 15, no_of_centers);
 	copyDataToAnotherArray(segFunct, segmFuntionPtr, height, length, width);
 
 	copyDataToExtendedArea(segmFuntionPtr, gauss_seidelPtr, height, length, width);
@@ -150,8 +151,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	store3dDataArrayD(edgeGradientPtr, length, width, height, name, flags);
 
 	Storage_Flags storageFlags = { false, false };
-	manageFile(edgeGradientPtr, length, width, height, name,
-		STORE_DATA_RAW, BINARY_DATA, storageFlags);
+	manageFile(edgeGradientPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
 
 	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
@@ -159,7 +159,6 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	do
 	{
 		segParameters.numberOfTimeStep = i;
-		//firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 
 		setBoundaryToZeroDirichletBC(gauss_seidelPtr, length_ext, width_ext, height_ext);
 		setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
@@ -170,14 +169,8 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		// Call to function that will evolve segmentation function in each discrete time step
 		generalizedSubsurfSegmentationTimeStep(prevSol_extPtr, gauss_seidelPtr, imageData, segParameters, CoefPtrs, centers, no_of_centers);
 
-		//secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-
 		//Compute the L2 norm of the difference between the current and previous solutions
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length_ext, width_ext, height_ext, h);
-
-		//printf("mass is %e\n", difference_btw_current_and_previous_sol);
-		//printf("segTolerance is %e\n", segParameters.segTolerance);
-		//printf("CPU time: %e secs\n", secondCpuTime - firstCpuTime);
 
 		copyDataToAnotherArray(gauss_seidelPtr, prevSol_extPtr, height_ext, length_ext, width_ext);
 
@@ -190,13 +183,11 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 
 			Storage_Flags storageFlags = { false, false };
 			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
+			printf("Step is %zd\n", segParameters.numberOfTimeStep);
+			printf("Error = %lf\n", difference_btw_current_and_previous_sol);
 		}
 		i++;
 	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
-
-	secondCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
-	printf("GSUBSURF CPU time: %e secs\n", secondCpuTime - firstCpuTime);
-	//printf("finish: Segmentation tolerance is %lf\n", segParameters.segTolerance);
 
 	for (i = 0; i < height; i++)
 	{
@@ -671,4 +662,3 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 
 	return true;
 }
-
