@@ -7,53 +7,42 @@ extern "C" {
 #include "common_functions.h"
 #include "transformation.h"
 
-	typedef struct {
-		dataType sx, sy, sz;
-	} Spacing;
-
-	typedef struct {
-		Point3D origin;
-		size_t height, width, length;
-		dataType** dataPtr;
-		Spacing toRealCoordinates;
-	} patientImageData;
-
 	//Interpolation regarding z-Direction
 	bool nearestNeighborInterpolation(dataType ** originalImage, dataType ** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
 		                  dataType originalSpacing, dataType newSpacing);
 
 	bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
 						  dataType originalSpacing, dataType newSpacing);
-	//====================
 
 	bool downSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
 
 	bool upSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
 
-	//Interpolation in all directions
-	bool interpolateToRealDimension(patientImageData imageSrc, const char * outputPathPtr);
+	//=========================
 
-	//Change coordinate system
-	bool imageCoordToRealCoord(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
-
-	bool IJKtoRAS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
-
-	bool IJKtoLPS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
-
-	//2D images for test
-
+	//Structure to handle image spacing
 	typedef struct {
-		dataType sx, sy;
-	} Spacing2D;
+		dataType sx, sy, sz;
+	} Spacing3D;
 
+	//Structure to handle image coordinates
+	//We need new structure because coordinates are array indexes (integer type is needed)
 	typedef struct {
-		Point2D origin;
-		size_t height, width;
-		dataType* dataPtr;
-		Spacing2D toRealCoordinates;
-	} patientImageData2D;
+		size_t x, y, z;
+	} imgPoint3D;
 
-	bool interpolateToRealDimension2D(patientImageData2D imageSrc, Spacing2D newSpacing, const char* outputPathPtr);
+	/*
+	* Get real world cordinate from image coordinate
+	* srcPoint : contains the voxel indexes
+	* realOrigin : image origin in real world
+	* imageSpacing : - distance between voxels in x and y direction
+	*                - distance between slices
+	* orientation : IJK(1,1,1), RAS(-1,-1,1) or LPS(1,-1,-1)
+	*/
+	Point3D imageCoordToRealCoord(imgPoint3D srcPoint, Point3D realOrigin, Spacing3D imageSpacing, Point3D orientation);
+
+	//Get image coordinate from real coordinate
+	imgPoint3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, Spacing3D imageSpacing, Point3D orientation);
 
 #ifdef __cplusplus
 }
