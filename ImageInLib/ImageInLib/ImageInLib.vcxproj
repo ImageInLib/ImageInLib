@@ -78,14 +78,12 @@
     <ClInclude Include="include\distanceMaps.h" />
     <ClInclude Include="include\file.h" />
     <ClInclude Include="include\filtering.h" />
-    <ClInclude Include="include\generate_2d_curves.h" />
     <ClInclude Include="include\Labelling.h" />
     <ClInclude Include="include\morphological_change.h" />
     <ClInclude Include="include\noiseGeneration.h" />
     <ClInclude Include="include\registration.h" />
     <ClInclude Include="include\segmentation.h" />
     <ClInclude Include="include\segmentation2d.h" />
-    <ClInclude Include="include\segmentation2D_lagrangean.h" />
     <ClInclude Include="include\shapeGeneration.h" />
     <ClInclude Include="include\statistics.h" />
     <ClInclude Include="include\template_functions.h" />
@@ -98,6 +96,7 @@
     <ClInclude Include="src\endianity_bl.h" />
     <ClInclude Include="src\fast_marching.h" />
     <ClInclude Include="src\filter_params.h" />
+    <ClInclude Include="src\generate_2d_curves.h" />
     <ClInclude Include="src\generate_3d_shapes.h" />
     <ClInclude Include="src\heat_equation.h" />
     <ClInclude Include="src\imageInterpolation.h" />
@@ -112,6 +111,7 @@
     <ClInclude Include="src\printing_function.h" />
     <ClInclude Include="src\procrustrates_dist.h" />
     <ClInclude Include="src\registration_params.h" />
+    <ClInclude Include="src\segmentation2D_lagrangean.h" />
     <ClInclude Include="src\segmentation3D_atlas.h" />
     <ClInclude Include="src\segmentation3D_common.h" />
     <ClInclude Include="src\segmentation3d_gsubsurf.h" />
@@ -174,7 +174,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\external_libs\vtk\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external_libs\vtk\include;include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -194,7 +194,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\external_libs\vtk\include;include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external_libs\vtk\include;include;src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>

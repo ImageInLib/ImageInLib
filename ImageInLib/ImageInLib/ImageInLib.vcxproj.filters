@@ -481,12 +481,6 @@
     <ClInclude Include="include\common_functions.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="include\generate_2d_curves.h">
-      <Filter>Header Files\Shape Generation</Filter>
-    </ClInclude>
-    <ClInclude Include="include\segmentation2D_lagrangean.h">
-      <Filter>Header Files\Segmentation</Filter>
-    </ClInclude>
     <ClInclude Include="include\segmentation2d.h">
       <Filter>Header Files\Segmentation</Filter>
     </ClInclude>
@@ -495,6 +489,12 @@
     </ClInclude>
     <ClInclude Include="src\imageInterpolation.h">
       <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation2D_lagrangean.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\generate_2d_curves.h">
+      <Filter>Header Files\Shape Generation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
