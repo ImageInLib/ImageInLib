@@ -33,6 +33,28 @@ extern "C" {
 	//Interpolation in all directions
 	bool interpolateToRealDimension(patientImageData imageSrc, const char * outputPathPtr);
 
+	//Change coordinate system
+	bool imageCoordToRealCoord(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
+
+	bool IJKtoRAS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
+
+	bool IJKtoLPS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint);
+
+	//2D images for test
+
+	typedef struct {
+		dataType sx, sy;
+	} Spacing2D;
+
+	typedef struct {
+		Point2D origin;
+		size_t height, width;
+		dataType* dataPtr;
+		Spacing2D toRealCoordinates;
+	} patientImageData2D;
+
+	bool interpolateToRealDimension2D(patientImageData2D imageSrc, Spacing2D newSpacing, const char* outputPathPtr);
+
 #ifdef __cplusplus
 }
 

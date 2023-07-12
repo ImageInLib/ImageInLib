@@ -121,6 +121,8 @@ bool upSampling(dataType** originalImage, dataType** newImage, size_t length, si
     return true;
 }
 
+/*
+// !!!!!!!!!! Not done : To be fixed !!!!!!!!!!!!!!!!!
 bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPathPtr) {
     
     if (imageSrc.dataPtr == NULL)
@@ -145,7 +147,6 @@ bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPat
     for (k = 0; k < height; k++) {
 
         k_real = k * imageSrc.toRealCoordinates.sz;
-
         dataType diffZ1 = abs(k_real - k);
         dataType diffZ2 = abs(k_real - (k + 1));
         if (diffZ1 < diffZ2) {
@@ -190,6 +191,104 @@ bool interpolateToRealDimension(patientImageData imageSrc, const char* outputPat
     for (k = 0; k < real_height; k++) {
         free(destImage[k]);
     }
+    free(destImage);
+
+    return true;
+}
+*/
+
+bool imageCoordToRealCoord(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint) {
+    destPoint.x = srcPoint.x * imageSpacing.sx;
+    destPoint.y = srcPoint.y * imageSpacing.sy;
+    destPoint.z = srcPoint.z * imageSpacing.sz;
+}
+
+bool IJKtoRAS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint) {
+
+    destPoint.x = -srcPoint.x + imageSpacing.sx;
+    destPoint.y = -srcPoint.y + imageSpacing.sy;
+    destPoint.z = srcPoint.z + imageSpacing.sz;
+
+    return true;
+}
+
+bool IJKtoLPS(Point3D srcPoint, Spacing imageSpacing, Point3D destPoint) {
+
+    destPoint.x = srcPoint.x + imageSpacing.sx;
+    destPoint.y = -srcPoint.y + imageSpacing.sy;
+    destPoint.z = -srcPoint.z + imageSpacing.sz;
+
+    return true;
+}
+
+//2D images for test
+
+bool interpolateToRealDimension2D(patientImageData2D imageSrc, Spacing2D newSpacing, const char* outputPathPtr) {
+
+    size_t i, j;
+
+    size_t height = imageSrc.height, width = imageSrc.width;
+    size_t height_new = (size_t)(height * imageSrc.toRealCoordinates.sx / newSpacing.sx);
+    size_t width_new = (size_t)(width * imageSrc.toRealCoordinates.sy / newSpacing.sy);
+
+    dataType* destImage = (dataType*)malloc(sizeof(dataType) * height_new * width_new);
+    if (destImage == NULL)
+        return false;
+
+    //Interpolation in x direction
+    dataType i1, i2, i_int = 0;
+    size_t i_new = 0;
+    for (i = 0; i < height - 1; i++) {
+        i1 = imageSrc.toRealCoordinates.sx * i;
+        i2 = imageSrc.toRealCoordinates.sx * (i + 1);
+        do {
+            for (j = 0; j < width; j++) {
+                if (i_int == 0) {
+                    destImage[x_new(i_new, j, height_new)] = imageSrc.dataPtr[x_new(i, j, height)];
+                }
+                else {
+                    if ((i_int - i1) < (i2 - i_int)) {
+                        destImage[x_new(i_new, j, height_new)] = imageSrc.dataPtr[x_new(i, j, height)];
+                    }
+                    else {
+                        destImage[x_new(i_new, j, height_new)] = imageSrc.dataPtr[x_new(i + 1, j, height)];
+                    }
+                }
+            }
+            i_int = i_int + newSpacing.sx;
+            i_new = i_new + 1;
+        } while (i_int < i);
+    }
+
+    //Interpolation in y direction
+    dataType j1, j2, j_int = 0;
+    size_t j_new = 0;
+    for (j = 0; j < width - 1; j++) {
+        j1 = imageSrc.toRealCoordinates.sy * j;
+        j2 = imageSrc.toRealCoordinates.sy * (j + 1);
+        do {
+            for (i = 0; i < height; i++) {
+                if (j_int == 0) {
+                    destImage[x_new(i, j_new, height_new)] = imageSrc.dataPtr[x_new(i, j, height)];
+                }
+                else {
+                    if ((j_int - j1) < (j2 - j_int)) {
+                        destImage[x_new(i, j_new, height_new)] = imageSrc.dataPtr[x_new(i, j, height)];
+                    }
+                    else {
+                        destImage[x_new(i, j_new, height_new)] = imageSrc.dataPtr[x_new(i, j + 1, height)];
+                    }
+                }
+            }
+            j_int = j_int + newSpacing.sy;
+            j_new = j_new + 1;
+        } while (j_int < j);
+    }
+
+    printf("The dimensions of new image are \n Heigth = %zd, Width = %zd", height_new, width_new);
+    Storage_Flags flags = { false, false };
+    store2dRawData(destImage, height_new, width_new, outputPathPtr, flags);
+
     free(destImage);
 
     return true;
