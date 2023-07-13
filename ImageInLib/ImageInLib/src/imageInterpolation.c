@@ -145,3 +145,86 @@ imgPoint3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, Spacing3D
     resultPoint.z = (dataType)((srcPoint.z - realOrigin.z) / (orientation.z * imageSpacing.sz));
     return resultPoint;
 }
+
+bool resizeImage(dataType* oldImage, dataType* newImage) {
+
+    if (oldImage == NULL || newImage == NULL)
+        return false;
+
+    const size_t height_old = 512, width_old = 512;
+    const size_t height_new = 600, width_new = 600;
+
+    size_t i, j;
+    dataType i_new, j_new;
+
+    size_t i_int, j_int;
+
+    size_t i_floor, i_ceil;
+    size_t j_floor, j_ceil;
+
+    //Compute scale factor
+    dataType sx = height_old / height_new;
+    dataType sy = width_old / width_new;
+
+    dataType val = 0.0;
+
+    //Map back to original coordinates
+    for (i = 0; i < height_new; i++) {
+        for (j = 0; j < width_new; j++) {
+
+            i_new = i * sx;
+            j_new = j * sy;
+
+            i_floor = floor(i_new); 
+            if (ceil(i_new) < height_old - 1) {
+                i_ceil = ceil(i_new);
+            }
+            else {
+                i_ceil = height_old - 1;
+            }
+
+            j_floor = floor(j_new);
+            if (ceil(j_new) < width_old - 1) {
+                j_ceil = ceil(j_new);
+            }
+            else {
+                j_ceil = width_old - 1;
+            }
+
+            i_int = (size_t)i_new;
+            j_int = (size_t)j_new;
+
+            if (i_floor == i_ceil && j_floor == j_ceil) {
+                val = oldImage[x_new(i_int, j_int, height_old)];
+            }
+            else {
+                if (i_floor == i_ceil) {
+                    dataType val1 = oldImage[x_new(i_int, j_floor, height_old)];
+                    dataType val2 = oldImage[x_new(i_int, j_ceil, height_old)];
+                    val = val1 * (j_ceil - j) + val2 * (j - j_floor);
+                }
+                else {
+                    if (j_floor == j_ceil) {
+                        dataType val1 = oldImage[x_new(i_floor, j_int, height_old)];
+                        dataType val2 = oldImage[x_new(i_ceil, j_int, height_old)];
+                        val = val1 * (i_ceil - i) + val2 * (i - i_floor);
+                    }
+                    else {
+                        dataType val1 = oldImage[x_new(i_floor, j_floor, height_old)];
+                        dataType val2 = oldImage[x_new(i_ceil, j_floor, height_old)];
+                        dataType val3 = oldImage[x_new(i_floor, j_ceil, height_old)];
+                        dataType val4 = oldImage[x_new(i_ceil, j_ceil, height_old)];
+                        
+                        dataType val11 = val1 * (i_ceil - i) + val2 * (i - i_floor);
+                        dataType val12 = val3 * (i_ceil - i) + val4 * (i - i_floor);
+                        
+                        val = val11 * (j_ceil - j) + val12 * (j - j_floor);
+                    }
+                }
+            }
+            newImage[x_new(i, j, height_new)] = val;
+        }
+    }
+
+    return true;
+}

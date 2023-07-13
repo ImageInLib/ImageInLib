@@ -3,6 +3,7 @@ extern "C" {
 #endif
 
 #pragma once
+#include <stdio.h>
 #include <stdbool.h>
 #include "common_functions.h"
 #include "transformation.h"
@@ -43,6 +44,8 @@ extern "C" {
 
 	//Get image coordinate from real coordinate
 	imgPoint3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, Spacing3D imageSpacing, Point3D orientation);
+
+	bool resizeImage(dataType* oldImage, dataType* newImage);
 
 #ifdef __cplusplus
 }
