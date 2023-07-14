@@ -134,7 +134,7 @@ Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D imageOrigin, VoxelSpacin
 }
 
 
-//Get image coordinate from real coordinate
+//Get 3D point in image coordinates system from 3D point in real coordinate system
 //TO DO : find manually the matrix inverse in order to write the final function 
 Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
     Point3D resultPoint;
@@ -222,28 +222,28 @@ bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
 
                 dataType minDist = 100000000;
 
-                //Top left neigh
+                //Top left neighbor
                 dataType distTL = sqrt(pow(i - i_floor, 2) + pow(j - j_floor, 2));
                 if (distTL < minDist) {
                     minDist = distTL;
                     val = oldImage.imageDataPtr[x_new(i_floor, j_floor, height_old)];
                 }
 
-                //Top right neigh
+                //Top right neighbor
                 dataType distTR = sqrt(pow(i - i_ceil, 2) + pow(j - j_floor, 2));
                 if (distTR < minDist) {
                     minDist = distTR;
                     val = oldImage.imageDataPtr[x_new(i_ceil, j_floor, height_old)];
                 }
 
-                //Bottom Left neigh
+                //Bottom Left neighbor
                 dataType distBL = sqrt(pow(i - i_floor, 2) + pow(j - j_ceil, 2));
                 if (distBL < minDist) {
                     minDist = distBL;
                     val = oldImage.imageDataPtr[x_new(i_floor, j_ceil, height_old)];
                 }
 
-                //Bottom Right neigh
+                //Bottom Right neighbor
                 dataType distBR = sqrt(pow(i - i_ceil, 2) + pow(j - j_ceil, 2));
                 if (distBR < minDist) {
                     minDist = distBR;

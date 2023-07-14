@@ -65,6 +65,24 @@ extern "C" {
 	typedef struct {
 		size_t xd, p;
 	}Random2dPoints;
+
+	//==============================================================================
+	// Structures for interpolation
+	
+	//Structure to handle image spacing
+	typedef struct {
+		dataType sx, sy, sz;
+	} VoxelSpacing;
+
+	//Matrix for rotation
+	typedef struct {
+		Point3D v1, v2, v3;
+	}OrientationMatrix;
+
+	typedef struct {
+		dataType sx, sy;
+	} PixelSpacing;
+
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
