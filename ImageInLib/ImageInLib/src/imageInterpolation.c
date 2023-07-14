@@ -122,15 +122,10 @@ bool upSampling(dataType** originalImage, dataType** newImage, size_t length, si
 }
 
 /*
- * Get real world cordinate from image coordinate
- * srcPoint : contains the voxel indexes
- * realOrigin : image origin in real world
- * imageSpacing : - distance between voxels in x and y direction
- *                - distance between slices
- * orientation : IJK((1, 0, 0),(0,1,0),(0,0,1)), RAS((-1,0,0),(0,-1,0),(0,0,1))
- * or LPS((0,0,1),(0,-1,0),(0,0,-))
+ * Get 3D point in real world from 3D image point
+ * Three operations are done here : image scaling, image translation and image rotation
 */
-Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D imageOrigin, voxelSpacing imageSpacing, orientationMatrix orientation) {
+Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D imageOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
     Point3D resultPoint;
     resultPoint.x = imageOrigin.x + imageSpacing.sx * (orientation.v1.x + orientation.v1.y + orientation.v1.z) * srcPoint.x;
     resultPoint.y = imageOrigin.y + imageSpacing.sy * (orientation.v2.x + orientation.v2.y + orientation.v2.z) * srcPoint.y;
@@ -138,17 +133,18 @@ Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D imageOrigin, voxelSpacin
     return resultPoint;
 }
 
-/*
+
 //Get image coordinate from real coordinate
-Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, voxelSpacing3D imageSpacing, orientationMatrix orientation) {
+//TO DO : find manually the matrix inverse in order to write the final function 
+Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
     Point3D resultPoint;
-    //resultPoint.x = ((srcPoint.x - realOrigin.x) / (orientation.x * imageSpacing.sx));
-    //resultPoint.y = ((srcPoint.y - realOrigin.y) / (orientation.y * imageSpacing.sy));
-    //resultPoint.z = ((srcPoint.z - realOrigin.z) / (orientation.z * imageSpacing.sz));
+
     return resultPoint;
 }
-*/
 
+/*
+* This function perform 2d nearest neighbor interpolation (expansion or shrinking)
+*/
 bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
 
     if (oldImage.imageDataPtr == NULL || newImage.imageDataPtr == NULL)
@@ -175,9 +171,11 @@ bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
     for (i = 0; i < height_new; i++) {
         for (j = 0; j < width_new; j++) {
 
+            //Compute correponding point to current pixel in old image
             i_new = i * sx;
             j_new = j * sy;
 
+            //find neighbors
             i_floor = floor(i_new);
             if (ceil(i_new) <= height_old - 1) {
                 i_ceil = ceil(i_new);
@@ -197,6 +195,7 @@ bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
             i_int = (int)i_new;
             j_int = (int)j_new;
 
+            //find the closest neighbor
             if ((i_floor == i_ceil) && (j_floor == j_ceil)) {
                 val = oldImage.imageDataPtr[x_new(i_int, j_int, height_old)];
             }
@@ -252,6 +251,7 @@ bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
                 }
             }
             newImage.imageDataPtr[x_new(i, j, height_new)] = val;
+
         }
     }
 
