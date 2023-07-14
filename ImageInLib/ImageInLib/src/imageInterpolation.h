@@ -24,30 +24,33 @@ extern "C" {
 	//Structure to handle image spacing
 	typedef struct {
 		dataType sx, sy, sz;
-	} voxelSpacing;
+	} VoxelSpacing;
 
 	typedef struct {
 		Point3D v1, v2, v3;
-	}orientationMatrix;
+	}OrientationMatrix;
 
 	/*
-	* Get real world cordinate from image coordinate
-	* srcPoint : contains the voxel indexes
-	* realOrigin : image origin in real world
-	* imageSpacing : - distance between voxels in x and y direction
-	*                - distance between slices
-	* orientation : IJK((1, 0, 0),(0,1,0),(0,0,1)), RAS((-1,0,0),(0,-1,0),(0,0,1))
+	* srcPoint : source 3d points in image coordinates system
+	* ImageOrigin : image origin in real world (ranslation)
+	* VoxelSpacing : - distance between voxels in x and y direction
+	*                - distance between slices (scaling)
+	* orientation : matrix for orientation/rotation IJK((1, 0, 0),(0,1,0),(0,0,1)), RAS((-1,0,0),(0,-1,0),(0,0,1))
 	* or LPS((0,0,1),(0,-1,0),(0,0,-))
 	*/
-	Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D realOrigin, voxelSpacing imageSpacing, orientationMatrix orientation);
+	Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation);
 
 	//Get image coordinate from real coordinate
 	//Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, voxelSpacing3D imageSpacing, orientationMatrix orientation);
 
 	typedef struct {
 		dataType sx, sy;
-	} pixelSpacing;
+	} PixelSpacing;
 
+	/*
+	* oldImage to handle the input image (height, width and pointer for pixel value)
+	* newImage to handle the result image (height, width and pointer for pixel value)
+	*/
 	bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage);
 
 #ifdef __cplusplus
