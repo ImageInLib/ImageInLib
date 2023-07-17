@@ -16,7 +16,7 @@ extern "C" {
 		GEODESIC_MEAN_CURVATURE_FILTER = 6
 	} FilterMethod;
 
-	void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const FilterMethod method);
+	void filterImage(Image_Data inputImageData, FilterParameters filterParameters, const FilterMethod method);
 
 #ifdef __cplusplus
 }
