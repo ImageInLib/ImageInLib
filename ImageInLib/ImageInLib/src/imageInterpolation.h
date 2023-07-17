@@ -62,6 +62,36 @@ extern "C" {
 	Point2D getImageCoordFromRealCoord2D(Point2D srcPoint, Point2D imageOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation);
 
 	/*
+	* This function find the four neighbors of given point
+	* PointNeighbors2D findPointNeighbors(Point2D point, size_t Xmax, size_t Ymax)
+	* point : the given point
+	* Xmax : maximum in x direction (height)
+	* Ymax : maximum in y direction (width)
+	*/
+	PointNeighbors2D findPointNeighbors(Point2D point, const size_t Xmax, const size_t Ymax);
+
+	/*
+	* This functions check if two given points are similar
+	* point1 and point2 are points to be tested
+	*/
+	bool ArePointsTheSame(Point2D point1, Point2D point2);
+
+	/*
+	* This function compute 2D euclidian distance between two given points
+	* point1 and point2 are given points
+	*/
+	dataType getDistance2D(Point2D point1, Point2D point2);
+
+	/*
+	* This function return the nearest neighbor of given point
+	* Point2D findNearestNeighbor2d(Point2D point, const size_t Xmax, const size_t Ymax)
+	* point : the given point
+	* Xmax : maximum in x direction (height)
+	* Ymax : maximum in y direction (width)
+	*/
+	Point2D findNearestNeighbor2d(Point2D point, const size_t Xmax, const size_t Ymax);
+
+	/*
 	* This function perform image interpolation from image coordinates system to real world coordinate system
 	* resizeImageFromImageCoordToRealCoord(Image_Data2D src_image, Image_Data2D dest_image, OrientationMatrix2D orientation)
 	* Image_Data2D src_image : structure to handle image in "IMAGE Cordinates System"
