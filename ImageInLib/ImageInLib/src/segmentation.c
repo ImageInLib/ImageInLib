@@ -14,7 +14,7 @@ void segmentImage(Image_Data inputImageData, void * pSegParameters, void * pfilt
         case SUBSURF_MODEL:
         {
             Segmentation_Parameters* pSegmentationParams = (Segmentation_Parameters*)(pSegParameters);
-            Filter_Parameters* explicitLheParameters = (Filter_Parameters*)(pfilterParameters);
+            FilterParameters* explicitLheParameters = (FilterParameters*)(pfilterParameters);
             subsurfSegmentation(inputImageData, pSegmentationParams->pInitialCondition, *pSegmentationParams, *explicitLheParameters, 
                 pSegmentationParams->pCenters, pSegmentationParams->no_of_centers, outputPathPtr);
             break;
@@ -22,7 +22,7 @@ void segmentImage(Image_Data inputImageData, void * pSegParameters, void * pfilt
         case GSUBSURF_MODEL:
         {
             Segmentation_Parameters* pSegmentationParams = (Segmentation_Parameters*)pSegParameters;
-            Filter_Parameters* explicitLheParameters = (Filter_Parameters*)(pfilterParameters);
+            FilterParameters* explicitLheParameters = (FilterParameters*)(pfilterParameters);
             generalizedSubsurfSegmentation(inputImageData, pSegmentationParams->pInitialCondition, *pSegmentationParams, *explicitLheParameters, 
                 pSegmentationParams->pCenters, pSegmentationParams->no_of_centers, outputPathPtr);
         }
@@ -35,7 +35,7 @@ void segmentImage(Image_Data inputImageData, void * pSegParameters, void * pfilt
 	}
 }
 
-void segment2dImage(Image_Data2D inputImageData, dataType* initialSegment, Segmentation_Parameters segParameters, Filter_Parameters filteringParameters,
+void segment2dImage(Image_Data2D inputImageData, dataType* initialSegment, Segmentation_Parameters segParameters, FilterParameters filteringParameters,
 	point2d* centers, const char* outputPathPtr, const SegmentationMethod model) 
 {
 	switch (model) 

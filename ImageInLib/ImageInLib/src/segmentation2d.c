@@ -171,7 +171,7 @@ bool epsilonRegularization(neighPtrs neighbours, const size_t height, const size
 	return true;
 }
 
-bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const FilterParameters smooth_parms, Segmentation_Parameters seg_parms)
 {
 	size_t i, j, i_ext, j_ext;
 	size_t height = imageData.height, width = imageData.width;
@@ -367,7 +367,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segme
 	return true;
 }
 
-bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const Filter_Parameters smooth_parms, Segmentation_Parameters seg_parms)
+bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segmentPath, const FilterParameters smooth_parms, Segmentation_Parameters seg_parms)
 {
 	size_t i, j, i_ext, j_ext;
 	const size_t height = imageData.height, width = imageData.width;

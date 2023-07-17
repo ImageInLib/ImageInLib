@@ -4,7 +4,7 @@
 #include "filter_params.h"
 #include "common_functions.h"
 
-void filterImage(Image_Data inputImageData, Filter_Parameters filterParameters, const FilterMethod method)
+void filterImage(Image_Data inputImageData, FilterParameters filterParameters, const FilterMethod method)
 {
 	switch (method)
 	{
