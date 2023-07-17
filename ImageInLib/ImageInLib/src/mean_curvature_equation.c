@@ -15,7 +15,7 @@
 
 // Local Function Prototype
 
-bool meanCurvatureTimeStep(Image_Data inputImageData, Filter_Parameters filterParameters)
+bool meanCurvatureTimeStep(Image_Data inputImageData, FilterParameters filterParameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL)

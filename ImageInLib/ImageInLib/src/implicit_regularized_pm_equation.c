@@ -8,7 +8,7 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatImplicitScheme(Image_Data inputImageData, Filter_Parameters implicitParameters)
+bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters implicitParameters)
 {
 	size_t k, i, j;
 	dataType hhh = implicitParameters.h * implicitParameters.h * implicitParameters.h;

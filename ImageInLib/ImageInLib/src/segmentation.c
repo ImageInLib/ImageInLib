@@ -5,7 +5,7 @@
 #include "segmentation3d_gsubsurf.h"
 #include "../include/segmentation2d.h"
 
-void segmentImage(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+void segmentImage(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
 	Point3D* centers, size_t no_of_centers, unsigned char* outputPathPtr, const SegmentationMethod model)
 {
 	switch (model)
@@ -20,7 +20,7 @@ void segmentImage(Image_Data inputImageData, dataType** initialSegment, Segmenta
 	}
 }
 
-void segment2dImage(Image_Data2D inputImageData, dataType* initialSegment, Segmentation_Parameters segParameters, Filter_Parameters filteringParameters,
+void segment2dImage(Image_Data2D inputImageData, dataType* initialSegment, Segmentation_Parameters segParameters, FilterParameters filteringParameters,
 	point2d* centers, const char* outputPathPtr, const SegmentationMethod model) 
 {
 	switch (model) 

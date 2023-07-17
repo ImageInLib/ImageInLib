@@ -8,7 +8,7 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
+bool nonLinearHeatExplicitScheme(Image_Data inputImageData, FilterParameters explicitParameters)
 {
 	size_t k, i, j;
 	dataType hhh = explicitParameters.h * explicitParameters.h * explicitParameters.h;
