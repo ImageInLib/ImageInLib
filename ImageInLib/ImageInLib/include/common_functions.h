@@ -51,12 +51,6 @@ extern "C" {
 		dataType** imageDataPtr; // Image Data Containers
 	} Image_Data;
 
-	typedef struct {
-		// Image Dimensions
-		size_t height, width; // Absolute Dimension
-		dataType* imageDataPtr; // Image Data Containers
-	} Image_Data2D;
-
 	// Generate Random Points
 	typedef struct {
 		size_t k, xd, p;
@@ -88,10 +82,12 @@ extern "C" {
 	} PixelSpacing;
 
 	typedef struct {
-		Image_Data2D image;
-		Point2D origin;
-		PixelSpacing spacing;
-	} ImageData2dInterp;
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+		Point2D origin; // image origin
+		PixelSpacing spacing; // pixel size
+	} Image_Data2D;
 
 	//==============================================================================
 	// Shapes Container
