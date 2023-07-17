@@ -127,18 +127,30 @@ bool upSampling(dataType** originalImage, dataType** newImage, size_t length, si
 */
 Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D imageOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
     Point3D resultPoint;
-    resultPoint.x = imageOrigin.x + imageSpacing.sx * (orientation.v1.x + orientation.v1.y + orientation.v1.z) * srcPoint.x;
-    resultPoint.y = imageOrigin.y + imageSpacing.sy * (orientation.v2.x + orientation.v2.y + orientation.v2.z) * srcPoint.y;
-    resultPoint.z = imageOrigin.z + imageSpacing.sz * (orientation.v3.x + orientation.v3.y + orientation.v3.z) * srcPoint.z;
+    resultPoint.x = imageOrigin.x + imageSpacing.sx * orientation.v1.x * srcPoint.x;
+    resultPoint.y = imageOrigin.y + imageSpacing.sy * orientation.v2.y * srcPoint.y;
+    resultPoint.z = imageOrigin.z + imageSpacing.sz * orientation.v3.z * srcPoint.z;
     return resultPoint;
 }
 
-
-//Get 3D point in image coordinates system from 3D point in real coordinate system
-//TO DO : find manually the matrix inverse in order to write the final function 
-Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
+/*
+* Get 3D point in image coordinates system from 3D point in real coordinate system
+* Three operations are done here : image scaling, image translation and image rotation
+*/
+Point3D realCoordToImageCoord(Point3D srcPoint, Point3D imageOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation) {
     Point3D resultPoint;
+    resultPoint.x = (srcPoint.x - imageOrigin.x) / imageSpacing.sx * orientation.v1.x;
+    resultPoint.y = (srcPoint.y - imageOrigin.y) / imageSpacing.sy * orientation.v2.y;
+    resultPoint.z = (srcPoint.z - imageOrigin.z) / imageSpacing.sz * orientation.v3.z;
+    return resultPoint;
+}
 
+/*
+* Find 2D nearest neighbor
+*/
+Point2D find2dNearestNeighbor(Point2D pixelSrcImage, Point2D pixelOutputImage) {
+    Point2D resultPoint;
+    //TO DO 
     return resultPoint;
 }
 
@@ -256,4 +268,255 @@ bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
     }
 
     return true;
+}
+
+// ===================================================================
+
+Point2D getRealCoordFromImageCoord2D(Point2D srcPoint, Point2D realOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation) {
+    Point2D resultPoint;
+    resultPoint.x = realOrigin.x + imageSpacing.sx * orientation.v1.x * srcPoint.x;
+    resultPoint.y = realOrigin.y + imageSpacing.sy * orientation.v2.y * srcPoint.y;
+    return resultPoint;
+}
+
+Point2D getImageCoordFromRealCoord2D(Point2D srcPoint, Point2D imageOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation) {
+    Point2D resultPoint;
+    resultPoint.x = (srcPoint.x - imageOrigin.x) / imageSpacing.sx * orientation.v1.x;
+    resultPoint.y = (srcPoint.y - imageOrigin.y) / imageSpacing.sy * orientation.v2.y;
+    return resultPoint;
+}
+
+/*
+* This function perform image interpolation from image coordinates system to real world coordinate system
+*/
+bool resizeImageFromImageCoordToRealCoord(ImageData2dInterp oldImage, ImageData2dInterp newImage) {
+    
+    if (oldImage.image.imageDataPtr == NULL || newImage.image.imageDataPtr == NULL)
+        return false;
+
+    const size_t height_old = oldImage.image.height, width_old = oldImage.image.width;
+    const size_t height_new = newImage.image.height, width_new = newImage.image.width;
+
+    int i, j, i_int, j_int;
+    Point2D initialPoint, currentPoint;
+    OrientationMatrix2D orientation = { {1,0},{0,1} };
+
+    int i_floor, i_ceil, j_floor, j_ceil;
+
+    dataType val = 0.0;
+
+    for (i = 0; i < height_new; i++) {
+        for (j = 0; j < width_new; j++) {
+
+            currentPoint.x = i; // automatic data type casting
+            currentPoint.y = j;
+
+            initialPoint = getImageCoordFromRealCoord2D(currentPoint, oldImage.origin, oldImage.spacing, orientation);
+
+            i_floor = floor(initialPoint.x);
+            if (ceil(initialPoint.x) <= height_old - 1) {
+                i_ceil = ceil(initialPoint.x);
+            }
+            else {
+                i_ceil = height_old - 1;
+            }
+
+            j_floor = floor(initialPoint.y);
+            if (ceil(initialPoint.y) <= width_old - 1) {
+                j_ceil = ceil(initialPoint.y);
+            }
+            else {
+                j_ceil = width_old - 1;
+            }
+
+            i_int = (int)initialPoint.x;
+            j_int = (int)initialPoint.y;
+
+            //find the closest neighbor
+            if ((i_floor == i_ceil) && (j_floor == j_ceil)) {
+                val = oldImage.image.imageDataPtr[x_new(i_int, j_int, height_old)];
+            }
+            if ((i_floor == i_ceil) && (j_floor != j_ceil)) {
+
+                if (abs(i - i_ceil) > abs(i - i_floor)) {
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_int, height_old)];
+                }
+                else {
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_int, height_old)];
+                }
+
+            }
+            if (i_floor != i_ceil && (j_floor == j_ceil)) {
+
+                if (abs(j - j_ceil) > abs(j - j_floor)) {
+                    val = oldImage.image.imageDataPtr[x_new(i_int, j_floor, height_old)];
+                }
+                else {
+                    val = oldImage.image.imageDataPtr[x_new(i_int, j_floor, height_old)];
+                }
+            }
+            if (i_floor != i_ceil && (j_floor != j_ceil)) {
+
+                dataType minDist = 100000000;
+
+                //Top left neighbor
+                dataType distTL = sqrt(pow(i - i_floor, 2) + pow(j - j_floor, 2));
+                if (distTL < minDist) {
+                    minDist = distTL;
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_floor, height_old)];
+                }
+
+                //Top right neighbor
+                dataType distTR = sqrt(pow(i - i_ceil, 2) + pow(j - j_floor, 2));
+                if (distTR < minDist) {
+                    minDist = distTR;
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_floor, height_old)];
+                }
+
+                //Bottom Left neighbor
+                dataType distBL = sqrt(pow(i - i_floor, 2) + pow(j - j_ceil, 2));
+                if (distBL < minDist) {
+                    minDist = distBL;
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_ceil, height_old)];
+                }
+
+                //Bottom Right neighbor
+                dataType distBR = sqrt(pow(i - i_ceil, 2) + pow(j - j_ceil, 2));
+                if (distBR < minDist) {
+                    minDist = distBR;
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_ceil, height_old)];
+                }
+            }
+            newImage.image.imageDataPtr[x_new(i, j, height_new)] = val;
+        }
+    }
+
+    return true;
+}
+
+/*
+* This function perform image interpolation from real world coordinates system image coordinate system
+*/
+bool resizeImageFromRealCoordToImageCoord(ImageData2dInterp oldImage, ImageData2dInterp newImage) {
+
+    if (oldImage.image.imageDataPtr == NULL || newImage.image.imageDataPtr == NULL)
+        return false;
+
+    const size_t height_old = oldImage.image.height, width_old = oldImage.image.width;
+    const size_t height_new = newImage.image.height, width_new = newImage.image.width;
+
+    int i, j, i_int, j_int;
+    Point2D initialPoint, currentPoint;
+    OrientationMatrix2D orientation = { {1,0},{0,1} };
+
+    int i_floor, i_ceil, j_floor, j_ceil;
+
+    dataType val = 0.0;
+
+    for (i = 0; i < height_new; i++) {
+        for (j = 0; j < width_new; j++) {
+
+            currentPoint.x = i; // automatic data type casting
+            currentPoint.y = j;
+
+            initialPoint = getRealCoordFromImageCoord2D(currentPoint, oldImage.origin, oldImage.spacing, orientation);
+
+            i_floor = floor(initialPoint.x);
+            if (ceil(initialPoint.x) <= height_old - 1) {
+                i_ceil = ceil(initialPoint.x);
+            }
+            else {
+                i_ceil = height_old - 1;
+            }
+
+            j_floor = floor(initialPoint.y);
+            if (ceil(initialPoint.y) <= width_old - 1) {
+                j_ceil = ceil(initialPoint.y);
+            }
+            else {
+                j_ceil = width_old - 1;
+            }
+
+            i_int = (int)initialPoint.x;
+            j_int = (int)initialPoint.y;
+
+            //find the closest neighbor
+            if ((i_floor == i_ceil) && (j_floor == j_ceil)) {
+                val = oldImage.image.imageDataPtr[x_new(i_int, j_int, height_old)];
+            }
+            if ((i_floor == i_ceil) && (j_floor != j_ceil)) {
+
+                if (abs(i - i_ceil) > abs(i - i_floor)) {
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_int, height_old)];
+                }
+                else {
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_int, height_old)];
+                }
+
+            }
+            if (i_floor != i_ceil && (j_floor == j_ceil)) {
+
+                if (abs(j - j_ceil) > abs(j - j_floor)) {
+                    val = oldImage.image.imageDataPtr[x_new(i_int, j_floor, height_old)];
+                }
+                else {
+                    val = oldImage.image.imageDataPtr[x_new(i_int, j_floor, height_old)];
+                }
+            }
+            if (i_floor != i_ceil && (j_floor != j_ceil)) {
+
+                dataType minDist = 100000000;
+
+                //Top left neighbor
+                dataType distTL = sqrt(pow(i - i_floor, 2) + pow(j - j_floor, 2));
+                if (distTL < minDist) {
+                    minDist = distTL;
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_floor, height_old)];
+                }
+
+                //Top right neighbor
+                dataType distTR = sqrt(pow(i - i_ceil, 2) + pow(j - j_floor, 2));
+                if (distTR < minDist) {
+                    minDist = distTR;
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_floor, height_old)];
+                }
+
+                //Bottom Left neighbor
+                dataType distBL = sqrt(pow(i - i_floor, 2) + pow(j - j_ceil, 2));
+                if (distBL < minDist) {
+                    minDist = distBL;
+                    val = oldImage.image.imageDataPtr[x_new(i_floor, j_ceil, height_old)];
+                }
+
+                //Bottom Right neighbor
+                dataType distBR = sqrt(pow(i - i_ceil, 2) + pow(j - j_ceil, 2));
+                if (distBR < minDist) {
+                    minDist = distBR;
+                    val = oldImage.image.imageDataPtr[x_new(i_ceil, j_ceil, height_old)];
+                }
+            }
+            newImage.image.imageDataPtr[x_new(i, j, height_new)] = val;
+        }
+    }
+
+    return true;
+}
+
+Point2D findNearestNeighbor2d(int iCurrent, int iLeft, int iRight, int jCurrent, int jTop, int jBottom) {
+    Point2D resultPoint;
+
+    if ( (iLeft == iRight) && (jTop == jBottom) ){
+        resultPoint.x = iLeft;
+        resultPoint.y = jTop;
+    }
+    if ((iLeft == iRight) && (jTop != jBottom)) {
+        if (abs(iCurrent - iLeft) <= abs(iCurrent - iRight)) {
+            resultPoint.x = iLeft;
+        }
+        else {
+            resultPoint.x = iRight;
+        }
+    }
+
+    return resultPoint;
 }

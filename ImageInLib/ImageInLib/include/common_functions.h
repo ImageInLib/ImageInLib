@@ -80,8 +80,18 @@ extern "C" {
 	}OrientationMatrix;
 
 	typedef struct {
+		Point2D v1, v2;
+	}OrientationMatrix2D;
+
+	typedef struct {
 		dataType sx, sy;
 	} PixelSpacing;
+
+	typedef struct {
+		Image_Data2D image;
+		Point2D origin;
+		PixelSpacing spacing;
+	} ImageData2dInterp;
 
 	//==============================================================================
 	// Shapes Container
