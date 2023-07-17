@@ -9,7 +9,7 @@
 
 // Functions for 3D images
 
-void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters)
+void heatExplicitScheme(Image_Data toExplicitImage, const FilterParameters explicitParameters)
 {
 	size_t k, i, j;
 	dataType hhh = explicitParameters.h * explicitParameters.h * explicitParameters.h;
@@ -80,9 +80,9 @@ void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters expl
 	free(tempPtr);
 }
 
-void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters)
+void heatImplicitScheme(Image_Data toImplicitImage, const FilterParameters implicitParameters)
 {
-	size_t k, i, j, z, steps = implicitParameters.maxNumberOfSolverIteration, p = implicitParameters.p;
+	size_t k, i, j, z, steps = implicitParameters.maxNumberOfSolverIteration;
 	dataType hhh = implicitParameters.h * implicitParameters.h * implicitParameters.h;
 	dataType coeff = implicitParameters.timeStepSize / hhh;
 
@@ -90,7 +90,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 	// sor - successive over relation value, used in Gauss-Seidel formula
 	dataType error = 0.0, sor = 0.0;
 	// Prepare variables toExplicitImage.height, toExplicitImage.length, toExplicitImage.width
-	// Less the borders because in the loops we add back the border p
+	// Less the borders because in the loops we add back the border "p"
 	size_t height = toImplicitImage.height, length = toImplicitImage.length, width = toImplicitImage.width;
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
@@ -181,7 +181,7 @@ void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters impl
 
 // Functions for 2D images
 
-void heat2dExplicitScheme(Image_Data2D imageData, const Filter_Parameters explicitParameters)
+void heat2dExplicitScheme(Image_Data2D imageData, const FilterParameters explicitParameters)
 {
 	size_t i, j, n, i_ext, j_ext;
 	const size_t height = imageData.height, width = imageData.width;
@@ -214,7 +214,7 @@ void heat2dExplicitScheme(Image_Data2D imageData, const Filter_Parameters explic
 	free(temporaryPtr);
 }
 
-void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implicitParameters)
+void heatImplicit2dScheme(Image_Data2D imageData, const FilterParameters implicitParameters)
 {
 	size_t i, j, n, i_ext, j_ext, currentIndx;
 	const size_t height = imageData.height, width = imageData.width;
@@ -281,3 +281,4 @@ void heatImplicit2dScheme(Image_Data2D imageData, const Filter_Parameters implic
 	free(gauss_seidel_solution);
 
 }
+

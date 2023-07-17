@@ -27,7 +27,7 @@
 
 // Functions for 3D Images
 
-bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
 	size_t i, j, k, xd;
@@ -239,7 +239,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 }
 
 bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** edgeGradientPtr, Gradient_Pointers VPtrs,
-	Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters, dataType coef_conv)
+	Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters, dataType coef_conv)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || edgeGradientPtr == NULL || VPtrs.GePtr == NULL || VPtrs.GwPtr == NULL
