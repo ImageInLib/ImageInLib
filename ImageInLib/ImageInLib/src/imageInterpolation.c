@@ -146,15 +146,6 @@ Point3D realCoordToImageCoord(Point3D srcPoint, Point3D imageOrigin, VoxelSpacin
 }
 
 /*
-* Find 2D nearest neighbor
-*/
-Point2D find2dNearestNeighbor(Point2D pixelSrcImage, Point2D pixelOutputImage) {
-    Point2D resultPoint;
-    //TO DO 
-    return resultPoint;
-}
-
-/*
 * This function perform 2d nearest neighbor interpolation (expansion or shrinking)
 */
 bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage) {
@@ -517,6 +508,5 @@ Point2D findNearestNeighbor2d(int iCurrent, int iLeft, int iRight, int jCurrent,
             resultPoint.x = iRight;
         }
     }
-
     return resultPoint;
 }
