@@ -47,6 +47,37 @@ extern "C" {
 	*/
 	bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage);
 
+	//=====================================================
+
+	/*
+	 * Get 2D point in real world Cordinates System from 2D image Coordinates System
+	 * Three operations are done here : scaling, translation and rotation
+	*/
+	Point2D getRealCoordFromImageCoord2D(Point2D srcPoint, Point2D realOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation);
+
+	/*
+	* Get 2D point in image Coordinates System from 2D point in real Coordinates System
+	* Three operations are done here : scaling, translation and rotation
+	*/
+	Point2D getImageCoordFromRealCoord2D(Point2D srcPoint, Point2D imageOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation);
+
+	/*
+	* This function perform image interpolation from image coordinates system to real world coordinate system
+	* resizeImageFromImageCoordToRealCoord(Image_Data2D src_image, Image_Data2D dest_image, OrientationMatrix2D orientation)
+	* Image_Data2D src_image : structure to handle image in "IMAGE Cordinates System"
+	*                          - height, width : image dimension
+	*                          - imageDataPtr : pointer for pixels value
+	*                          - origin : image origin
+	*                          - spacing : pixel size
+	* Image_Data2D dest_image : structure to handle interpolated image in "Real World Coordinates System"
+	*                          - height, width : interpolated image dimension
+	*                          - imageDataPtr : pointer for interpolated pixels value
+	*                          - origin : interpolated image origin
+	*                          - spacing : interpolated pixel size
+	* OrientationMatrix2D orientation : orientation of the rotation
+	*/
+	bool resizeImageFromImageCoordToRealCoord(Image_Data2D src_image, Image_Data2D dest_image, OrientationMatrix2D orientation);
+
 #ifdef __cplusplus
 }
 
