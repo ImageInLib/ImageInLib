@@ -7,74 +7,61 @@ extern "C" {
 #include <stdbool.h>
 #include "common_functions.h"
 #include "transformation.h"
+#include "interpolations.h"
 
-	//Interpolation regarding z-Direction
-	bool nearestNeighborInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
-		dataType originalSpacing, dataType newSpacing);
-
-	bool linear2dInterpolation(dataType** originalImage, dataType** newImage, size_t imageLength, size_t imageWidth, size_t imageHeight,
-		dataType originalSpacing, dataType newSpacing);
-
-	bool downSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
-
-	bool upSampling(dataType** originalImage, dataType** newImage, size_t length, size_t width, size_t height);
-
-	//=========================
+	//====================
+	//3D Functions
 
 	/*
-	* srcPoint : source 3d points in image coordinates system
-	* ImageOrigin : image origin in real world (ranslation)
-	* VoxelSpacing : - distance between voxels in x and y direction
-	*                - distance between slices (scaling)
+	* Point3D getImageCoordFromRealCoord3D(Point3D src_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation)
+	* src_point : source 3D points in image coordinates system
+	* real_origin : origin in real world
+	* real_spacing : - distance between voxels in x and y direction
+	*                 - distance between slices
 	* orientation : matrix for orientation/rotation IJK((1, 0, 0),(0,1,0),(0,0,1)), RAS((-1,0,0),(0,-1,0),(0,0,1))
-	* or LPS((0,0,1),(0,-1,0),(0,0,-))
+	* or LPS((0,0,1),(0,-1,0),(0,0,-1))
+	* For given point in real world cordinates system the function provide
+	* the corresponding point in image coordinates system
 	*/
-	Point3D imageCoordToRealCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation);
+	Point3D getImageCoordFromRealCoord3D(Point3D src_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation);
 
 	/*
-	* srcPoint : source 3d points in real world coordinates system
-	* ImageOrigin : image origin in image coordinate system
-	* VoxelSpacing : - distance between voxels in x and y direction
-	*                - distance between slices (scaling)
+	* Point3D getRealCoordFomImageCoord3D(Point3D src_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation)
+	* src_point : source 3D points in image coordinates system
+	* real_origin : origin in real world
+	* real_spacing : - distance between voxels in x and y direction
+	*                 - distance between slices
 	* orientation : matrix for orientation/rotation IJK((1, 0, 0),(0,1,0),(0,0,1)), RAS((-1,0,0),(0,-1,0),(0,0,1))
-	* or LPS((0,0,1),(0,-1,0),(0,0,-))
+	* or LPS((0,0,1),(0,-1,0),(0,0,-1))
+	* For given point in image cordinates system the function provide
+	* the corresponding point in real world coordinates system
 	*/
-	Point3D realCoordToImageCoord(Point3D srcPoint, Point3D realOrigin, VoxelSpacing imageSpacing, OrientationMatrix orientation);
-
-	/*
-	* oldImage to handle the input image (height, width and pointer for pixel value)
-	* newImage to handle the result image (height, width and pointer for pixel value)
-	*/
-	bool resizeImage(Image_Data2D oldImage, Image_Data2D newImage);
+	Point3D getRealCoordFomImageCoord3D(Point3D src_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation);
 
 	//=====================================================
+	//2D Functions
 
 	/*
-	 * Get 2D point in real world Cordinates System from 2D image Coordinates System
-	 * Three operations are done here : scaling, translation and rotation
+	* Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation)
+	* src_point : source 2D points in image coordinates system
+	* real_origin : origin in real world
+	* real_spacing : distance between voxels in x and y direction
+	* orientation : matrix for orientation
+	* For given point in real world cordinates system the function provide
+	* the corresponding point in image coordinates system
 	*/
-	Point2D getRealCoordFromImageCoord2D(Point2D srcPoint, Point2D realOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation);
+	Point2D getRealCoordFromImageCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation);
 
 	/*
-	* Get 2D point in image Coordinates System from 2D point in real Coordinates System
-	* Three operations are done here : scaling, translation and rotation
+	* Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation)
+	* src_point : source 2D points in image coordinates system
+	* real_origin : origin in real world
+	* real_spacing : - distance between voxels in x and y direction
+	* orientation : matrix for orientation
+	* For given point in real world cordinates system the function provide
+	* the corresponding point in image coordinates system
 	*/
-	Point2D getImageCoordFromRealCoord2D(Point2D srcPoint, Point2D imageOrigin, PixelSpacing imageSpacing, OrientationMatrix2D orientation);
-
-	/*
-	* This function find the four neighbors of given point
-	* PointNeighbors2D findPointNeighbors(Point2D point, size_t Xmax, size_t Ymax)
-	* point : the given point
-	* Xmax : maximum in x direction (height)
-	* Ymax : maximum in y direction (width)
-	*/
-	PointNeighbors2D findPointNeighbors(Point2D point, const size_t Xmax, const size_t Ymax);
-
-	/*
-	* This functions check if two given points are similar
-	* point1 and point2 are points to be tested
-	*/
-	bool ArePointsTheSame(Point2D point1, Point2D point2);
+	Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D image_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation);
 
 	/*
 	* This function compute 2D euclidian distance between two given points
@@ -83,17 +70,22 @@ extern "C" {
 	dataType getDistance2D(Point2D point1, Point2D point2);
 
 	/*
-	* This function return the nearest neighbor of given point
-	* Point2D findNearestNeighbor2d(Point2D point, const size_t Xmax, const size_t Ymax)
+	* This function get the neighbors of 2D given point
 	* point : the given point
-	* Xmax : maximum in x direction (height)
-	* Ymax : maximum in y direction (width)
+	* spacing : distance between pixels
 	*/
-	Point2D findNearestNeighbor2d(Point2D point, const size_t Xmax, const size_t Ymax);
+	PointNeighbors2D getPointNeighbors2D(Point2D point, PixelSpacing spacing);
+
+	/*
+	* This function return the nearest neighbor of given point
+	* Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing)
+	* point : the given point
+	*/
+	Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing);
 
 	/*
 	* This function perform image interpolation from image coordinates system to real world coordinate system
-	* resizeImageFromImageCoordToRealCoord(Image_Data2D src_image, Image_Data2D dest_image, OrientationMatrix2D orientation)
+	* bool interpolateImageFromImageCSToRealWorldCS(Image_Data2D src_image, Image_Data2D interp_image, dataType scale_factor)
 	* Image_Data2D src_image : structure to handle image in "IMAGE Cordinates System"
 	*                          - height, width : image dimension
 	*                          - imageDataPtr : pointer for pixels value
@@ -104,9 +96,10 @@ extern "C" {
 	*                          - imageDataPtr : pointer for interpolated pixels value
 	*                          - origin : interpolated image origin
 	*                          - spacing : interpolated pixel size
-	* OrientationMatrix2D orientation : orientation of the rotation
+	* dataType scale_factor : the scaling. if 0 < scale_factor < 1 ---> shrink
+	*                                      if 1 < scale_factor < infty ---> magnify
 	*/
-	bool resizeImageFromImageCoordToRealCoord(Image_Data2D src_image, Image_Data2D dest_image, OrientationMatrix2D orientation);
+	bool interpolateImageFromImageCStoRealWorldCS(Image_Data2D src_image, Image_Data2D interp_image, dataType scale_factor);
 
 #ifdef __cplusplus
 }

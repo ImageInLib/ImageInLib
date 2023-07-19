@@ -65,75 +65,6 @@ Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing) {
 
     neighbors = getPointNeighbors2D(point, spacing);
 
-    /*
-    //Case 1 :
-    if (neighbors.top_left.x == neighbors.bottom_right.x && neighbors.top_left.y == neighbors.bottom_right.y) {
-        result_point.x = point.x;
-        result_point.y = point.y;
-    }
-
-    //Case 2 :
-    if (neighbors.top_left.x == neighbors.top_right.x && neighbors.top_left.y != neighbors.bottom_left.y) {
-        if (abs(point.y - neighbors.top_left.y) < abs(point.y - neighbors.bottom_left.y)) {
-            result_point.x = point.x;
-            result_point.y = neighbors.top_left.y;
-        }
-        else {
-            result_point.x = point.x;
-            result_point.y = neighbors.bottom_left.y;
-        }
-    }
-
-    //Case 3 :
-    if (neighbors.top_left.y == neighbors.bottom_left.y && neighbors.top_left.x != neighbors.top_right.x) {
-        if (abs(point.x - neighbors.top_left.x) < abs(point.x - neighbors.top_right.x)) {
-            result_point.x = neighbors.top_left.x;
-            result_point.y = point.y;
-        }
-        else {
-            result_point.x = neighbors.top_right.x;
-            result_point.y = point.y;
-        }
-    }
-
-    //Case 4 :
-    if (neighbors.top_left.x != neighbors.top_right.x && neighbors.top_left.y != neighbors.bottom_left.y) {
-
-        dataType distance[4];
-        distance[0] = getDistance2D(point, neighbors.top_left);
-        distance[1] = getDistance2D(point, neighbors.top_right);
-        distance[2] = getDistance2D(point, neighbors.bottom_left);
-        distance[3] = getDistance2D(point, neighbors.bottom_right);
-
-        dataType min_dist = 1000000000000;
-        int k, min_indice;
-
-        for (k = 0; k < 4; k++) {
-            if (distance[k] < min_dist) {
-                min_dist = distance[k];
-                min_indice = k;
-            }
-        }
-
-        if (min_indice == 0) {
-            result_point.x = neighbors.top_left.x;
-            result_point.y = neighbors.top_left.y;
-        }
-        if (min_indice == 1) {
-            result_point.x = neighbors.top_right.x;
-            result_point.y = neighbors.top_right.y;
-        }
-        if (min_indice == 2) {
-            result_point.x = neighbors.bottom_left.x;
-            result_point.y = neighbors.bottom_left.y;
-        }
-        if (min_indice == 3) {
-            result_point.x = neighbors.bottom_right.x;
-            result_point.y = neighbors.bottom_right.y;
-        }
-    }
-    */
-
     dataType distance[4];
     distance[0] = getDistance2D(point, neighbors.top_left);
     distance[1] = getDistance2D(point, neighbors.top_right);
@@ -151,27 +82,17 @@ Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing) {
     }
 
     if (min_indice == 0) {
-        //result_point.x = neighbors.top_left.x;
-        //result_point.y = neighbors.top_left.y;
         return neighbors.top_left;
     }
     if (min_indice == 1) {
-        //result_point.x = neighbors.top_right.x;
-        //result_point.y = neighbors.top_right.y;
         return neighbors.top_right;
     }
     if (min_indice == 2) {
-        //result_point.x = neighbors.bottom_left.x;
-        //result_point.y = neighbors.bottom_left.y;
         return neighbors.bottom_left;
     }
     if (min_indice == 3) {
-        //result_point.x = neighbors.bottom_right.x;
-        //result_point.y = neighbors.bottom_right.y;
         return neighbors.bottom_right;
     }
-
-    //return result_point;
 }
 
 bool interpolateImageFromImageCStoRealWorldCS(Image_Data2D src_image, Image_Data2D interp_image, dataType scale_factor) {
