@@ -43,31 +43,25 @@ extern "C" {
 
 	/*
 	* Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation)
-	* src_point : source 2D points in image coordinates system
-	* real_origin : origin in real world
-	* real_spacing : distance between voxels in x and y direction
+	* Point2D src_point : source 2D points in image coordinates system
+	* Point2D real_origin : origin in real world coordinates system
+	* PixelSpacing real_spacing : distance between voxels in x and y direction
 	* orientation : matrix for orientation
-	* For given point in real world cordinates system the function provide
-	* the corresponding point in image coordinates system
+	* For given point in image cordinates system, the function provides
+	* the corresponding point in image real world coordinates system
 	*/
 	Point2D getRealCoordFromImageCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation);
 
 	/*
 	* Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation)
-	* src_point : source 2D points in image coordinates system
-	* real_origin : origin in real world
-	* real_spacing : - distance between voxels in x and y direction
-	* orientation : matrix for orientation
-	* For given point in real world cordinates system the function provide
+	* Point2D src_point : source 2D points in image coordinates system
+	* Point2D real_origin : origin in real world coordinates system
+	* PixelSpacing real_spacing : distance between voxels in x and y direction
+	* OrientationMatrix2D orientation : matrix for orientation
+	* For given point in real world cordinates system, the function provides
 	* the corresponding point in image coordinates system
 	*/
 	Point2D getImageCoordFromRealCoord2D(Point2D src_point, Point2D image_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation);
-
-	/*
-	* This function compute 2D euclidian distance between two given points
-	* point1 and point2 are given points
-	*/
-	dataType getDistance2D(Point2D point1, Point2D point2);
 
 	/*
 	* This function get the neighbors of 2D given point

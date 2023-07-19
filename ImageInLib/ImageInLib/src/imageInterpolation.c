@@ -15,9 +15,9 @@ Point3D getImageCoordFromRealCoord3D(Point3D image_point, Point3D image_origin, 
 
 Point3D getRealCoordFomImageCoord3D(Point3D real_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation) {
     Point3D resultPoint;
-    resultPoint.x = (real_point.x - real_origin.x) / real_spacing.sx * orientation.v1.x;
-    resultPoint.y = (real_point.y - real_origin.y) / real_spacing.sy * orientation.v2.y;
-    resultPoint.z = (real_point.z - real_origin.z) / real_spacing.sz * orientation.v3.z;
+    resultPoint.x = (real_point.x - real_origin.x) / (real_spacing.sx * orientation.v1.x);
+    resultPoint.y = (real_point.y - real_origin.y) / (real_spacing.sy * orientation.v2.y);
+    resultPoint.z = (real_point.z - real_origin.z) / (real_spacing.sz * orientation.v3.z);
     return resultPoint;
 }
 
@@ -33,8 +33,8 @@ Point2D getRealCoordFromImageCoord2D(Point2D image_point, Point2D real_origin, P
 
 Point2D getImageCoordFromRealCoord2D(Point2D real_point, Point2D real_origin, PixelSpacing real_spacing, OrientationMatrix2D orientation) {
     Point2D result_point;
-    result_point.x = (real_point.x - real_origin.x) / real_spacing.sx * orientation.v1.x;
-    result_point.y = (real_point.y - real_origin.y) / real_spacing.sy * orientation.v2.y;
+    result_point.x = (real_point.x - real_origin.x) / (real_spacing.sx * orientation.v1.x);
+    result_point.y = (real_point.y - real_origin.y) / (real_spacing.sy * orientation.v2.y);
     return result_point;
 }
 
@@ -53,10 +53,6 @@ PointNeighbors2D getPointNeighbors2D(Point2D point, PixelSpacing spacing) {
     return neighbors;
 }
 
-dataType getDistance2D(Point2D point1, Point2D point2) {
-    return sqrt(pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2));
-}
-
 Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing) {
 
     PointNeighbors2D neighbors;
@@ -64,10 +60,10 @@ Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing) {
     neighbors = getPointNeighbors2D(point, spacing);
 
     dataType distance[4];
-    distance[0] = getDistance2D(point, neighbors.top_left);
-    distance[1] = getDistance2D(point, neighbors.top_right);
-    distance[2] = getDistance2D(point, neighbors.bottom_left);
-    distance[3] = getDistance2D(point, neighbors.bottom_right);
+    distance[0] = getPoint2DDistance(point, neighbors.top_left);
+    distance[1] = getPoint2DDistance(point, neighbors.top_right);
+    distance[2] = getPoint2DDistance(point, neighbors.bottom_left);
+    distance[3] = getPoint2DDistance(point, neighbors.bottom_right);
 
     dataType min_dist = 1000000000000;
     int k, min_indice;
