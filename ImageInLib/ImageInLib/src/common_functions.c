@@ -286,3 +286,24 @@ bool copyCurve2DPointsToArray(const Curve2D* pCurve, dataType** pArray)
 		pArray[i][1] = pCurve->pPoints[i].y;
 	}
 }
+
+bool isCurveClosed(const Curve2D* pcurve)
+{
+	size_t num_end_points = 0;
+	for (size_t i = 0; i < pcurve->numPoints; i++)
+	{
+		if (pcurve->pPoints[i].isEndPoint)
+		{
+			num_end_points++;
+		}
+	}
+
+	if (num_end_points == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

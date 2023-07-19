@@ -17,12 +17,11 @@ extern "C" {
 	} SegmentationMethod;
 
 	// Structure that holds the parameters used during 2d Lagrangean segmentation process.
-		typedef struct
+	typedef struct
 	{
-		size_t numberOfTimeStep;	// Number of current time step
-		Curve2D* pInitialCondition;	// Initial curve
-		size_t numberOfCurvePoints;// Number of initial segmentation curve points
-		bool isCurveClosed;			// The flag defines, if the curve is open (with fixed the 1st and last point) or closed
+		size_t num_time_steps;	// Number of time steps
+		Curve2D* pinitial_condition;	// Initial curve
+		size_t num_points;// Number of initial segmentation curve points
 	} Lagrangean2DSegmentationParameters;
 
 

@@ -173,6 +173,13 @@ extern "C" {
 	/// <param name="array">Alocated array of expected size length (same as the curve) * 2</param>
 	/// <returns></returns>
 	bool copyCurve2DPointsToArray(const Curve2D * pCurve, dataType ** pArray);
+
+	/// <summary>
+	/// The function check, if the given curve is closed or not
+	/// </summary>
+	/// <param name="pcurve">Input curve to be checked</param>
+	/// <returns>Returns true, if the curve is closed, otherwise false.</returns>
+	bool isCurveClosed(const Curve2D * pcurve);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus
