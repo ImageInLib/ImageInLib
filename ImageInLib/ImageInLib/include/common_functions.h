@@ -87,6 +87,7 @@ extern "C" {
 		dataType* imageDataPtr; // Image Data Containers
 		Point2D origin; // image origin
 		PixelSpacing spacing; // pixel size
+		OrientationMatrix2D orientation;
 	} Image_Data2D;
 
 	typedef struct {
