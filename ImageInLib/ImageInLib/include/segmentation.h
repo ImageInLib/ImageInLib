@@ -20,7 +20,7 @@ extern "C" {
 		typedef struct
 	{
 		size_t numberOfTimeStep;	// Number of current time step
-		Point2D* pInitialCondition;	// Initial curve
+		Curve2D* pInitialCondition;	// Initial curve
 		size_t numberOfCurvePoints;// Number of initial segmentation curve points
 		bool isCurveClosed;			// The flag defines, if the curve is open (with fixed the 1st and last point) or closed
 	} Lagrangean2DSegmentationParameters;

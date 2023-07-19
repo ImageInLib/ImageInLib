@@ -30,19 +30,27 @@ extern "C" {
 	// Includes
 #include <stddef.h>
 #include <omp.h>
+#include <stdbool.h>
 //==============================================================================
 // MACROs
 //==============================================================================
 // STRUCTs
 
 // Common 2D Points - {x,y}
-	typedef struct {
-		dataType x, y;
+	typedef struct ptstruct{
+		dataType x;
+		dataType y;
 	} Point2D;
 
-	// Common 2D Curve - list of Point2D
+	// 2D point extended by flag indicating, if the point is end point (1st or last)
 	typedef struct {
-		Point2D* pPoints;
+		struct ptstruct;
+		bool isEndPoint;
+	} CurvePoint2D;
+
+	// 2D Curve - list of CurvePoint2D
+	typedef struct {
+		CurvePoint2D* pPoints;
 		size_t numPoints;
 	} Curve2D;
 
@@ -157,6 +165,14 @@ extern "C" {
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	double getPoint2DDistance(const Point2D a, const Point2D b);
+	
+	/// <summary>
+	/// The points of pCurve are copied to pArray. The function expects same length of the particular objects (curve and array)
+	/// </summary>
+	/// <param name="pCurve">Pointer to the curve to be copied</param>
+	/// <param name="array">Alocated array of expected size length (same as the curve) * 2</param>
+	/// <returns></returns>
+	bool copyCurve2DPointsToArray(const Curve2D * pCurve, dataType ** pArray);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

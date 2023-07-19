@@ -274,3 +274,15 @@ double getPoint2DDistance(const Point2D a, const Point2D b)
 {
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
+
+bool copyCurve2DPointsToArray(const Curve2D* pCurve, dataType** pArray)
+{
+	if (pCurve == NULL || pArray == NULL) {
+		return false;
+	}
+
+	for (int i = 0; i < pCurve->numPoints; i++) {
+		pArray[i][0] = pCurve->pPoints[i].x;
+		pArray[i][1] = pCurve->pPoints[i].y;
+	}
+}

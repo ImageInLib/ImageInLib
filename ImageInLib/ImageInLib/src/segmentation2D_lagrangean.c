@@ -8,7 +8,7 @@ bool lagrangeanExplicitOpen2DCurveSegmentation(Image_Data inputImage2D, const La
     {
         for (size_t i = 0; i < pResultSegmentation->numPoints; i++)
         {
-            pResultSegmentation->pPoints[i] = pSegmentationParams->pInitialCondition[i];
+            pResultSegmentation->pPoints[i] = pSegmentationParams->pInitialCondition->pPoints[i];
         }
     }
 
