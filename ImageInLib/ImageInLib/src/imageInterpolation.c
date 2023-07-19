@@ -61,8 +61,6 @@ Point2D getNearestNeighbor2D(Point2D point, PixelSpacing spacing) {
 
     PointNeighbors2D neighbors;
 
-    //Point2D result_point;
-
     neighbors = getPointNeighbors2D(point, spacing);
 
     dataType distance[4];
