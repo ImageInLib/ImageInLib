@@ -41,9 +41,19 @@ dataType getInterpolatedValueNearestNeighbor2D(Image_Data2D src_image, Point2D p
 
     int i_floor, i_ceil, j_floor, j_ceil;
 
-    i_floor = floor(point.x / src_image.spacing.sx);
-    j_floor = floor(point.y / src_image.spacing.sy);
-    i_ceil, j_ceil;
+    if (floor(point.x / src_image.spacing.sx) > src_image.height - 1) {
+        i_floor = src_image.height - 1;
+    }
+    else {
+        i_floor = floor(point.x / src_image.spacing.sx);
+    }
+
+    if (floor(point.y / src_image.spacing.sy) > src_image.width - 1) {
+        j_floor = src_image.width - 1;
+    }
+    else {
+        j_floor = floor(point.y / src_image.spacing.sy);
+    }
 
     if (ceil(point.x / src_image.spacing.sx) > src_image.height - 1) {
         i_ceil = src_image.height - 1;
@@ -107,9 +117,19 @@ dataType getInterpolatedValueBilinear2D(Image_Data2D src_image, Point2D point) {
 
     int i_floor, i_ceil, j_floor, j_ceil;
 
-    i_floor = floor(point.x / src_image.spacing.sx);
-    j_floor = floor(point.y / src_image.spacing.sy);
-    i_ceil, j_ceil;
+    if (floor(point.x / src_image.spacing.sx) > src_image.height - 1) {
+        i_floor = src_image.height - 1;
+    }
+    else {
+        i_floor = floor(point.x / src_image.spacing.sx);
+    }
+
+    if (floor(point.y / src_image.spacing.sy) > src_image.width - 1) {
+        j_floor = src_image.width - 1;
+    }
+    else {
+        j_floor = floor(point.y / src_image.spacing.sy);
+    }
 
     if (ceil(point.x / src_image.spacing.sx) > src_image.height - 1) {
         i_ceil = src_image.height - 1;
