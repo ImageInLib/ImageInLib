@@ -51,12 +51,6 @@ extern "C" {
 		dataType** imageDataPtr; // Image Data Containers
 	} Image_Data;
 
-	typedef struct {
-		// Image Dimensions
-		size_t height, width; // Absolute Dimension
-		dataType* imageDataPtr; // Image Data Containers
-	} Image_Data2D;
-
 	// Generate Random Points
 	typedef struct {
 		size_t k, xd, p;
@@ -80,8 +74,21 @@ extern "C" {
 	}OrientationMatrix;
 
 	typedef struct {
+		Point2D v1, v2;
+	}OrientationMatrix2D;
+
+	typedef struct {
 		dataType sx, sy;
 	} PixelSpacing;
+
+	typedef struct {
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+		Point2D origin; // image origin
+		PixelSpacing spacing; // pixel size
+		OrientationMatrix2D orientation;
+	} Image_Data2D;
 
 	//==============================================================================
 	// Shapes Container
