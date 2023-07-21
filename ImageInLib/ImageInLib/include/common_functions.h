@@ -90,10 +90,6 @@ extern "C" {
 		OrientationMatrix2D orientation;
 	} Image_Data2D;
 
-	typedef struct {
-		Point2D top_left, top_right, bottom_left, bottom_right;
-	} PointNeighbors2D;
-
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
