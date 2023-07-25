@@ -59,8 +59,8 @@ extern "C" {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 		dataType** imageDataPtr; // Image Data Containers
-		Point3D origin;
-		VoxelSpacing spacing;
+		Point3D origin; // image origin
+		VoxelSpacing spacing; // distance between pixels and distance between slice //--> voxel dimension
 		OrientationMatrix orientation;
 	} Image_Data;
 
