@@ -44,11 +44,24 @@ extern "C" {
 		dataType x, y, z;
 	} Point3D;
 
+	//Structure to handle image spacing
+	typedef struct {
+		dataType sx, sy, sz;
+	} VoxelSpacing;
+
+	//Matrix for rotation
+	typedef struct {
+		Point3D v1, v2, v3;
+	}OrientationMatrix;
+
 	// Image Container and Properties
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 		dataType** imageDataPtr; // Image Data Containers
+		Point3D origin;
+		VoxelSpacing spacing;
+		OrientationMatrix orientation;
 	} Image_Data;
 
 	// Generate Random Points
@@ -62,16 +75,6 @@ extern "C" {
 
 	//==============================================================================
 	// Structures for interpolation
-	
-	//Structure to handle image spacing
-	typedef struct {
-		dataType sx, sy, sz;
-	} VoxelSpacing;
-
-	//Matrix for rotation
-	typedef struct {
-		Point3D v1, v2, v3;
-	}OrientationMatrix;
 
 	typedef struct {
 		Point2D v1, v2;
