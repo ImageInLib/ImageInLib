@@ -175,6 +175,8 @@ extern "C" {
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	double getPoint2DDistance(const Point2D a, const Point2D b);
+	//==============================================================================
+	double getPoint3DDistance(const Point3D a, const Point3D b);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus
