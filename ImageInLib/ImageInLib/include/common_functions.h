@@ -44,18 +44,25 @@ extern "C" {
 		dataType x, y, z;
 	} Point3D;
 
+	//Structure to handle image spacing
+	typedef struct {
+		dataType sx, sy, sz;
+	} VoxelSpacing;
+
+	//Matrix for rotation
+	typedef struct {
+		Point3D v1, v2, v3;
+	}OrientationMatrix;
+
 	// Image Container and Properties
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 		dataType** imageDataPtr; // Image Data Containers
+		Point3D origin; // image origin
+		VoxelSpacing spacing; // distance between pixels and distance between slice //--> voxel dimension
+		OrientationMatrix orientation;
 	} Image_Data;
-
-	typedef struct {
-		// Image Dimensions
-		size_t height, width; // Absolute Dimension
-		dataType* imageDataPtr; // Image Data Containers
-	} Image_Data2D;
 
 	// Generate Random Points
 	typedef struct {
@@ -65,6 +72,27 @@ extern "C" {
 	typedef struct {
 		size_t xd, p;
 	}Random2dPoints;
+
+	//==============================================================================
+	// Structures for interpolation
+
+	typedef struct {
+		Point2D v1, v2;
+	}OrientationMatrix2D;
+
+	typedef struct {
+		dataType sx, sy;
+	} PixelSpacing;
+
+	typedef struct {
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+		Point2D origin; // image origin
+		PixelSpacing spacing; // pixel size
+		OrientationMatrix2D orientation;
+	} Image_Data2D;
+
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
@@ -150,6 +178,8 @@ extern "C" {
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	double getPoint2DDistance(const Point2D a, const Point2D b);
+	//==============================================================================
+	double getPoint3DDistance(const Point3D a, const Point3D b);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

@@ -1,30 +1,5 @@
 #include "interpolations.h"
 
-// Local Function Prototypes
-/*
-* Function to calculate linear values R1, R2 inputs for Bilinear
-* 1D
-*/
-dataType linearInterpolation(dataType x, dataType x1, dataType x2, dataType q00, dataType q01);
-/*
-* Function to calculate Bilinear Interpolation
-* 2D
-* Assume a Rectangular shaper
-* Out rectangle
-* x - bottom center, x1 bottom left , x2 -bottom right
-* y - vertical center, y1 vertical bottom, y2 vertical top
-* q00, q01 slopes
-* P = (y,x) - Point to be interpolated/Returned
-* Inner rectangle
-* Intersections of above points
-* q11 = (y1,x1) - Bottom left, q12 = (y1,x2) - Bottom right
-* q21 = (y2,x1) - Top left, q22 = (y2,x2) - Top Right
-* R1 = (y1,x) - Between q11 and q21
-* R2 = (y1,x) - Between q12 and q22
-* P = (y,x) - Point to be interpolated/Returned. Between R1 and R2
-*
-*/
-dataType bilinearInterpolation(dataType x, dataType x1, dataType x2, dataType q11, dataType q12, dataType q21, dataType q22, dataType y, dataType y1, dataType y2);
 /*
 * Function to calculate Tri-linear Interpolation
 */
