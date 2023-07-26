@@ -12,7 +12,8 @@ extern "C" {
 	typedef enum
 	{
 		NEAREST_NEIGHBOR = 1,
-		BILINEAR,
+		BILINEAR, // for 2D image
+		TRILINEAR // for 3D image
 	} interpolationMethod;
 
 	//====================
@@ -44,6 +45,39 @@ extern "C" {
 	*/
 	Point3D getImageCoordFromRealCoord3D(Point3D real_point, Point3D real_origin, VoxelSpacing real_spacing, OrientationMatrix orientation);
 
+	/*
+	* This function return the interpolated value by nearest neighbor approach
+	* dataType getInterpolatedValueNearestNeighbor3D(Image_Data src_image, Point3D point)
+	* Image_Data src_image : source image
+	* Point3D point : the current point
+	*/
+	dataType getInterpolatedValueNearestNeighbor3D(Image_Data src_image, Point3D point);
+
+	/*
+	* This function return the interpolated value by bilinear interpolation approach
+	* dataType getInterpolatedValueTrilinear3D(Image_Data src_image, Point3D point)
+	* Image_Data src_image : source image
+	* Point3D point : the current point
+	*/
+	dataType getInterpolatedValueTrilinear3D(Image_Data src_image, Point3D point);
+
+	/*
+	* This function perform image interpolation
+	* bool imageInterpolation3D(Image_Data src_image, Image_Data dest_image, dataType scale_factor, interpolationMethod method)
+	* Image_Data src_image : source image structure
+	*                          - height, lenght, width : image dimension
+	*                          - imageDataPtr : pointer for pixels value
+	*                          - origin : image origin
+	*                          - spacing : pixel size
+	* Image_Data dest_image : interpolated image structure
+	*                          - height, Lenght, width : interpolated image dimension
+	*                          - imageDataPtr : pointer for interpolated pixels value
+	*                          - origin : interpolated image origin
+	*                          - spacing : interpolated pixel size
+	* interpolationMethod method : nearest neighbor, bilinear (for 2D image), trilinear
+	*/
+	bool imageInterpolation3D(Image_Data src_image, Image_Data dest_image, interpolationMethod method);
+
 	//=====================================================
 	//2D Functions
 
@@ -73,7 +107,7 @@ extern "C" {
 	* This function return the interpolated value by nearest neighbor approach
 	* dataType getInterpolatedValueNearestNeighbor2D(Image_Data2D src_image, Point2D point)
 	* Image_Data2D src_image : source image
-	* Point point : the current point
+	* Point2D point : the current point
 	*/
 	dataType getInterpolatedValueNearestNeighbor2D(Image_Data2D src_image, Point2D point);
 
@@ -81,14 +115,14 @@ extern "C" {
 	* This function return the interpolated value by bilinear interpolation approach
 	* dataType getInterpolatedValueNearestNeighbor2D(Image_Data2D src_image, Point2D point)
 	* Image_Data2D src_image : source image
-	* Point point : the current point
+	* Point2D point : the current point
 	*/
 	dataType getInterpolatedValueBilinear2D(Image_Data2D src_image, Point2D point);
 
 	/*
 	* This function perform image interpolation
 	* bool imageInterpolation2D(Image_Data2D src_image, Image_Data2D dest_image, dataType scale_factor, interpolationMethod method)
-	* Image_Data2D src_image : source image structure 
+	* Image_Data2D src_image : source image structure
 	*                          - height, width : image dimension
 	*                          - imageDataPtr : pointer for pixels value
 	*                          - origin : image origin
@@ -98,8 +132,7 @@ extern "C" {
 	*                          - imageDataPtr : pointer for interpolated pixels value
 	*                          - origin : interpolated image origin
 	*                          - spacing : interpolated pixel size
-	* dataType scale_factor : the scaling. if 0 < scale_factor < 1 ---> shrink
-	*                                      if 1 < scale_factor < infty ---> magnify
+	* interpolationMethod method : nearest neighbor, bilinear, trilinear(for 3D images)
 	*/
 	bool imageInterpolation2D(Image_Data2D src_image, Image_Data2D dest_image, interpolationMethod method);
 
