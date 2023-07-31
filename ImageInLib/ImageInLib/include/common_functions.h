@@ -44,8 +44,13 @@ extern "C" {
 
 	// 2D point extended by flag indicating, if the point is end point (1st or last)
 	typedef struct {
-		struct ptstruct;
+		union {
+			struct ptstruct;
+			Point2D pt;
+		};
 		bool isEndPoint;
+		void * prev_point;
+		void * next_point;
 	} CurvePoint2D;
 
 	// 2D Curve - list of CurvePoint2D

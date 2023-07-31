@@ -22,6 +22,7 @@ extern "C" {
 		size_t num_time_steps;	// Number of time steps
 		Curve2D* pinitial_condition;	// Initial curve
 		size_t num_points;// Number of initial segmentation curve points
+		dataType time_step_size;	//discrete time step size
 	} Lagrangean2DSegmentationParameters;
 
 
