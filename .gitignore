@@ -271,10 +271,10 @@ __pycache__/
 *.build/
 
 #png and jpeg files
-*.png
-*.PNG
-*.jpeg
-*.jpg
+#*.png
+#*.PNG
+#*.jpeg
+#*.jpg
 
 #pgm files
 *.pgm
