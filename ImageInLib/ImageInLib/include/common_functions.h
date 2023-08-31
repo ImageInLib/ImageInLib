@@ -73,9 +73,6 @@ extern "C" {
 		size_t xd, p;
 	}Random2dPoints;
 
-	//==============================================================================
-	// Structures for interpolation
-
 	typedef struct {
 		Point2D v1, v2;
 	}OrientationMatrix2D;
@@ -92,6 +89,10 @@ extern "C" {
 		PixelSpacing spacing; // pixel size
 		OrientationMatrix2D orientation;
 	} Image_Data2D;
+
+	typedef struct {
+		dataType min_data, max_data, mean_data, sd_data;
+	} Statistics;
 
 	//==============================================================================
 	// Shapes Container
