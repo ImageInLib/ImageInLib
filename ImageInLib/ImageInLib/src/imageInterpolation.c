@@ -355,6 +355,55 @@ bool imageInterpolation3D(Image_Data src_image, Image_Data dest_image, interpola
     return true;
 }
 
+Statistics getStatisticsPET(Image_Data imageData, Point3D point, dataType radius) {
+
+    size_t i, j, k, nb_point = 0;
+    Statistics result;
+    Point3D point_pet = getImageCoordFromRealCoord3D(point, imageData.origin, imageData.spacing, imageData.orientation);
+    dataType sum = 0.0;
+    result.max_data = 0.0; result.min_data = 1000000000000000;
+
+    for (k = 0; k < imageData.height; k++) {
+        for (i = 0; i < imageData.length; i++) {
+            for (j = 0; j < imageData.width; j++) {
+                Point3D current_point = { (dataType)i, (dataType)j, (dataType)k };
+                dataType dist = getPoint3DDistance(point_pet, current_point);
+                //We are considering just voxel in a ball defined by the radius
+                if (dist <= radius) {
+                    dataType voxel_value = imageData.imageDataPtr[k][x_new(i, j, imageData.length)];
+                    if (voxel_value < result.min_data) {
+                        result.min_data = voxel_value;
+                    }
+                    if (voxel_value > result.max_data) {
+                        result.max_data = voxel_value;
+                    }
+                    sum = sum + voxel_value;
+                    nb_point = nb_point + 1;
+                }
+            }
+        }
+    }
+
+    result.mean_data = sum / (dataType)nb_point;
+
+    dataType sum_diff = 0.0;
+    for (k = 0; k < imageData.height; k++) {
+        for (i = 0; i < imageData.length; i++) {
+            for (j = 0; j < imageData.width; j++) {
+                Point3D current_point = { (dataType)i, (dataType)j, (dataType)k };
+                dataType dist = getPoint3DDistance(point_pet, current_point);
+                if (dist <= radius) {
+                    sum_diff = sum_diff + pow(imageData.imageDataPtr[k][x_new(i, j, imageData.length)] - result.mean_data, 2);
+                }
+            }
+        }
+    }
+
+    result.sd_data = sqrt(sum_diff / (dataType)nb_point);
+
+    return result;
+}
+
 //=======================================================
 
 //2D images
