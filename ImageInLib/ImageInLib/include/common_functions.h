@@ -180,6 +180,8 @@ extern "C" {
 	double getPoint2DDistance(const Point2D a, const Point2D b);
 	//==============================================================================
 	double getPoint3DDistance(const Point3D a, const Point3D b);
+	//==============================================================================
+	Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

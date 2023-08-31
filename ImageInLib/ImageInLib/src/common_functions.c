@@ -279,3 +279,24 @@ double getPoint3DDistance(const Point3D a, const Point3D b)
 {
 	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
 }
+//==============================================================================
+Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height) {
+
+	Point3D result = { 0.0, 0.0, 0.0 };
+	dataType max_value = 0.0;
+
+	for (size_t k = 0; k < height; k++) {
+		for (size_t i = 0; i < length; i++) {
+			for (size_t j = 0; j < width; j++) {
+				size_t x = x_new(i, j, length);
+				if (distanceMapPtr[k][x] > max_value) {
+					max_value = distanceMapPtr[k][x];
+					result.x = (dataType)i; 
+					result.y = (dataType)j; 
+					result.z = (dataType)k;
+				}
+			}
+		}
+	}
+	return result;
+}
