@@ -86,7 +86,7 @@ extern "C" {
 	* point : the given point in real world coordinates system
 	* radius : radium of the region (ball) where to compute the statistics
 	*/
-	Statistics getStatisticsPET(Image_Data imageData, Point3D point, dataType radius);
+	Statistics getStatistics(Image_Data imageData, Point3D point, dataType radius);
 
 	//=====================================================
 	//2D Functions

@@ -355,7 +355,7 @@ bool imageInterpolation3D(Image_Data src_image, Image_Data dest_image, interpola
     return true;
 }
 
-Statistics getStatisticsPET(Image_Data imageData, Point3D point, dataType radius) {
+Statistics getStatistics(Image_Data imageData, Point3D point, dataType radius) {
 
     size_t i, j, k, nb_point = 0;
     Statistics result;
