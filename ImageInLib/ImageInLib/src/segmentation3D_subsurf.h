@@ -17,11 +17,8 @@ extern "C" {
 #include "heat_equation.h"
 #include "filter_params.h"
 
-// MACROs
 
-// STRUCTs
-
-//Structure that holds the parameters used during SUBSURF segmentation process.
+	//Structure that holds the parameters used during SUBSURF and GSUBSURF segmentation process.
 	typedef struct
 	{
 		size_t maxNoGSIteration;// Maximum number of Gauss-Seidel iterations
@@ -35,10 +32,8 @@ extern "C" {
 		/* h is the Grid size, tau is time step for the segmentation process,
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
-
-		//gsubsurf parameters
-		dataType coef_conv;
-		dataType coef_dif;
+		dataType coef_conv, coef_dif; //gsubsurf coefficients
+		bool isTheInitialSegBinary; // foreground = 1, background = 0
 	} Segmentation_Parameters;
 
 	// Structure that holds the coefficients for PM function G calculated from the image
@@ -67,7 +62,6 @@ extern "C" {
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
-
 		dataType **segmentationFuntionPtr; // Segmentation funtion
 		dataType **inputImageToBeSegmented; // input image to be segmented
 	} Segment_Image_Data;
