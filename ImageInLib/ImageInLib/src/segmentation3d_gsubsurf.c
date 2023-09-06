@@ -180,7 +180,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initia
 
 			Storage_Flags storageFlags = { false, false };
 			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
-			printf("Step is %zd\n", segParameters.numberOfTimeStep);
+			printf("Step is %zd\n", z);
 			printf("Error = %lf\n", difference_btw_current_and_previous_sol);
 		}
 
