@@ -335,7 +335,7 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segme
 		copyDataTo2dReducedArea(segmentationPtr, gaussSeidelPtr, height, width);
 
 		//save the solution
-		if (number_time_step % seg_parms.mod == 0) {
+		if (number_time_step % seg_parms.savingFrequency == 0) {
 			strcpy_s(name, sizeof name, segmentPath);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", number_time_step);
 			strcat_s(name, sizeof(name), name_ending);
@@ -575,7 +575,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segm
 		copyDataTo2dReducedArea(segmentationPtr, gaussSeidelPtr, height, width);
 
 		//save the solution
-		if (number_time_step % seg_parms.mod == 0) {
+		if (number_time_step % seg_parms.savingFrequency == 0) {
 			strcpy_s(name, sizeof name, segmentPath);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", number_time_step);
 			strcat_s(name, sizeof(name), name_ending);

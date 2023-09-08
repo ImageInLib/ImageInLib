@@ -172,7 +172,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initia
 		copyDataToAnotherArray(gauss_seidelPtr, prevSol_extPtr, height_ext, length_ext, width_ext);
 
 		//writing density.
-		if ((z % segParameters.mod) == 0)
+		if ((z % segParameters.savingFrequency) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", z);

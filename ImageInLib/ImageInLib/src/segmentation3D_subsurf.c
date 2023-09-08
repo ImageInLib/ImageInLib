@@ -151,7 +151,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length, width, height, segParameters.h);
 
 		//writing density.
-		if ((i%segParameters.mod) == 0)
+		if ((i%segParameters.savingFrequency) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);

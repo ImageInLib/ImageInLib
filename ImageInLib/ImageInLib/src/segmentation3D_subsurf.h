@@ -26,7 +26,7 @@ extern "C" {
 		dataType eps2; // epsilon is the regularization factor (Evans-Spruck)
 		size_t numberOfTimeStep;// Number of current time step
 		size_t maxNoOfTimeSteps;// Maximum number of time step
-		size_t mod; // Kind of writing density
+		size_t savingFrequency; // Kind of writing density
 		dataType segTolerance; // Tolerance for stopping of the segmentation process
 		dataType tau, h, omega_c, gauss_seidelTolerance;
 		/* h is the Grid size, tau is time step for the segmentation process,
