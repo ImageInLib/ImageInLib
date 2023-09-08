@@ -18,7 +18,7 @@ extern "C" {
 #include "filter_params.h"
 
 
-	//Structure that holds the parameters used during SUBSURF and GSUBSURF segmentation process.
+	//Structure that holds the parameters used during SUBSURF and GSUBSURF
 	typedef struct
 	{
 		size_t maxNoGSIteration;// Maximum number of Gauss-Seidel iterations
@@ -33,7 +33,7 @@ extern "C" {
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
 		dataType coef_conv, coef_dif; //gsubsurf coefficients
-		bool isTheInitialSegBinary; // foreground = 1, background = 0
+		bool initialSegmentAsDirichletBoundaryCondition; // if yes the initial segment is keeped else we apply the classical model
 	} Segmentation_Parameters;
 
 	// Structure that holds the coefficients for PM function G calculated from the image
