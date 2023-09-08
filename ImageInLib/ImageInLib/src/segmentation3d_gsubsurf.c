@@ -25,7 +25,7 @@
 #include "filter_params.h"
 #include "vtk_params.h"
 
-bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
 	size_t i, j, k;
@@ -136,7 +136,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initia
 	setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
 
 	//compute coefficients from presmoothed image
-	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, explicit_lhe_Parameters, coef_conv);
+	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, implicit_lhe_Parameters, coef_conv);
 
 	//Array for name construction
 	unsigned char  name[500];
@@ -236,7 +236,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initia
 }
 
 bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** edgeGradientPtr, Gradient_Pointers VPtrs,
-	Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters, dataType coef_conv)
+	Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters, dataType coef_conv)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || edgeGradientPtr == NULL || VPtrs.GePtr == NULL || VPtrs.GwPtr == NULL
@@ -282,7 +282,7 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	heatImplicitScheme(presmoothingData, implicit_lhe_Parameters);
 
 	copyDataToReducedArea(inputImageData.imageDataPtr, extendedCoefPtr, height, length, width);
 

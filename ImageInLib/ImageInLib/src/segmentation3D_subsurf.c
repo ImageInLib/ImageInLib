@@ -30,7 +30,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)
 {
 	size_t i, j, k; // length == xDim, width == yDim, height == zDim
@@ -123,7 +123,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
 
 	//compute coefficients from presmoothed image
-	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
+	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, implicit_lhe_Parameters);
 
 	//Array for name construction
 	unsigned char name[350];
@@ -494,7 +494,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 }
 
 bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, Gradient_Pointers GPtrs,
-	Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters)
+	Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || extendedCoefPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL
@@ -528,7 +528,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	heatImplicitScheme(presmoothingData, implicit_lhe_Parameters);
 
 	copyDataToReducedArea(imageToBeSegPtr, extendedCoefPtr, inputImageData.height, inputImageData.length, inputImageData.width);
 

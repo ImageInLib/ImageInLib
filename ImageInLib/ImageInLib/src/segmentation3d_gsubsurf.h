@@ -11,11 +11,11 @@ extern "C" {
 #include "heat_equation.h"
 #include "filter_params.h"
 
-	bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
+	bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 		Point3D* centers, size_t no_of_centers, unsigned char* outputPathPtr);
 
 	bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** edgeGradientPtr, Gradient_Pointers VPtrs,
-		Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters, dataType coef_conv);
+		Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters, dataType coef_conv);
 
 	bool generalizedGaussSeidelCoefficients(Segment_Image_Data inputImageData, dataType** edgeGradientPtr, Coefficient_Pointers CoefPtrs, 
 		Gradient_Pointers VPtrs, Segmentation_Parameters segParameters, dataType coef_dif);
