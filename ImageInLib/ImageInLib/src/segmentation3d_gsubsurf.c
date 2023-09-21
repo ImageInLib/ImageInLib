@@ -14,7 +14,6 @@
 #include "data_initialization.h"
 #include "edgedetection.h"
 #include "data_storage.h"
-//#include "data_load.h"
 #include "generate_3D_shapes.h"
 #include "common_functions.h"
 #include "Common_Math.h"
@@ -23,26 +22,22 @@
 #include "filter_params.h"
 #include "vtk_params.h"
 
-// Local Function Prototype
-
-// Functions for 3D Images
-
-bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFunct, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char* outputPathPtr) {
 
-	size_t i, j, k, xd;
+	size_t i, j, k;
 	size_t height = inputImageData.height, length = inputImageData.length, width = inputImageData.width;
 	size_t dim2D = length * width;
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
 	size_t dim2D_ext = length_ext * width_ext;
+	
 	dataType h = segParameters.h;
-
 	dataType coef_conv = segParameters.coef_conv;
 	dataType coef_dif = segParameters.coef_dif;
 
-	dataType firstCpuTime, secondCpuTime, difference_btw_current_and_previous_sol;
+	dataType difference_btw_current_and_previous_sol;
 
 	dataType** gauss_seidelPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
 	dataType** prevSol_extPtr = (dataType**)malloc(sizeof(dataType*) * height_ext);
@@ -129,8 +124,8 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	VPtrs.GtPtr = VtPtr;
 	VPtrs.GbPtr = VbPtr;
 
-	//generate initial segmentation function
-	copyDataToAnotherArray(segFunct, segmFuntionPtr, height, length, width);
+	//copy initial segmentation function
+	copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
 
 	copyDataToExtendedArea(segmFuntionPtr, gauss_seidelPtr, height, length, width);
 	copyDataToExtendedArea(segmFuntionPtr, prevSol_extPtr, height, length, width);
@@ -138,7 +133,7 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
 
 	//compute coefficients from presmoothed image
-	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, explicit_lhe_Parameters, coef_conv);
+	generalizedGFunctionForImageToBeSegmented(inputImageData, edgeGradientPtr, VPtrs, segParameters, implicit_lhe_Parameters, coef_conv);
 
 	//Array for name construction
 	unsigned char  name[500];
@@ -153,12 +148,11 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 	Storage_Flags storageFlags = { false, false };
 	manageFile(edgeGradientPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
 
-	firstCpuTime = clock() / (dataType)(CLOCKS_PER_SEC);
 	//loop for segmentation time steps
-	i = 1;
+	size_t z = 0; // time steps counter
 	do
 	{
-		segParameters.numberOfTimeStep = i;
+		z = z + 1;
 
 		setBoundaryToZeroDirichletBC(gauss_seidelPtr, length_ext, width_ext, height_ext);
 		setBoundaryToZeroDirichletBC(prevSol_extPtr, length_ext, width_ext, height_ext);
@@ -175,19 +169,19 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 		copyDataToAnotherArray(gauss_seidelPtr, prevSol_extPtr, height_ext, length_ext, width_ext);
 
 		//writing density.
-		if ((i % segParameters.mod) == 0)
+		if ((z % segParameters.savingFrequency) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
-			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", z);
 			strcat_s(name, sizeof(name), name_ending);
 
 			Storage_Flags storageFlags = { false, false };
 			manageFile(imageData.segmentationFuntionPtr, length, width, height, name, STORE_DATA_RAW, BINARY_DATA, storageFlags);
-			printf("Step is %zd\n", segParameters.numberOfTimeStep);
+			printf("Step is %zd\n", z);
 			printf("Error = %lf\n", difference_btw_current_and_previous_sol);
 		}
-		i++;
-	} while ((i <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
+
+	} while ((z <= segParameters.maxNoOfTimeSteps) && (difference_btw_current_and_previous_sol > segParameters.segTolerance));
 
 	for (i = 0; i < height; i++)
 	{
@@ -239,20 +233,20 @@ bool generalizedSubsurfSegmentation(Image_Data inputImageData, dataType** segFun
 }
 
 bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataType** edgeGradientPtr, Gradient_Pointers VPtrs,
-	Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters, dataType coef_conv)
+	Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters, dataType coef_conv)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || edgeGradientPtr == NULL || VPtrs.GePtr == NULL || VPtrs.GwPtr == NULL
 		|| VPtrs.GnPtr == NULL || VPtrs.GsPtr == NULL || VPtrs.GtPtr == NULL || VPtrs.GbPtr == NULL)
 		return false;
 
-	size_t i, j, k, x, x_ext; // length == xDim, width == yDim, height == zDim
+	size_t i, j, k, x;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 	size_t height = inputImageData.height;
 	size_t length = inputImageData.length;
 	size_t width = inputImageData.width;
 	size_t dim2D = length * width;
-	size_t k_ext, j_ext, i_ext;
+	size_t k_ext, j_ext, i_ext, x_ext;
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
@@ -285,9 +279,7 @@ bool generalizedGFunctionForImageToBeSegmented(Image_Data inputImageData, dataTy
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	heatImplicitScheme(presmoothingData, explicit_lhe_Parameters); // unconditionnally stable
-	//geodesicMeanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
-	//meanCurvatureTimeStep(presmoothingData, explicit_lhe_Parameters);
+	heatImplicitScheme(presmoothingData, implicit_lhe_Parameters);
 
 	copyDataToReducedArea(inputImageData.imageDataPtr, extendedCoefPtr, height, length, width);
 
@@ -573,7 +565,7 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 		return false;
 
 	size_t k, i, j;
-	dataType hh = segParameters.h * segParameters.h, hhh = segParameters.h * segParameters.h * segParameters.h;
+	dataType hh = segParameters.h * segParameters.h;
 	dataType tau = segParameters.tau;
 
 	// Error value used to check iteration
@@ -590,7 +582,7 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 	size_t x_ext; //x_ext = x_new(i_ext, j_ext, length_ext);
 	size_t z; // Steps counter
 
-	const dataType coef_tauh = tau / hhh;
+	const dataType coef_tauh = tau / hh;
 
 	// The Implicit Scheme Evaluation
 	z = 0;
@@ -608,7 +600,6 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 					x = x_new(i, j, length);
 
 					// Gauss-Seidel Formula Evaluation
-					//explicit for advection
 					gauss_seidel = (dataType)(((prevSol_extPtr[k_ext][x_ext] + coef_tauh * (CoefPtrs.e_Ptr[k][x] * gauss_seidelPtr[k_ext][x_ext + 1] 
 					+ CoefPtrs.w_Ptr[k][x] * gauss_seidelPtr[k_ext][x_ext - 1] + CoefPtrs.s_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 					+ CoefPtrs.n_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
@@ -616,7 +607,14 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 					/ (1 + coef_tauh * (CoefPtrs.e_Ptr[k][x] + CoefPtrs.w_Ptr[k][x] + CoefPtrs.s_Ptr[k][x] + CoefPtrs.n_Ptr[k][x] + CoefPtrs.b_Ptr[k][x] + CoefPtrs.t_Ptr[k][x]))));
 
 					// SOR implementation using Gauss-Seidel
-					gauss_seidelPtr[k_ext][x_ext] = gauss_seidelPtr[k_ext][x_ext] + segParameters.omega_c * (gauss_seidel - gauss_seidelPtr[k_ext][x_ext]);
+					if (segParameters.initialSegmentAsDirichletBoundaryCondition == true) {
+						if (gauss_seidelPtr[k_ext][x_ext] != 1.0) {
+							gauss_seidelPtr[k_ext][x_ext] = gauss_seidelPtr[k_ext][x_ext] + segParameters.omega_c * (gauss_seidel - gauss_seidelPtr[k_ext][x_ext]);
+						}
+					}
+					else {
+						gauss_seidelPtr[k_ext][x_ext] = gauss_seidelPtr[k_ext][x_ext] + segParameters.omega_c * (gauss_seidel - gauss_seidelPtr[k_ext][x_ext]);
+					}
 				}
 			}
 		}
@@ -638,15 +636,12 @@ bool generalizedSubsurfSegmentationTimeStep(dataType** prevSol_extPtr, dataType*
 							+ CoefPtrs.s_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)]
 							+ CoefPtrs.n_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)]
 							+ CoefPtrs.b_Ptr[k][x] * gauss_seidelPtr[k_ext + 1][x_ext] + CoefPtrs.t_Ptr[k][x] * gauss_seidelPtr[k_ext - 1][x_ext])
-						- prevSol_extPtr[k_ext][x_ext], 2) * hhh);
+						- prevSol_extPtr[k_ext][x_ext], 2) * hh);
 				}
 			}
 		}
-	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
 
-	/*if ((segParameters.maxNoOfTimeSteps % 10) == 0) {
-		printf("Step is %zd\n", segParameters.numberOfTimeStep);
-	}*/
+	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
 
 	if (no_of_centers == 1)
 	{

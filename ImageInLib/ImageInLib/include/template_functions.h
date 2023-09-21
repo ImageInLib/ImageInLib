@@ -1,8 +1,4 @@
-/*
-* Author: Konan ALLALY
-* Purpose: INFLANET project - Image Processing in Nuclear Medicine (2D/3D)
-* Language:  C and C++
-*/
+
 #pragma once
 
 #include<iostream>
