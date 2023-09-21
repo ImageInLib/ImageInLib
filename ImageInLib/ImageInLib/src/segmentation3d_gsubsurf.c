@@ -1,6 +1,3 @@
-#pragma warning(disable:6385)
-#pragma warning(disable:6386)
-
 #include <stdio.h> // Standard lib for input and output functions
 #include <stdlib.h>
 #include <time.h>

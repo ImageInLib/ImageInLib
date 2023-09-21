@@ -1,5 +1,3 @@
-#pragma warning(disable:6385)
-#pragma warning(disable:6386)
 
 /*
 * Author: Markjoe Olunna UBA
