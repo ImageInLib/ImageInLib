@@ -17,11 +17,8 @@ extern "C" {
 #include "heat_equation.h"
 #include "filter_params.h"
 
-// MACROs
 
-// STRUCTs
-
-//Structure that holds the parameters used during SUBSURF segmentation process.
+	//Structure that holds the parameters used during SUBSURF and GSUBSURF
 	typedef struct
 	{
 		size_t maxNoGSIteration;// Maximum number of Gauss-Seidel iterations
@@ -29,12 +26,14 @@ extern "C" {
 		dataType eps2; // epsilon is the regularization factor (Evans-Spruck)
 		size_t numberOfTimeStep;// Number of current time step
 		size_t maxNoOfTimeSteps;// Maximum number of time step
-		size_t mod; // Kind of writing density
+		size_t savingFrequency; // Kind of writing density
 		dataType segTolerance; // Tolerance for stopping of the segmentation process
 		dataType tau, h, omega_c, gauss_seidelTolerance;
 		/* h is the Grid size, tau is time step for the segmentation process,
 		   omega_c is the relaxation parameter in SOR implementation using Gauss-Seidel, gauss_seidelTolerance is the acceptable
 		   tolerance for Gauss-Seidel iterations*/
+		dataType coef_conv, coef_dif; //gsubsurf coefficients
+		bool initialSegmentAsDirichletBoundaryCondition; // if yes the initial segment is keeped else we apply the classical model
 	} Segmentation_Parameters;
 
 	// Structure that holds the coefficients for PM function G calculated from the image
@@ -63,7 +62,6 @@ extern "C" {
 	typedef struct {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
-
 		dataType **segmentationFuntionPtr; // Segmentation funtion
 		dataType **inputImageToBeSegmented; // input image to be segmented
 	} Segment_Image_Data;
@@ -104,7 +102,7 @@ extern "C" {
 	- Finally, it also generates initial segmentation function
 	- no_of_centers is no of centers (usually more than one during segmentation of multiple cells)
 	- center_x, center_y, center_z are pointers to the center coordinates*/
-	bool subsurfSegmentation(Image_Data inputImageData, Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters,
+	bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 		Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr);
 
 	/* gFunctionForImageToBeSegmented manages computation of norm of presmoothed image to be segmented
@@ -116,7 +114,7 @@ extern "C" {
 	-segParameters is structure that holds the parameters used during SUBSURF segmentation process
 	-explicit_lhe_Parameters is structure that holds the parameters used for presmoothing or solving LHE*/
 	bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, Gradient_Pointers GPtrs,
-		Segmentation_Parameters segParameters, Filter_Parameters explicit_lhe_Parameters);
+		Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters);
 
 	/* gaussSeidelCoefficients calculates coefficient used during Gauss-Seidel iterations
 	- inputImageData is structure that holds the image and its dimensions
@@ -135,7 +133,6 @@ extern "C" {
 	-center_x, center_y, center_z are the center coordinates*/
 	bool rescaleLocallyToIntervalZeroOne(dataType **imagePtr, size_t length, size_t width, size_t height,
 		dataType center_x, dataType center_y, dataType center_z, dataType R, size_t counter);
-
 #ifdef __cplusplus
 }
 #endif

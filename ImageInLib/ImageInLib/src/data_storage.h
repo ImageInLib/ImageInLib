@@ -32,9 +32,15 @@ extern "C" {
 
 	bool store3dRealDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 		const size_t zDim, unsigned char * pathPtr, VTK_Header_Lines *lines, Storage_Flags flags);
+
 	bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength, const size_t imageWidth,
 		const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines *lines);
 
+	bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData);
+
+	bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+
+	bool store2dRawData(dataType* array2DPtr, const size_t xDim, const size_t yDim, const char* pathPtr, Storage_Flags flags);
 #ifdef __cplusplus
 }
 #endif

@@ -28,12 +28,42 @@ extern "C" {
 /*
 * Function To Perform Heat Explicit Scheme
 */
-	void heatExplicitScheme(Image_Data toExplicitImage, const Filter_Parameters explicitParameters);
+	//3D functions
+	void heatExplicitScheme(Image_Data toExplicitImage, const FilterParameters explicitParameters);
 	/*
 	* Function To Perform Heat Gauss-Seidel Method Implicit Scheme
 	*/
-	void heatImplicitScheme(Image_Data toImplicitImage, const Filter_Parameters implicitParameters);
+	void heatImplicitScheme(Image_Data toImplicitImage, const FilterParameters implicitParameters);
 	//==============================================================================
+	
+	//2D Functions
+	/*
+	* void heat2dExplicitScheme(Image_Data2D imageData, const FilterParameters explicitParameters)
+	* imageData:	Image_Data2D structure to handle 2D images, 
+	*					height, width image dimensions
+	*					imageDataPtr pointer for pixels value
+	* explicitParameters: FilterParameters structure for heat explicit scheme. we need:
+						timeStepSize
+	                    h
+						timeStepsNum
+	*/
+	void heat2dExplicitScheme(Image_Data2D imageData, const FilterParameters explicitParameters);
+
+	/*
+	* void heatImplicit2dScheme(Image_Data2D imageData, const FilterParameters explicitParameters)
+	* imageData:	Image_Data2D structure to handle 2D images,
+	*					height, width image dimensions
+	*					imageDataPtr pointer for pixels value
+	* implicitParameters: FilterParameters structure for heat implicit scheme. we need:
+						timeStepSize
+						h
+						timeStepsNum
+						omega_c
+						tolerance
+
+	*/
+	void heatImplicit2dScheme(Image_Data2D imageData, const FilterParameters implicitParameters);
+
 	//#endif // !HEAT_QUATION_H
 
 #ifdef __cplusplus

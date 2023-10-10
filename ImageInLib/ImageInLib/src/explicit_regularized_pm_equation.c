@@ -8,11 +8,11 @@
 
 // Local Function Prototype
 
-bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters explicitParameters)
+bool nonLinearHeatExplicitScheme(Image_Data inputImageData, FilterParameters explicitParameters)
 {
 	size_t k, i, j;
-	dataType  hh = explicitParameters.h * explicitParameters.h;
-	dataType  tau = explicitParameters.timeStepSize;
+	dataType hhh = explicitParameters.h * explicitParameters.h * explicitParameters.h;
+	dataType tau = explicitParameters.timeStepSize;
 
 	// Perform Reflection of the tempPtr
 	// Prepare variables inputImageData.height, inputImageData.length, inputImageData.width
@@ -20,15 +20,15 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 	size_t height_ext = height + 2;
 	size_t length_ext = length + 2;
 	size_t width_ext = width + 2;
-	const dataType  coeff = tau / hh;
-	dataType  u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
+	const dataType coeff = tau / hhh;
+	dataType u, uN, uS, uE, uW, uNW, uNE, uSE, uSW, Tu, TuN, TuS, TuE, TuW, TuNW, TuNE, TuSE, TuSW, //current and surrounding voxel values
 		Bu, BuN, BuS, BuE, BuW, BuNW, BuNE, BuSE, BuSW;
 	size_t kplus1, kminus1, iminus1, iplus1, jminus1, jplus1;
 	size_t x;
 	size_t x_ext;
 	size_t k_ext, j_ext, i_ext;
-	dataType  ux, uy, uz;
-	dataType  e_coef, w_coef, n_coef, s_coef, t_coef, b_coef, sum_coef;
+	dataType ux, uy, uz;
+	dataType e_coef, w_coef, n_coef, s_coef, t_coef, b_coef, sum_coef;
 
 	Image_Data presmoothingParamenters;
 	presmoothingParamenters.height = height_ext;
@@ -36,11 +36,11 @@ bool nonLinearHeatExplicitScheme(Image_Data inputImageData, Filter_Parameters ex
 	presmoothingParamenters.width = width_ext;
 
 	// Create temporary Image Data holder for Previous time step data - with extended boundary because of boundary condition
-	dataType  ** prevSolPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	dataType** prevSolPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	/* Create tempporary Image Data holder for calculation of diffusion coefficients on presmoothed image
 	- with extended boundary because of boundary condition*/
-	dataType  ** presmoothed_coefPtr = (dataType  **)malloc(sizeof(dataType  *) * (height_ext));
+	dataType** presmoothed_coefPtr = (dataType**)malloc(sizeof(dataType*) * (height_ext));
 
 	//checks if the memory was allocated
 	if (prevSolPtr == NULL || presmoothed_coefPtr == NULL)

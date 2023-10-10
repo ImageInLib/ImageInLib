@@ -263,3 +263,27 @@ __pycache__/
 /ImageInLib/external_libs/vtk/lib64
 /ImageInLib/external_libs/vtk/include
 /ImageInLib/external_libs/vtk/.build/lib64/vtk.tlog
+
+#RAW files
+*.raw
+
+#Build files
+*.build/
+
+#png and jpeg files
+#*.png
+#*.PNG
+#*.jpeg
+#*.jpg
+
+#pgm files
+*.pgm
+
+*.csv
+
+*.txt
+
+*.schema
+
+*.vtk
+/ImageInLib/ImageInLib/output/segmentation

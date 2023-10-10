@@ -6,18 +6,15 @@ extern "C" {
 #pragma once
 	typedef struct
 	{
-		double timeStepSize;
-		double h;
-		double sigma;
-		double edge_detector_coefficient;
-		double omega_c;
-		double tolerance;
-		double eps2;
-		double coef;
-		size_t p;
+		dataType timeStepSize;
+		dataType h;
+		dataType edge_detector_coefficient;
+		dataType omega_c;
+		dataType tolerance;
+		dataType eps2;
 		size_t timeStepsNum;
 		size_t maxNumberOfSolverIteration;
-	} Filter_Parameters;
+	} FilterParameters;
 	// Parameters used in filtering
 
 #ifdef __cplusplus

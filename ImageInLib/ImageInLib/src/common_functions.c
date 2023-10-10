@@ -1,9 +1,11 @@
 #include <memory.h>
 #include "common_functions.h"
+#include <math.h>
+
 //==============================================================================
 // Local Function Prototype
 //==============================================================================
-void reflection3DB(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p)
+void reflection3DB(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t p)
 {
 	size_t k, i, j;
 	size_t height = imageHeight, length = imageLength, width = imageWidth; // Actual Z, X, Y dimensions
@@ -41,7 +43,7 @@ void reflection3DB(dataType ** toReflectImage, size_t imageHeight, size_t imageL
 }
 //==============================================================================
 //imageHeight and imageLength is considered as data extension together with boundary
-void reflection3D(dataType ** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth)
+void reflection3D(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth)
 {
 	size_t k, i, j;
 	size_t length = imageLength, width = imageWidth; // Actual X, Y dimensions
@@ -97,13 +99,13 @@ size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLe
 	return rowIndex + columnIndex * rowLength; // x + y*DimX
 }
 //==============================================================================
-void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
+void copyDataToExtendedArea(dataType** originalDataPtr, dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t length_ext = originalLength + 2;
 	const size_t width_ext = originalWidth + 2;
 
-	size_t sliceBound = (length_ext - 1)* width_ext;
+	size_t sliceBound = (length_ext - 1) * width_ext;
 	size_t i, k, k_ext, i_d = 0;
 
 	for (k = 0, k_ext = 1; k < originalHeight; k++, k_ext++)
@@ -117,13 +119,13 @@ void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** exten
 	}
 }
 //==============================================================================
-void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
+void copyDataToReducedArea(dataType** originalDataPtr, const dataType** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth)
 {
 	const size_t height_ext = originalHeight + 2;
 	const size_t length_ext = originalLength + 2;
 	const size_t width_ext = originalWidth + 2;
 
-	size_t sliceBound = (length_ext - 1)* width_ext;
+	size_t sliceBound = (length_ext - 1) * width_ext;
 	size_t i, k, k_ext, i_d = 0;
 
 	for (k = 0, k_ext = 1; k < originalHeight; k++, k_ext++)
@@ -137,7 +139,7 @@ void copyDataToReducedArea(dataType ** originalDataPtr, const dataType ** extend
 	}
 }
 //==============================================================================
-void copyDataToAnotherArray(dataType ** source, dataType ** destination, size_t height, size_t length, size_t width)
+void copyDataToAnotherArray(dataType** source, dataType** destination, size_t height, size_t length, size_t width)
 {
 	size_t k, i, j, xd;
 	for (k = 0; k < height; k++)
@@ -159,48 +161,142 @@ size_t x_flat(const size_t rowIndex, const size_t columnIndex, const size_t heig
 	return rowIndex + rowLength * (columnIndex + columnLength * heightIndex); // x + xlen * (y + ylen * z)
 }
 //==============================================================================
-void rescaleNewRange(dataType ** dta, size_t height, size_t length, size_t width, dataType min_new, dataType max_new, dataType max_dta, dataType min_dta)
-{
+void rescaleNewRange(dataType** imageDataPtr, size_t imageLength, size_t imageWidth, size_t imageHeight, dataType minNew, dataType maxNew, dataType max_dta, dataType min_dta) {
 	size_t k, i, j, xd;
-	// Find the Max Intensity
-	for (k = 0; k < height; k++)
-	{
-		for (i = 0; i < length; i++)
-		{
-			for (j = 0; j < width; j++)
-			{
+
+	// Find the Min and Max Intensity
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
+
 				// 1D Conversion of row and column
-				xd = x_new(i, j, length);
-				if (dta[k][xd] > max_dta)
-				{
-					max_dta = dta[k][xd];
+				xd = x_new(i, j, imageLength);
+				if (imageDataPtr[k][xd] > max_dta) {
+					max_dta = imageDataPtr[k][xd];
 				}
-				if (dta[k][xd] < min_dta)
-				{
-					min_dta = dta[k][xd];
+				if (imageDataPtr[k][xd] < min_dta) {
+					min_dta = imageDataPtr[k][xd];
 				}
 			}
 		}
 	}
 	// Rescale from min_new to max_new
-	dataType diff_old = max_dta - min_dta;
-	dataType diff_new = max_new - min_new;
-	double scale_factor = (double)(diff_new) / (diff_old);
-	for (k = 0; k < height; k++)
-	{
-		for (i = 0; i < length; i++)
-		{
-			for (j = 0; j < width; j++)
-			{
+	dataType diffOld = max_dta - min_dta;
+	dataType diffNew = maxNew - minNew;
+	dataType scale_factor = (diffNew) / (diffOld);
+	for (k = 0; k < imageHeight; k++) {
+		for (i = 0; i < imageLength; i++) {
+			for (j = 0; j < imageWidth; j++) {
 				// 1D Conversion of row and column
-				xd = x_new(i, j, length);
-				dta[k][xd] = (dataType)scale_factor * (dta[k][xd] - max_dta) + max_new;
+				xd = x_new(i, j, imageLength);
+				imageDataPtr[k][xd] = scale_factor * (imageDataPtr[k][xd] - max_dta) + maxNew;
 				// Alternatively
-				//dta[k][xd] = (dataType)scale_factor * (dta[k][xd] - min_dta) + min_new;
-
+				//dta[k][xd] = scale_factor * (dta[k][xd] - min_dta) + min_new; }
 			}
+		}
+	}
+}
+//==============================================================================
+
+//2D function
+void copyDataToAnother2dArray(dataType* source, dataType* destination, size_t imageHeight, size_t imageWidth) {
+	size_t i, j, xd;
+	for (i = 0; i < imageHeight; i++) {
+		for (j = 0; j < imageWidth; j++) {
+			xd = x_new(i, j, imageHeight);
+			destination[xd] = source[xd];
+		}
+	}
+}
+//==============================================================================
+void copyDataTo2dExtendedArea(dataType* originalDataPtr, dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+{
+	const size_t height_ext = originalHeight + 2;
+	const size_t width_ext = originalWidth + 2;
+
+	size_t sliceBound = (height_ext - 1) * width_ext;
+	size_t i, j, i_ext, j_ext, i_d = 0;
+
+	for (i = 0, i_ext = 1; i < originalHeight; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < originalWidth; j++, j_ext++) {
+			extendedDataPtr[x_new(i_ext, j_ext, height_ext)] = originalDataPtr[x_new(i, j, originalHeight)];
 		}
 	}
 
 }
 //==============================================================================
+void copyDataTo2dReducedArea(dataType* originalDataPtr, const dataType* extendedDataPtr, const size_t originalHeight, const size_t originalWidth)
+{
+	const size_t height_ext = originalHeight + 2;
+	const size_t width_ext = originalWidth + 2;
+
+	size_t sliceBound = (height_ext - 1) * width_ext;
+	size_t i, j, i_ext, j_ext, i_d = 0;
+
+	for (i = 0, i_ext = 1; i < originalHeight; i++, i_ext++) {
+		for (j = 0, j_ext = 1; j < originalWidth; j++, j_ext++) {
+			originalDataPtr[x_new(i, j, originalHeight)] = extendedDataPtr[x_new(i_ext, j_ext, height_ext)];
+		}
+	}
+
+}
+//==============================================================================
+void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth)
+{
+	size_t i, j;
+	size_t height = imageHeight, width = imageWidth;
+
+	const size_t heightMin = height - 1;
+	const size_t widthMin = width - 1;
+
+	size_t x;
+
+	// Y reflection
+	for (i = 0; i < height; i++)
+	{
+		toReflectImage[x_new(i, 0, height)] = toReflectImage[x_new(i, 1, height)];
+		toReflectImage[x_new(i, widthMin, height)] = toReflectImage[x_new(i, widthMin - 1, height)];
+	}
+
+	// X Direction
+	for (j = 0; j < width; j++)
+	{
+		x = x_new(0, j, height);
+		toReflectImage[x] = toReflectImage[x + 1];
+
+		x = x_new(heightMin, j, height);
+		toReflectImage[x] = toReflectImage[x - 1];
+	}
+
+}
+//==============================================================================
+double getPoint2DDistance(const Point2D a, const Point2D b)
+{
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+//==============================================================================
+double getPoint3DDistance(const Point3D a, const Point3D b)
+{
+	return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+}
+//==============================================================================
+Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height) {
+
+	Point3D result = { 0.0, 0.0, 0.0 };
+	dataType max_value = 0.0;
+
+	for (size_t k = 0; k < height; k++) {
+		for (size_t i = 0; i < length; i++) {
+			for (size_t j = 0; j < width; j++) {
+				size_t x = x_new(i, j, length);
+				if (distanceMapPtr[k][x] > max_value) {
+					max_value = distanceMapPtr[k][x];
+					result.x = (dataType)i; 
+					result.y = (dataType)j; 
+					result.z = (dataType)k;
+				}
+			}
+		}
+	}
+	return result;
+}
