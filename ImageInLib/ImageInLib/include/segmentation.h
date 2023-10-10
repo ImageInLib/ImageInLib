@@ -25,9 +25,18 @@ extern "C" {
 		dataType time_step_size;	//discrete time step size
 	} Lagrangean2DSegmentationParameters;
 
-
-	void segmentImage(Image_Data inputImageData, void* pSegParameters, void* pfilterParameters,
-		const SegmentationMethod model, unsigned char * outputPathPtr, void * resultSegment);
+	/// <summary>
+	/// The method segments the image according to given inoput paraneters
+	/// </summary>
+	/// <param name="pInputImageData">Pointer to Image_Data for 3D cases or pointer to Image_Data2D respectively representing an image to be segmented</param>
+	/// <param name="pSegParameters">Pointer to Segmentation_Parameters representing segmentation parameters</param>
+	/// <param name="pFilterParameters">Pointer to FilterParameters representing pre-filtering parameters</param>
+	/// <param name="model">SegmentationMethod representing available segmentation methods</param>
+	/// <param name="outputPathPtr">A pointer to unsigned char representing a destination path for resulting segmentation </param>
+	/// <param name="pResultSegment">A pointer to Curve2D where results are returned. It is used by CURVE_2D_OPEN_EXPLCIT only</param>
+	//TODO: utilize pResultSegment for another segmentation methods as well
+	void segmentImage(void * pInputImageData, void* pSegParameters, void* pFilterParameters,
+		const SegmentationMethod model, unsigned char * outputPathPtr, void * pResultSegment);
 
 	void segment2dImage(Image_Data2D inputImageData, dataType* initialSegment, Segmentation_Parameters segParameters, FilterParameters filteringParameters,
 		point2d* centers, const char* outputPathPtr, const SegmentationMethod model);

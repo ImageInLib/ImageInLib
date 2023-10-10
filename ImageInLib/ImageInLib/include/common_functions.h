@@ -64,6 +64,11 @@ extern "C" {
 		dataType x, y, z;
 	} Point3D;
 
+	typedef struct {
+		dataType hx;
+		dataType hy;
+	} FiniteVolumeSize2D;
+
 	// Image Container and Properties
 	typedef struct {
 		// Image Dimensions
@@ -130,9 +135,9 @@ extern "C" {
 	void reflection3D(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
 	/*
-	* Gradient Calculation function
+	* Edge Detector Calculation function
 	*/
-	dataType gradientFunction(dataType value, dataType coef);
+	dataType edgeDetector(dataType value, dataType coef);
 	//==============================================================================
 	/*
 	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
@@ -185,6 +190,25 @@ extern "C" {
 	/// <param name="pcurve">Input curve to be checked</param>
 	/// <returns>Returns true, if the curve is closed, otherwise false.</returns>
 	bool isCurveClosed(const Curve2D * pcurve);
+
+	/// <summary>
+	/// Calculates gradient in 2D point given by central difference on input data
+	/// </summary>
+	/// <param name="image_data">Input image data</param>
+	/// <param name="ind_x">x coordinate of the finite volume to calculate the gradient component</param>
+	/// <param name="ind_y">y coordinate of the finite volume to calculate the gradient component</param>
+	/// <param name="sz">size of finite volumes</param>
+	/// <param name="grad">output - calculated gradient</param>
+	/// <returns>True, if it was possible to estimate gradient</returns>
+	bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D * grad);
+
+	/// <summary>
+	/// The function returns the distance to given point from orgin (0,0) - in other words, calculated a norm of the given vector 
+	/// </summary>
+	/// <param name="pt">Given input point</param>
+	/// <returns>Returns the result of (sqrt(pt.x * pt.x + pt.y * pt.y))</returns>
+	dataType norm(const Point2D pt);
+
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

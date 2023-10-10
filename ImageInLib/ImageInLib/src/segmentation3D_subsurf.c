@@ -584,7 +584,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 					/ quotient;
 				uz = ((Tu + TuE) - (Bu + BuE))
 					/ quotient;
-				GPtrs.GePtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GePtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / segParameters.h;
@@ -592,7 +592,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 					/ quotient;
 				uz = ((TuW + Tu) - (BuW + Bu))
 					/ quotient;
-				GPtrs.GwPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GwPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
 				// Calculation of coefficients in north direction
 				ux = ((uNE + uE) - (uNW + uW))
@@ -600,7 +600,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 				uy = (uN - u) / segParameters.h;
 				uz = ((TuN + Tu) - (BuN + Bu))
 					/ quotient;
-				GPtrs.GnPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GnPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
 				// Calculation of coefficients in south direction
 				ux = ((uE + uSE) - (uW + uSW))
@@ -608,7 +608,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 				uy = (uS - u) / segParameters.h;
 				uz = ((TuS + Tu) - (BuS + Bu))
 					/ quotient;
-				GPtrs.GsPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GsPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
 				// Calculation of coefficients in top direction
 				ux = ((TuE + uE) - (TuW + uW))
@@ -616,7 +616,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 				uy = ((TuN + uN) - (TuS + uS))
 					/ quotient;
 				uz = (Tu - u) / segParameters.h;
-				GPtrs.GtPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GtPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 
 				// Calculation of coefficients in bottom direction
 				ux = ((BuW + uW) - (BuE + uE))
@@ -624,7 +624,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 				uy = ((BuN + uN) - (BuS + uS))
 					/ quotient;
 				uz = (Bu - u) / segParameters.h;
-				GPtrs.GbPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
+				GPtrs.GbPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), segParameters.coef);
 			}
 		}
 	}

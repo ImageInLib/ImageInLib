@@ -18,7 +18,7 @@ extern "C" {
 		STORE_2D_DATA_CSV
 	} OperationType;
 
-	bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
+	bool manageFile(void * imageDataPtr, const size_t length, const size_t width,
 		const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags);
 
 	/*Converts to dataType = float*/

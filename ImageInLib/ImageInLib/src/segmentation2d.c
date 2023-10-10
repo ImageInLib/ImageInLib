@@ -224,10 +224,10 @@ bool subsurf(Image_Data2D imageData, dataType* initialSegment, const char* segme
 
 			size_t currentIndx = x_new(i, j, height);
 
-			gEast[currentIndx] = gradientFunction(pow(U.East[currentIndx], 2), coef_edge_detector);
-			gWest[currentIndx] = gradientFunction(pow(U.West[currentIndx], 2), coef_edge_detector);
-			gNorth[currentIndx] = gradientFunction(pow(U.North[currentIndx], 2), coef_edge_detector);
-			gSouth[currentIndx] = gradientFunction(pow(U.South[currentIndx], 2), coef_edge_detector);
+			gEast[currentIndx] = edgeDetector(pow(U.East[currentIndx], 2), coef_edge_detector);
+			gWest[currentIndx] = edgeDetector(pow(U.West[currentIndx], 2), coef_edge_detector);
+			gNorth[currentIndx] = edgeDetector(pow(U.North[currentIndx], 2), coef_edge_detector);
+			gSouth[currentIndx] = edgeDetector(pow(U.South[currentIndx], 2), coef_edge_detector);
 
 			current = (dataType)(((gEast[currentIndx] + gWest[currentIndx] + gNorth[currentIndx] + gSouth[currentIndx]) / 4.0));
 			gAverage[currentIndx] = current;
@@ -431,7 +431,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segm
 		for (j = 0; j < width; j++) {
 			size_t currentIndx = x_new(i, j, height);
 			average_gFunction = (dataType)((uCoef.East[currentIndx] + uCoef.West[currentIndx] + uCoef.North[currentIndx] + uCoef.South[currentIndx]) / 4.0);
-			edgeDetectorPtr[currentIndx] = gradientFunction(pow(average_gFunction, 2), coef_edge_detector);
+			edgeDetectorPtr[currentIndx] = edgeDetector(pow(average_gFunction, 2), coef_edge_detector);
 		}
 	}
 

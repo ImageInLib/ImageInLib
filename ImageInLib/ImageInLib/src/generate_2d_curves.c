@@ -57,7 +57,7 @@ double getCirclePerimeter(const double radius)
 
 bool generateStraightLineCurve(Curve2D* pCurve, const Point2D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance)
 {
-    if(pInitialPoints == NULL)
+    if(pInitialPoints == NULL || pCurve  == NULL)
     {
         return false;
     }
@@ -65,6 +65,11 @@ bool generateStraightLineCurve(Curve2D* pCurve, const Point2D* pInitialPoints, c
     const size_t line_points_count = howManyPointsForStraightLineCurve(pInitialPoints, initialPointsCount, pointsDistance);
 
     CurvePoint2D* p_line_points = (CurvePoint2D*)malloc(sizeof(CurvePoint2D) * line_points_count);
+
+    if (p_line_points == NULL) {
+        return false;
+    }
+
     pCurve->pPoints = p_line_points;
     pCurve->numPoints = line_points_count;
 

@@ -45,17 +45,17 @@ void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, Vector_Paramete
 				xD = (inputPtr.imageDataPtr[k][x_new(i, j + 1, _width)] - inputPtr.imageDataPtr[k][x]) / h;
 				yD = (xCent.fieldPtr[k][x_new(i + 1, j + 1, _width)] - xCent.fieldPtr[k][x_new(i, j + 1, _width)]) / h;// Y Direction
 				zD = (zCent.fieldPtr[k + 1][x_new(i, j + 1, _width)] - zCent.fieldPtr[k][x_new(i, j + 1, _width)]) / h;// Z Direction
-				vectorPtr[k][x].x = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].x = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 				// South
 				xD = (inputPtr.imageDataPtr[k][x_new(i + 1, j, _width)] - inputPtr.imageDataPtr[k][x]) / h; // Y Direction
 				yD = (xCent.fieldPtr[k][x_new(i + 1, j + 1, _width)] - xCent.fieldPtr[k][x_new(i + 1, j, _width)]) / h;// X Direction
 				zD = (yCent.fieldPtr[k + 1][x_new(i + 1, j, _width)] - yCent.fieldPtr[k][x_new(i + 1, j, _width)]) / h;// Z Direction
-				vectorPtr[k][x].y = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].y = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 				// Top
 				xD = (inputPtr.imageDataPtr[k + 1][x] - inputPtr.imageDataPtr[k][x]) / h; // Z Direction
 				yD = (yCent.fieldPtr[k + 1][x_new(i + 1, j, _width)] - yCent.fieldPtr[k + 1][x]) / h;// Y Direction
 				zD = (zCent.fieldPtr[k + 1][x_new(i, j + 1, _width)] - zCent.fieldPtr[k + 1][x]) / h;// X Direction
-				vectorPtr[k][x].z = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].z = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 			}
 			else if (fieldDirection == FINITE_BACKWARD)
 			{
@@ -63,17 +63,17 @@ void generate3DVector(Point3D ** vectorPtr, Image_Data inputPtr, Vector_Paramete
 				xD = (inputPtr.imageDataPtr[k][x] - inputPtr.imageDataPtr[k][x_new(i, j - 1, _width)]) / h;
 				yD = (xCent.fieldPtr[k][x_new(i + 1, j + 1, _width)] - xCent.fieldPtr[k][x]) / h;// Y Direction
 				zD = (zCent.fieldPtr[k + 1][x] - zCent.fieldPtr[k][x]) / h;// Z Direction
-				vectorPtr[k][x].x = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].x = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 				// North
 				xD = (inputPtr.imageDataPtr[k][x] - inputPtr.imageDataPtr[k][x_new(i - 1, j, _width)]) / h; // Y Direction
 				yD = (xCent.fieldPtr[k][x_new(i, j + 1, _width)] - xCent.fieldPtr[k][x]) / h;// X Direction
 				zD = (yCent.fieldPtr[k + 1][x] - yCent.fieldPtr[k][x]) / h;// Z Direction
-				vectorPtr[k][x].y = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].y = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 				// Bottom
 				xD = (inputPtr.imageDataPtr[k][x] - inputPtr.imageDataPtr[k - 1][x]) / h; // Z Direction
 				yD = (yCent.fieldPtr[k][x_new(i + 1, j, _width)] - yCent.fieldPtr[k][x]) / h;// Y Direction
 				zD = (zCent.fieldPtr[k][x_new(i, j + 1, _width)] - zCent.fieldPtr[k][x]) / h;// X Direction
-				vectorPtr[k][x].z = gradientFunction(xD*xD + yD * yD + zD * zD, coeff);
+				vectorPtr[k][x].z = edgeDetector(xD*xD + yD * yD + zD * zD, coeff);
 			}
 			else if (fieldDirection == FINITE_CENTRAL)
 			{
