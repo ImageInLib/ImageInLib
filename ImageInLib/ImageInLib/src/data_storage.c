@@ -86,7 +86,7 @@ bool store3dDataVtkUC(unsigned char ** array3DPtr, const size_t xDim, const size
 bool store3dDataArrayD(dataType ** array3DPtr, const size_t xDim, const size_t yDim,
 	const size_t zDim, unsigned char * pathPtr, Storage_Flags flags)
 {
-	size_t i, j, k;
+	size_t i, k;
 	const size_t dimXY = xDim * yDim;
 	FILE *cfPtr;
 
@@ -211,7 +211,7 @@ bool store3dDataVtkD(dataType ** array3DPtr, const size_t xDim, const size_t yDi
 		fprintf(outputfile, "DIMENSIONS %zd %zd %zd\n", xDim, yDim, zDim);
 
 		//fprintf(outputfile, "ORIGIN %f %f %f\n", (-1.25 + h / 2.), (-1.25 + h / 2.), (-1.25 + h / 2.));
-		fprintf(outputfile, "ORIGIN %f %f %f\n", 0, 0, 0);
+		fprintf(outputfile, "ORIGIN %f %f %f\n", (double)0, (double)0, (double)0);
 		fprintf(outputfile, "SPACING %f %f %f\n", sx, sy, sz);
 		fprintf(outputfile, "POINT_DATA %zd\n", dimXYZ);
 		fprintf(outputfile, "SCALARS scalars double\n");
@@ -295,7 +295,7 @@ bool store3dRealDataVtkUC(unsigned char ** array3DPtr, const size_t imageLength,
 
 //==================================
 //function for storage of data in 2D PGM. Used format is defined by a flag writeRawData (true = raw, false = ascii).
-bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData)
+bool store2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData)
 {
 	FILE* pgmimg;
 	pgmimg = fopen(pathPtr, "w");
@@ -315,15 +315,15 @@ bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, c
 	// Writing the maximum gray value
 	fprintf(pgmimg, "255\n");
 
+	const int dataSize = (int)(xDim * yDim);
+
 	if (writeRawData)
 	{
-		const int dataSize = (int)(xDim * yDim);
 		unsigned char * rawData = (unsigned char *)malloc(dataSize);
 		
-		for (size_t i = 0; i < xDim; i++) {
-			for (size_t j = 0; j < yDim; j++) {
-				const size_t index = x_new(j, i, yDim);
-				rawData[index] = (unsigned char)imageDataPtr[i][j];
+		if (rawData) {
+			for (size_t i = 0; i < dataSize; i++) {
+				rawData[i] = (unsigned char)imageDataPtr[i];
 			}
 		}
 
@@ -332,11 +332,9 @@ bool store2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, c
 	}
 	else
 	{
-		for (size_t i = 0; i < xDim; i++) {
-			for (size_t j = 0; j < yDim; j++) {
-				// Writing the gray values in the 2D array to the file
-				fprintf(pgmimg, "%d \n", (unsigned char)imageDataPtr[i][j]);
-			}
+		for (size_t i = 0; i < dataSize; i++) {
+			// Writing the gray values in the 2D array to the file
+			fprintf(pgmimg, "%d \n", (unsigned char)imageDataPtr[i]);
 		}
 	}
 

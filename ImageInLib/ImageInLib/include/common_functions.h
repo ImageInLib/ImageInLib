@@ -30,14 +30,34 @@ extern "C" {
 	// Includes
 #include <stddef.h>
 #include <omp.h>
+#include <stdbool.h>
 //==============================================================================
 // MACROs
 //==============================================================================
 // STRUCTs
+
 // Common 2D Points - {x,y}
-	typedef struct {
-		dataType x, y;
+	typedef struct ptstruct{
+		dataType x;
+		dataType y;
 	} Point2D;
+
+	// 2D point extended by flag indicating, if the point is end point (1st or last)
+	typedef struct {
+		union {
+			struct ptstruct;
+			Point2D pt;
+		};
+		bool isEndPoint;
+		void * prev_point;
+		void * next_point;
+	} CurvePoint2D;
+
+	// 2D Curve - list of CurvePoint2D
+	typedef struct {
+		CurvePoint2D* pPoints;
+		size_t numPoints;
+	} Curve2D;
 
 // Common 3D Points - {x,y,z}
 	typedef struct {
@@ -53,6 +73,11 @@ extern "C" {
 	typedef struct {
 		Point3D v1, v2, v3;
 	}OrientationMatrix;
+
+	typedef struct {
+		dataType hx;
+		dataType hy;
+	} FiniteVolumeSize2D;
 
 	// Image Container and Properties
 	typedef struct {
@@ -139,9 +164,9 @@ extern "C" {
 	void reflection3D(dataType** toReflectImage, size_t imageHeight, size_t imageLength, size_t imageWidth);
 	//==============================================================================
 	/*
-	* Gradient Calculation function
+	* Edge Detector Calculation function
 	*/
-	dataType gradientFunction(dataType value, dataType coef);
+	dataType edgeDetector(dataType value, dataType coef);
 	//==============================================================================
 	/*
 	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
@@ -179,6 +204,40 @@ extern "C" {
 	void reflection2D(dataType* toReflectImage, size_t imageHeight, size_t imageWidth);
 	//==============================================================================
 	double getPoint2DDistance(const Point2D a, const Point2D b);
+	
+	/// <summary>
+	/// The points of pCurve are copied to pArray. The function expects same length of the particular objects (curve and array)
+	/// </summary>
+	/// <param name="pCurve">Pointer to the curve to be copied</param>
+	/// <param name="array">Alocated array of expected size length (same as the curve) * 2</param>
+	/// <returns></returns>
+	bool copyCurve2DPointsToArray(const Curve2D * pCurve, dataType ** pArray);
+
+	/// <summary>
+	/// The function check, if the given curve is closed or not
+	/// </summary>
+	/// <param name="pcurve">Input curve to be checked</param>
+	/// <returns>Returns true, if the curve is closed, otherwise false.</returns>
+	bool isCurveClosed(const Curve2D * pcurve);
+
+	/// <summary>
+	/// Calculates gradient in 2D point given by central difference on input data
+	/// </summary>
+	/// <param name="image_data">Input image data</param>
+	/// <param name="ind_x">x coordinate of the finite volume to calculate the gradient component</param>
+	/// <param name="ind_y">y coordinate of the finite volume to calculate the gradient component</param>
+	/// <param name="sz">size of finite volumes</param>
+	/// <param name="grad">output - calculated gradient</param>
+	/// <returns>True, if it was possible to estimate gradient</returns>
+	bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D * grad);
+
+	/// <summary>
+	/// The function returns the distance to given point from orgin (0,0) - in other words, calculated a norm of the given vector 
+	/// </summary>
+	/// <param name="pt">Given input point</param>
+	/// <returns>Returns the result of (sqrt(pt.x * pt.x + pt.y * pt.y))</returns>
+	dataType norm(const Point2D pt);
+
 	//==============================================================================
 	double getPoint3DDistance(const Point3D a, const Point3D b);
 	//==============================================================================

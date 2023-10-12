@@ -173,7 +173,7 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 
 //==================================
 //Load 2D .pgm (ascii) image
-bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+bool load2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
 {
     int intensity;
     size_t i, j;
@@ -211,21 +211,21 @@ bool load2dPGM(dataType** imageDataPtr, const size_t xDim, const size_t yDim, co
     if (pgmVersion == 2) //ascii
 	{
 
-
-        for (i = 0; i < xDim; i++) {
-            for (j = 0; j < yDim; j++) {
+		size_t xd = 0;
+        for (i = 0; i < yDim; i++) {
+            for (j = 0; j < xDim; j++) {
                 fscanf(file, "%d", &intensity);
-                imageDataPtr[i][j] = (dataType)intensity;
+				// 2D to 1D representation for i, j
+				xd = x_new(j, i, xDim);
+                imageDataPtr[xd] = (dataType)intensity;
             }
         }
     }     
 	if (pgmVersion == 5) //raw
 	{
 		fgets(line2, dataSize, file);
-		for (i = 0; i < xDim; i++) {
-			for (j = 0; j < yDim; j++) {
-				imageDataPtr[i][j] = (dataType)line2[x_new(j,i,yDim)];
-			}
+		for (i = 0; i < dataSize; i++) {
+				imageDataPtr[i] = (dataType)line2[i];
 		}
 	}
     else

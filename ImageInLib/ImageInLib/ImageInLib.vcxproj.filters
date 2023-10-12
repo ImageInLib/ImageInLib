@@ -1,118 +1,500 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="distanceForPathFinding.cpp" />
-    <ClCompile Include="src\balls_on_cirlce.c" />
-    <ClCompile Include="src\balls_on_helix.c" />
-    <ClCompile Include="src\brute_force_algorithm.c" />
-    <ClCompile Include="src\common_functions.c" />
-    <ClCompile Include="src\common_math.c" />
-    <ClCompile Include="src\common_vtk.cpp" />
-    <ClCompile Include="src\data initialization version2.c" />
-    <ClCompile Include="src\data_initialization.c" />
-    <ClCompile Include="src\data_load.c" />
-    <ClCompile Include="src\data_storage.c" />
-    <ClCompile Include="src\distanceMaps.c" />
-    <ClCompile Include="src\edge_detection_function.c" />
-    <ClCompile Include="src\endianity_bl.c" />
-    <ClCompile Include="src\explicit_regularized_pm_equation.c" />
-    <ClCompile Include="src\fast_marching.c" />
-    <ClCompile Include="src\fast_sweeping_method.c" />
-    <ClCompile Include="src\file.c" />
-    <ClCompile Include="src\filtering.c" />
-    <ClCompile Include="src\generate_2d_curves.c" />
-    <ClCompile Include="src\generate_3d_shapes.c" />
-    <ClCompile Include="src\geodesic_mean_curvature_equation.c" />
-    <ClCompile Include="src\heat_equation.c" />
-    <ClCompile Include="src\imageInterpolation.c" />
-    <ClCompile Include="src\image_difference.c" />
-    <ClCompile Include="src\image_norm.c" />
-    <ClCompile Include="src\implicit_regularized_pm_equation.c" />
-    <ClCompile Include="src\interpolations.c" />
-    <ClCompile Include="src\l2_norm.c" />
-    <ClCompile Include="src\Labelling.cpp" />
-    <ClCompile Include="src\linked_list.c" />
-    <ClCompile Include="src\mean_curvature_equation.c" />
-    <ClCompile Include="src\mean_hausdorff_distance.c" />
-    <ClCompile Include="src\morphological_change.c" />
-    <ClCompile Include="src\noiseGeneration.c" />
-    <ClCompile Include="src\noise_generator.c" />
-    <ClCompile Include="src\pca.c" />
-    <ClCompile Include="src\printing_function.c" />
-    <ClCompile Include="src\procrustrates_dist.c" />
-    <ClCompile Include="src\registration.c" />
-    <ClCompile Include="src\rouy_tourin_function.c" />
-    <ClCompile Include="src\segmentation.c" />
-    <ClCompile Include="src\segmentation3D_atlas.c" />
-    <ClCompile Include="src\segmentation3D_common.c" />
-    <ClCompile Include="src\segmentation3d_gsubsurf.c" />
-    <ClCompile Include="src\segmentation3D_subsurf.c" />
-    <ClCompile Include="src\setting_boundary_values.c" />
-    <ClCompile Include="src\shapeGeneration.c" />
-    <ClCompile Include="src\shape_registration.c" />
-    <ClCompile Include="src\statistics.c" />
-    <ClCompile Include="src\thresholding_function.c" />
-    <ClCompile Include="src\time_space_l2_norm.c" />
-    <ClCompile Include="src\transformation.c" />
-    <ClCompile Include="src\transformations.c" />
-    <ClCompile Include="src\vector_fields.c" />
-    <ClCompile Include="src\vtk_format_ascii.c" />
-    <ClCompile Include="src\segmentation2d.c" />
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Noise Generation">
+      <UniqueIdentifier>{426bb144-5222-4489-a20e-61dc79e730c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{e5abfae1-c4d9-4d2f-a59a-389f7fa8a34a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data Structures">
+      <UniqueIdentifier>{a34345a2-74b0-4109-8c46-8f19e05bdd72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Distance Function">
+      <UniqueIdentifier>{9e2c416b-1ea2-4537-bcc4-4a1fdb7569a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\File Management">
+      <UniqueIdentifier>{304ebb28-af47-41e4-9a9c-16dff58a5554}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Filtering">
+      <UniqueIdentifier>{35a84cff-0c43-4003-b2cc-f6f49c066c56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces">
+      <UniqueIdentifier>{fe040d4d-67f8-46d9-be78-50849ba9aece}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Transformation">
+      <UniqueIdentifier>{c8d1b7fe-ff6d-437d-9640-ffc328a44eee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Statistics">
+      <UniqueIdentifier>{17f7cffe-3216-4c24-9e60-380717b7419d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shape Generation">
+      <UniqueIdentifier>{a70f852a-1384-4c0c-ad03-64882fa1f2f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Segmentation">
+      <UniqueIdentifier>{7765572a-a8b2-4029-b787-c5376c713099}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Others">
+      <UniqueIdentifier>{a8421e67-cec8-4fdf-a2fa-7ffb9753f7a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Numerics">
+      <UniqueIdentifier>{db3c016d-84a0-410c-a45b-c3a48678a149}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{41aeb46e-d455-4da8-92b0-2f06dae764b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data Structures">
+      <UniqueIdentifier>{92f1b637-e90c-4e10-89c6-3f9002710451}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\File Management">
+      <UniqueIdentifier>{1d927aa3-6144-4ce1-b050-bed1612aeebe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Filtering">
+      <UniqueIdentifier>{4dd57989-e52f-4320-9784-0fb461b1d4c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces">
+      <UniqueIdentifier>{455102ac-d4f3-4474-804c-f8671d12ae69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Noise Generation">
+      <UniqueIdentifier>{1878cc3a-ce89-44f0-b6c1-84d2d0a9ad10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Numerics">
+      <UniqueIdentifier>{dbe1dfa8-84ff-4643-affa-bb6f796efa41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Others">
+      <UniqueIdentifier>{120106fb-521b-41af-a063-035f56a535dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Segmentation">
+      <UniqueIdentifier>{04080cf6-e1bc-48c2-8aaf-42a2bbbac073}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shape Generation">
+      <UniqueIdentifier>{ec06cb34-5d17-4d3e-a558-a3ee5b60faa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Statistics">
+      <UniqueIdentifier>{e9f8f5cc-dbf2-4b29-bb40-6db9168df289}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Transformation">
+      <UniqueIdentifier>{08b60e84-0fe5-4863-8148-2ab5eac79c91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Distance Functions">
+      <UniqueIdentifier>{24b220d7-fb35-4125-8cc8-6aea4d91a093}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\File Management">
+      <UniqueIdentifier>{5c585696-34c2-4f74-9ff3-bad2ee7acf8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Filtering">
+      <UniqueIdentifier>{a453bb3f-e453-4817-a088-0ca4e4f4e003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Noise Generator">
+      <UniqueIdentifier>{1e5ed660-a32f-4048-832f-a205109111a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Registration">
+      <UniqueIdentifier>{42155e9a-e8ee-4bfd-afa6-ca35cb7af04a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Segmentation">
+      <UniqueIdentifier>{026a6f9b-db73-4630-b13c-c72d82707bb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Shape Generation">
+      <UniqueIdentifier>{8d2ed5e5-fdc7-4e63-b55a-3e9ac063ef10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Statistics">
+      <UniqueIdentifier>{61116bf4-eefb-4649-a3b8-836f2bd09df0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Transformation">
+      <UniqueIdentifier>{e34ab0e1-9edb-4cf4-8319-c76c7fed372a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Distance Functions">
+      <UniqueIdentifier>{16099344-65dd-4259-a102-7c5970c83305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\File Management">
+      <UniqueIdentifier>{99dcff81-0163-4614-a05c-dccfc79f3bbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Filtering">
+      <UniqueIdentifier>{0b4d7a99-7c06-42eb-8692-21d2c6e2ca63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Noise Generator">
+      <UniqueIdentifier>{5b6219b4-0bbe-4bad-879f-73d4955760cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Registration">
+      <UniqueIdentifier>{8725838e-691f-4011-a61b-9e07b7190a39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Segmentation">
+      <UniqueIdentifier>{d9d43ebe-b80f-4599-9e06-8b447399ed30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Statistics">
+      <UniqueIdentifier>{5bee29e8-2a4f-4531-aa0b-512eade16452}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Shape Generation">
+      <UniqueIdentifier>{1ccef3db-b9d3-42e1-b4d5-03ab412d889b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Transformation">
+      <UniqueIdentifier>{8201d67c-8a94-4a8d-adf5-ab933b35ba98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Distance Function">
+      <UniqueIdentifier>{529cb28c-1d6e-4db1-b6e6-3b2fe6d8cc75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Labelling">
+      <UniqueIdentifier>{6e8d466e-45e8-40e6-9ab7-31f58f2428ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Labelling">
+      <UniqueIdentifier>{441c6922-f006-4b26-9368-b8b3d41ec056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\morphology">
+      <UniqueIdentifier>{0b397659-66a9-4901-b55e-a528365c25af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\morphology">
+      <UniqueIdentifier>{4391e895-a529-434c-b679-ffc255f9b1ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="distanceForPathFinding.h" />
-    <ClInclude Include="include\common_functions.h" />
-    <ClInclude Include="include\common_math.h" />
-    <ClInclude Include="include\common_vtk.h" />
-    <ClInclude Include="include\distanceMaps.h" />
-    <ClInclude Include="include\file.h" />
-    <ClInclude Include="include\filtering.h" />
-    <ClInclude Include="include\generate_2d_curves.h" />
-    <ClInclude Include="include\Labelling.h" />
-    <ClInclude Include="include\morphological_change.h" />
-    <ClInclude Include="include\noiseGeneration.h" />
-    <ClInclude Include="include\registration.h" />
-    <ClInclude Include="include\segmentation.h" />
-    <ClInclude Include="include\segmentation2d.h" />
-    <ClInclude Include="include\shapeGeneration.h" />
-    <ClInclude Include="include\statistics.h" />
-    <ClInclude Include="include\template_functions.h" />
-    <ClInclude Include="include\transformation.h" />
-    <ClInclude Include="src\data_initialization.h" />
-    <ClInclude Include="src\data_load.h" />
-    <ClInclude Include="src\data_storage.h" />
-    <ClInclude Include="src\distance_function.h" />
-    <ClInclude Include="src\edgedetection.h" />
-    <ClInclude Include="src\endianity_bl.h" />
-    <ClInclude Include="src\fast_marching.h" />
-    <ClInclude Include="src\filter_params.h" />
-    <ClInclude Include="src\generate_3d_shapes.h" />
-    <ClInclude Include="src\heat_equation.h" />
-    <ClInclude Include="src\imageInterpolation.h" />
-    <ClInclude Include="src\image_difference.h" />
-    <ClInclude Include="src\image_norm.h" />
-    <ClInclude Include="src\interpolations.h" />
-    <ClInclude Include="src\linked_list.h" />
-    <ClInclude Include="src\mean_hausdorff_distance.h" />
-    <ClInclude Include="src\noise_generator.h" />
-    <ClInclude Include="src\non_linear_heat_equation.h" />
-    <ClInclude Include="src\pca.h" />
-    <ClInclude Include="src\printing_function.h" />
-    <ClInclude Include="src\procrustrates_dist.h" />
-    <ClInclude Include="src\registration_params.h" />
-    <ClInclude Include="src\segmentation3D_atlas.h" />
-    <ClInclude Include="src\segmentation3D_common.h" />
-    <ClInclude Include="src\segmentation3d_gsubsurf.h" />
-    <ClInclude Include="src\segmentation3D_subsurf.h" />
-    <ClInclude Include="src\setting_boundary_values.h" />
-    <ClInclude Include="src\shapeAnalysis_params.h" />
-    <ClInclude Include="src\shape_registration.h" />
-    <ClInclude Include="src\thresholding.h" />
-    <ClInclude Include="src\trajectories.h" />
-    <ClInclude Include="src\transformations.h" />
-    <ClInclude Include="src\transform_params.h" />
-    <ClInclude Include="src\vector_fields.h" />
-    <ClInclude Include="src\vtk_format_ascii.h" />
-    <ClInclude Include="src\vtk_params.h" />
+    <ClCompile Include="src\transformations.c">
+      <Filter>Source Files\Transformation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shape_registration.c">
+      <Filter>Source Files\Transformation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pca.c">
+      <Filter>Source Files\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\endianity_bl.c">
+      <Filter>Source Files\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\balls_on_cirlce.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\balls_on_helix.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\generate_3d_shapes.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation3D_subsurf.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation3D_atlas.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thresholding_function.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\printing_function.c">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vector_fields.c">
+      <Filter>Source Files\Others</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data initialization version2.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data_initialization.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\image_difference.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\image_norm.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\l2_norm.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\setting_boundary_values.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\time_space_l2_norm.c">
+      <Filter>Source Files\Numerics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\noise_generator.c">
+      <Filter>Source Files\Noise Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\explicit_regularized_pm_equation.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\geodesic_mean_curvature_equation.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\heat_equation.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\implicit_regularized_pm_equation.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mean_curvature_equation.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data_load.c">
+      <Filter>Source Files\File Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data_storage.c">
+      <Filter>Source Files\File Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vtk_format_ascii.c">
+      <Filter>Source Files\File Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\brute_force_algorithm.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fast_marching.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fast_sweeping_method.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\procrustrates_dist.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rouy_tourin_function.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\linked_list.c">
+      <Filter>Source Files\Data Structures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common_functions.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common_math.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\edge_detection_function.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interpolations.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\distanceMaps.c">
+      <Filter>Source Files\Interfaces\Distance Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\file.c">
+      <Filter>Source Files\Interfaces\File Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\filtering.c">
+      <Filter>Source Files\Interfaces\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\noiseGeneration.c">
+      <Filter>Source Files\Interfaces\Noise Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="src\registration.c">
+      <Filter>Source Files\Interfaces\Registration</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation.c">
+      <Filter>Source Files\Interfaces\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\transformation.c">
+      <Filter>Source Files\Interfaces\Transformation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\statistics.c">
+      <Filter>Source Files\Interfaces\Statistics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shapeGeneration.c">
+      <Filter>Source Files\Interfaces\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common_vtk.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation3D_common.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mean_hausdorff_distance.c">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Labelling.cpp">
+      <Filter>Source Files\Labelling</Filter>
+    </ClCompile>
+    <ClCompile Include="src\morphological_change.c">
+      <Filter>Source Files\morphology</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation3d_gsubsurf.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\generate_2d_curves.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation2D_lagrangean.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\segmentation2d.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="distanceForPathFinding.cpp">
+      <Filter>Source Files\Distance Function</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imageInterpolation.c">
+      <Filter>Source Files\Transformation</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\transformations.h">
+      <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\transform_params.h">
+      <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shape_registration.h">
+      <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\registration_params.h">
+      <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pca.h">
+      <Filter>Header Files\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\endianity_bl.h">
+      <Filter>Header Files\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\trajectories.h">
+      <Filter>Header Files\Shape Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\generate_3d_shapes.h">
+      <Filter>Header Files\Shape Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3D_atlas.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3D_common.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3D_subsurf.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\thresholding.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vector_fields.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="src\printing_function.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="src\data_initialization.h">
+      <Filter>Header Files\Numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\image_difference.h">
+      <Filter>Header Files\Numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\image_norm.h">
+      <Filter>Header Files\Numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\setting_boundary_values.h">
+      <Filter>Header Files\Numerics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\noise_generator.h">
+      <Filter>Header Files\Noise Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\filter_params.h">
+      <Filter>Header Files\Filtering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\heat_equation.h">
+      <Filter>Header Files\Filtering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\non_linear_heat_equation.h">
+      <Filter>Header Files\Filtering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vtk_format_ascii.h">
+      <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="src\data_storage.h">
+      <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="src\data_load.h">
+      <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="src\distance_function.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fast_marching.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\procrustrates_dist.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shapeAnalysis_params.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\linked_list.h">
+      <Filter>Header Files\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="src\edgedetection.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\interpolations.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vtk_params.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\file.h">
+      <Filter>Header Files\Interfaces\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="include\filtering.h">
+      <Filter>Header Files\Interfaces\Filtering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\registration.h">
+      <Filter>Header Files\Interfaces\Registration</Filter>
+    </ClInclude>
+    <ClInclude Include="include\noiseGeneration.h">
+      <Filter>Header Files\Interfaces\Noise Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="include\segmentation.h">
+      <Filter>Header Files\Interfaces\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\transformation.h">
+      <Filter>Header Files\Interfaces\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shapeGeneration.h">
+      <Filter>Header Files\Interfaces\Shape Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\statistics.h">
+      <Filter>Header Files\Interfaces\Statistics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\distanceMaps.h">
+      <Filter>Header Files\Interfaces\Distance Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_vtk.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_math.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mean_hausdorff_distance.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Labelling.h">
+      <Filter>Header Files\Labelling</Filter>
+    </ClInclude>
+    <ClInclude Include="include\template_functions.h">
+      <Filter>Header Files\File Management</Filter>
+    </ClInclude>
+    <ClInclude Include="include\morphological_change.h">
+      <Filter>Header Files\morphology</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3d_gsubsurf.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\common_functions.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\segmentation2d.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="distanceForPathFinding.h">
+      <Filter>Header Files\Distance Function</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imageInterpolation.h">
+      <Filter>Header Files\Transformation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation2D_lagrangean.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\generate_2d_curves.h">
+      <Filter>Header Files\Shape Generation</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
