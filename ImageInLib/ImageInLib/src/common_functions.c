@@ -300,7 +300,6 @@ Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t leng
 	}
 	return result;
 }
-}
 
 bool copyCurve2DPointsToArray(const Curve2D* pCurve, dataType** pArray)
 {
@@ -312,6 +311,8 @@ bool copyCurve2DPointsToArray(const Curve2D* pCurve, dataType** pArray)
 		pArray[i][0] = pCurve->pPoints[i].x;
 		pArray[i][1] = pCurve->pPoints[i].y;
 	}
+
+	return true;
 }
 
 bool isCurveClosed(const Curve2D* pcurve)
@@ -393,5 +394,5 @@ bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind
 
 dataType norm(const Point2D pt)
 {
-	return sqrt(pt.x * pt.x + pt.y * pt.y);
+	return (dataType)sqrt(pt.x * pt.x + pt.y * pt.y);
 }
