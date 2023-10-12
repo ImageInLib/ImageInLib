@@ -64,6 +64,16 @@ extern "C" {
 		dataType x, y, z;
 	} Point3D;
 
+	//Structure to handle image spacing
+	typedef struct {
+		dataType sx, sy, sz;
+	} VoxelSpacing;
+
+	//Matrix for rotation
+	typedef struct {
+		Point3D v1, v2, v3;
+	}OrientationMatrix;
+
 	typedef struct {
 		dataType hx;
 		dataType hy;
@@ -74,13 +84,10 @@ extern "C" {
 		// Image Dimensions
 		size_t height, length, width; // Absolute Dimension
 		dataType** imageDataPtr; // Image Data Containers
+		Point3D origin; // image origin
+		VoxelSpacing spacing; // distance between pixels and distance between slice //--> voxel dimension
+		OrientationMatrix orientation;
 	} Image_Data;
-
-	typedef struct {
-		// Image Dimensions
-		size_t height, width; // Absolute Dimension
-		dataType* imageDataPtr; // Image Data Containers
-	} Image_Data2D;
 
 	// Generate Random Points
 	typedef struct {
@@ -90,6 +97,28 @@ extern "C" {
 	typedef struct {
 		size_t xd, p;
 	}Random2dPoints;
+
+	typedef struct {
+		Point2D v1, v2;
+	}OrientationMatrix2D;
+
+	typedef struct {
+		dataType sx, sy;
+	} PixelSpacing;
+
+	typedef struct {
+		// Image Dimensions
+		size_t height, width; // Absolute Dimension
+		dataType* imageDataPtr; // Image Data Containers
+		Point2D origin; // image origin
+		PixelSpacing spacing; // pixel size
+		OrientationMatrix2D orientation;
+	} Image_Data2D;
+
+	typedef struct {
+		dataType min_data, max_data, mean_data, sd_data;
+	} Statistics;
+
 	//==============================================================================
 	// Shapes Container
 	typedef struct {
@@ -209,6 +238,16 @@ extern "C" {
 	/// <returns>Returns the result of (sqrt(pt.x * pt.x + pt.y * pt.y))</returns>
 	dataType norm(const Point2D pt);
 
+	//==============================================================================
+	double getPoint3DDistance(const Point3D a, const Point3D b);
+	//==============================================================================
+	/*
+	* Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height)
+	* distanceMapPtr : pointer contaning the computed distance for each pixel
+	* lenght, width, height : image dimension
+	* The function return the coordinates of the voxel with the higest value
+	*/
+	Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height);
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

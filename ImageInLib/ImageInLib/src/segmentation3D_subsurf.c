@@ -1,3 +1,4 @@
+
 /*
 * Author: Markjoe Olunna UBA
 * Purpose: ImageInLife project - 4D Image Segmentation Methods
@@ -27,7 +28,7 @@
 #include "vtk_params.h"
 // Local Function Prototype
 
-bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters,
+bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters,
 	Point3D * centers, size_t no_of_centers, unsigned char * outputPathPtr)
 {
 	size_t i, j, k; // length == xDim, width == yDim, height == zDim
@@ -120,7 +121,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 	copyDataToAnotherArray(initialSegment, segmFuntionPtr, height, length, width);
 
 	//compute coefficients from presmoothed image
-	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, explicit_lhe_Parameters);
+	gFunctionForImageToBeSegmented(inputImageData, prevSol_extPtr, GPtrs, segParameters, implicit_lhe_Parameters);
 
 	//Array for name construction
 	unsigned char name[350];
@@ -148,7 +149,7 @@ bool subsurfSegmentation(Image_Data inputImageData, dataType** initialSegment, S
 		difference_btw_current_and_previous_sol = l2normD(prevSol_extPtr, gauss_seidelPtr, length, width, height, segParameters.h);
 
 		//writing density.
-		if ((i%segParameters.mod) == 0)
+		if ((i%segParameters.savingFrequency) == 0)
 		{
 			strcpy_s(name, sizeof name, outputPathPtr);
 			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", i);
@@ -212,7 +213,7 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 		return false;
 
 	size_t k, i, j;
-	dataType hh = segParameters.h * segParameters.h, hhh = segParameters.h * segParameters.h * segParameters.h;
+	dataType hh = segParameters.h * segParameters.h;
 	dataType tau = segParameters.tau;
 
 	// Error value used to check iteration
@@ -291,14 +292,13 @@ bool subsurfSegmentationTimeStep(dataType **prevSol_extPtr, dataType **gauss_sei
 							+ (CoefPtrs.s_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext + 1, length_ext)])
 							+ (CoefPtrs.n_Ptr[k][x] * gauss_seidelPtr[k_ext][x_new(i_ext, j_ext - 1, length_ext)])
 							+ (CoefPtrs.b_Ptr[k][x] * gauss_seidelPtr[k_ext + 1][x_ext])
-							+ (CoefPtrs.t_Ptr[k][x] * gauss_seidelPtr[k_ext - 1][x_ext])) - prevSol_extPtr[k_ext][x_ext], 2) * hhh);
+							+ (CoefPtrs.t_Ptr[k][x] * gauss_seidelPtr[k_ext - 1][x_ext])) - prevSol_extPtr[k_ext][x_ext], 2) * hh);
 				}
 			}
 		}
 	} while (mean_square_residue > segParameters.gauss_seidelTolerance && z < segParameters.maxNoGSIteration);
 
 	//Copy the current time step to original data array after timeStepsNum
-	//copy gauss_seidelPtr ---> inputImageData.segmentationFunctionPtr
 	copyDataToReducedArea(inputImageData.segmentationFuntionPtr, gauss_seidelPtr, height, length, width);
 
 	//Rescale values of segmentation function and current time step to interval (0, 1)
@@ -492,7 +492,7 @@ bool generateInitialSegmentationFunctionForMultipleCentres(dataType **inputDataA
 }
 
 bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extendedCoefPtr, Gradient_Pointers GPtrs,
-	Segmentation_Parameters segParameters, FilterParameters explicit_lhe_Parameters)
+	Segmentation_Parameters segParameters, FilterParameters implicit_lhe_Parameters)
 {
 	//checks if the memory was allocated
 	if (inputImageData.imageDataPtr == NULL || extendedCoefPtr == NULL || GPtrs.GePtr == NULL || GPtrs.GwPtr == NULL
@@ -526,7 +526,7 @@ bool gFunctionForImageToBeSegmented(Image_Data inputImageData, dataType **extend
 	reflection3D(extendedCoefPtr, height_ext, length_ext, width_ext);
 
 	//perfom presmoothing
-	heatExplicitScheme(presmoothingData, explicit_lhe_Parameters);
+	heatImplicitScheme(presmoothingData, implicit_lhe_Parameters);
 
 	copyDataToReducedArea(imageToBeSegPtr, extendedCoefPtr, inputImageData.height, inputImageData.length, inputImageData.width);
 
