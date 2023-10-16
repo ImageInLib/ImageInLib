@@ -163,7 +163,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 					/ (4.0 * implicitParameters.h));
 				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * implicitParameters.h));
-				e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				e_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / implicitParameters.h;
@@ -171,7 +171,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 					/ (4.0 * implicitParameters.h));
 				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * implicitParameters.h));
-				w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				w_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in north direction
 				ux = (dataType)(((uNE + uE) - (uNW + uW))
@@ -179,7 +179,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 				uy = (uN - u) / implicitParameters.h;
 				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * implicitParameters.h));
-				n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				n_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in south direction
 				ux = (dataType)(((uE + uSE) - (uW + uSW))
@@ -187,7 +187,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 				uy = (uS - u) / implicitParameters.h;
 				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * implicitParameters.h));
-				s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				s_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in top direction
 				ux = (dataType)(((TuE + uE) - (TuW + uW))
@@ -195,7 +195,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 				uy = (dataType)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * implicitParameters.h));
 				uz = (Tu - u) / implicitParameters.h;
-				t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				t_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in bottom direction
 				ux = (dataType)(((BuW + uW) - (BuE + uE))
@@ -203,7 +203,7 @@ bool nonLinearHeatImplicitScheme(Image_Data inputImageData, FilterParameters imp
 				uy = (dataType)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * implicitParameters.h));
 				uz = (Bu - u) / implicitParameters.h;
-				b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
+				b_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), implicitParameters.edge_detector_coefficient);
 			}
 		}
 	}

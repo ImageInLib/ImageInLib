@@ -254,7 +254,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((Tu + TuE) - (Bu + BuE))
 					/ (4.0 * filterParameters.h));
-				presmoot_e_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_e_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in west direction
 				ux = (uW - u) / filterParameters.h;
@@ -262,7 +262,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 					/ (4.0 * filterParameters.h));
 				uz = (dataType)(((TuW + Tu) - (BuW + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_w_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_w_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in north direction
 				ux = (dataType)(((uNE + uE) - (uNW + uW))
@@ -270,7 +270,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 				uy = (uN - u) / filterParameters.h;
 				uz = (dataType)(((TuN + Tu) - (BuN + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_n_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_n_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in south direction
 				ux = (dataType)(((uE + uSE) - (uW + uSW))
@@ -278,7 +278,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 				uy = (uS - u) / filterParameters.h;
 				uz = (dataType)(((TuS + Tu) - (BuS + Bu))
 					/ (4.0 * filterParameters.h));
-				presmoot_s_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_s_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in top direction
 				ux = (dataType)(((TuE + uE) - (TuW + uW))
@@ -286,7 +286,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 				uy = (dataType)(((TuN + uN) - (TuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Tu - u) / filterParameters.h;
-				presmoot_t_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_t_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				// Calculation of coefficients in bottom direction
 				ux = (dataType)(((BuW + uW) - (BuE + uE))
@@ -294,7 +294,7 @@ bool geodesicMeanCurvatureTimeStep(Image_Data inputImageData, FilterParameters f
 				uy = (dataType)(((BuN + uN) - (BuS + uS))
 					/ (4.0 * filterParameters.h));
 				uz = (Bu - u) / filterParameters.h;
-				presmoot_b_coefPtr[k][x] = gradientFunction((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
+				presmoot_b_coefPtr[k][x] = edgeDetector((ux * ux) + (uy * uy) + (uz * uz), filterParameters.edge_detector_coefficient);
 
 				//calculation of coefficients in the original image data
 				// Calculation of coefficients in east direction
