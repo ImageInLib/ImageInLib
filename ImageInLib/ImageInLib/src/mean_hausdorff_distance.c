@@ -3,7 +3,6 @@
 //==============================================================================
 #include <float.h>
 #include <math.h>
-#include < stdlib.h >
 //==============================================================================
 // MHD Function
 dataType mean_hausdorff(dataType ** curveA_Pointer, dataType ** curveB_Pointer, dataType curveIntensity, size_t height, size_t length, size_t width)

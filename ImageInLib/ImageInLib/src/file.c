@@ -2,36 +2,36 @@
 #include "data_load.h"
 #include "data_storage.h"
 
-bool manageFile(dataType  ** imageDataPtr, const size_t length, const size_t width,
+bool manageFile(void* imageDataPtr, const size_t length, const size_t width,
 	const size_t height, unsigned char * pathPtr, OperationType operation, LoadDataType dType, Storage_Flags flags)
 {
 	bool status = false; // Initial Status, only changed to true if the operation is successful
     switch (operation)
     {
         case LOAD_DATA_RAW:
-            status = load3dDataArrayRAW(imageDataPtr, length, width, height, pathPtr, dType);
+            status = load3dDataArrayRAW((dataType**)imageDataPtr, length, width, height, pathPtr, dType);
             break;
         case LOAD_2D_DATA_PGM:
-            status = load2dPGM(imageDataPtr, width, height, pathPtr);
+            status = load2dPGM((dataType*)imageDataPtr, width, height, pathPtr);
             break;
         case STORE_DATA_RAW:
             switch (dType)
             {
                 case BINARY_DATA:
-                    status = store3dDataArrayD(imageDataPtr, length, width, height, pathPtr, flags);
+                    status = store3dDataArrayD((dataType**)imageDataPtr, length, width, height, pathPtr, flags);
                     break;
                 case ASCII_DATA:
-                    status = store3dDataArrayASCII(imageDataPtr, length, width, height, pathPtr, flags);
+                    status = store3dDataArrayASCII((dataType**)imageDataPtr, length, width, height, pathPtr, flags);
                     break;
                 default:
                     break;
             }
             break;
         case STORE_2D_DATA_PGM:
-            status = store2dPGM(imageDataPtr, width, height, pathPtr, dType == BINARY_DATA);
+            status = store2dPGM((dataType*)imageDataPtr, width, height, pathPtr, dType == BINARY_DATA);
             break;
         case STORE_2D_DATA_CSV:
-            status = store2dCSV(imageDataPtr, width, height, pathPtr);
+            status = store2dCSV((dataType**)imageDataPtr, width, height, pathPtr);
             break;
         default:
             break;
