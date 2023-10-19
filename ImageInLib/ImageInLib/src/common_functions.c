@@ -89,7 +89,7 @@ void reflection3D(dataType** toReflectImage, size_t imageHeight, size_t imageLen
 /*
 * Evaluates the diffusivity value
 */
-dataType gradientFunction(dataType value, dataType coef)
+dataType edgeDetector(dataType value, dataType coef)
 {
 	return (dataType)(1.0 / (1 + coef * value));
 }
@@ -299,4 +299,100 @@ Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t leng
 		}
 	}
 	return result;
+}
+
+bool copyCurve2DPointsToArray(const Curve2D* pCurve, dataType** pArray)
+{
+	if (pCurve == NULL || pArray == NULL) {
+		return false;
+	}
+
+	for (int i = 0; i < pCurve->numPoints; i++) {
+		pArray[i][0] = pCurve->pPoints[i].x;
+		pArray[i][1] = pCurve->pPoints[i].y;
+	}
+
+	return true;
+}
+
+bool isCurveClosed(const Curve2D* pcurve)
+{
+	size_t num_end_points = 0;
+	for (size_t i = 0; i < pcurve->numPoints; i++)
+	{
+		if (pcurve->pPoints[i].isEndPoint)
+		{
+			num_end_points++;
+		}
+	}
+
+	if (num_end_points == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D* grad)
+{
+	if (image_data.imageDataPtr == NULL || image_data.height < 2 || image_data.width < 2 ||
+		sz.hx == 0 || sz.hy == 0) {
+		return false;
+	}
+
+	size_t x = ind_x, y = ind_y;
+	if (x >= image_data.width)
+	{
+		x = image_data.width - 1;
+	}
+
+	if (y >= image_data.height)
+	{
+		y = image_data.height - 1;
+	}
+
+	dataType dx = 0, dy = 0;
+	dataType hx_c = 2 * sz.hx;
+	dataType hy_c = 2 * sz.hy;
+
+	if (x == 0)
+	{
+		dx = (image_data.imageDataPtr[x_new(x + 1, y, image_data.width)] - image_data.imageDataPtr[x_new(x, y, image_data.width)]) / sz.hx;
+	}
+	else if (x == image_data.width - 1)
+	{
+		dx = (image_data.imageDataPtr[x_new(x, y, image_data.width)] - image_data.imageDataPtr[x_new(x - 1, y, image_data.width)]) / sz.hx;
+	}
+	else
+	{
+		dx = (image_data.imageDataPtr[x_new(x + 1, y, image_data.width)] - image_data.imageDataPtr[x_new(x - 1, y, image_data.width)]) / hx_c;
+	}
+
+	if (y == 0)
+	{
+		dy = (image_data.imageDataPtr[x_new(x, y + 1, image_data.width)] - image_data.imageDataPtr[x_new(x, y, image_data.width)]) / sz.hy;
+	}
+	else if (y == image_data.height - 1)
+	{
+		dy = (image_data.imageDataPtr[x_new(x, y, image_data.width)] - image_data.imageDataPtr[x_new(x, y - 1, image_data.width)]) / sz.hy;
+	}
+	else
+	{
+		const size_t xtmp = x_new(x, y + 1, image_data.width);
+		dy = (image_data.imageDataPtr[x_new(x, y + 1, image_data.width)] - image_data.imageDataPtr[x_new(x, y - 1, image_data.width)]) / hy_c;
+	}
+
+
+	grad->x = dx;
+	grad->y = dy;
+
+	return true;
+}
+
+dataType norm(const Point2D pt)
+{
+	return (dataType)sqrt(pt.x * pt.x + pt.y * pt.y);
 }

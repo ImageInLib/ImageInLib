@@ -27,14 +27,14 @@ void generateShape(dataType **inputDataPtr, unsigned char *outputDataPtr, Point3
 	}
 }
 
-bool generate2DCurve(Point2D* pCurve, const size_t curvePointsCount, const Point2D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance, ShapeType method)
+bool generate2DCurve(Curve2D* pCurve, const Point2D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance, ShapeType method)
 {
 	switch (method)
 	{
 	case CIRCLE_2D_CURVE:
-		return generateCircleCurve(pCurve, curvePointsCount,pInitialPoints, initialPointsCount, pointsDistance);
+		return generateCircleCurve(pCurve, pInitialPoints, initialPointsCount, pointsDistance);
 	case LINE_2D_CURVE:
-		return generateStraightLineCurve(pCurve, curvePointsCount, pInitialPoints, initialPointsCount, pointsDistance);
+		return generateStraightLineCurve(pCurve, pInitialPoints, initialPointsCount, pointsDistance);
 	default:
 		return false;
 	}
