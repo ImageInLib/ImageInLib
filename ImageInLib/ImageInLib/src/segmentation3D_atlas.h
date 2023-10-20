@@ -57,11 +57,13 @@ typedef struct {
 // Segmentation parameters 
 typedef struct {
 	size_t maxNoGaussIterations, reflectionLength, storeFileFrequency, timeSteps;
-	dataType episonRegularization, tau, edgeDetectorCoef, inflationCoeff, toleranceGausedel, toleranceSegmentation, omegaGaussedel;
+	dataType episonRegularization, tau, edgeDetectorCoef, inflationCoeff, toleranceGausedel, toleranceSegmentation, omegaGaussedel, toleranceEstimation;
 	dataType lamda, eta, eta; // control parameters for expanding and edge term influences respectively
 	Point3D hSpacing; // pixel spacing - x,y,z
 	dataType mu1, mu2; // control parameters for the external force and the curvature terms
 	dataType d1, d2; // distance used to determing what gamma value to set before using the atlas
+	Registration_Params regParams;
+	Optimization_Method optMethod;
 } Segmentation_Paramereters;
 //==============================================================================
 // Struct for mean shape, eigenvectors, eigenvalues, princomp
@@ -73,7 +75,15 @@ typedef struct {
 	// Principal component
 	dataType* eigenvalues;
 	int princomp; enum EstimationMethod estMethod;
+	char pcaFolder[200], meanDistFile[200], meanFile[200], pcaReferenceMean[200], pcaResultFile[200];
+	dataType threshold_comp;
 } PCAData;
+//==============================================================================
+typedef struct {
+	dataType** d_0th_step, * d_mass, rho_zero_step;
+	int w_size, offset, beg_reduce, turnoff_g2;
+	bool skip_g2, est_fun, reduce_g2;
+} tmpDataHolders;
 //==============================================================================
 // ENUMs
 enum EstimationMethod { MIN_Energy = 1, MIN_Probability };
@@ -81,12 +91,12 @@ enum EstimationMethod { MIN_Energy = 1, MIN_Probability };
 // Global Variables
 //==============================================================================
 // Function Prototypes
-void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, T** priorShape, T lambda, T eta, T zeta, T h, size_t p, T epsilon, T tau);
+void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, dataType** priorShape, dataType lambda, dataType eta, dataType zeta, dataType h, size_t p, dataType epsilon, dataType tau, dataType mu1, dataType mu2);
 //==============================================================================
 void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, size_t p);
 //==============================================================================
 // Atlas Segmentation Model interface function
-void atlasSegmentationModel(Segmentation_Paramereters segParameters, size_t imageHeight, size_t imageLength, size_t imageWidth);
+void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam);
 //==============================================================================
 #endif // !SEGMENTATIO3D_COMMON
 

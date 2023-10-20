@@ -13,9 +13,9 @@ void initializeGradData(GradData* grad3D, size_t imageHeight, size_t imageLength
 // Initialize the ABSContainer
 void initializeABSContainer(ABSContainer* dta3D, size_t imageHeight, size_t imageLength, size_t imageWidth, size_t reflexLength);
 // Estimate shape function by minimization of the energy
-void estimatedShapeByEnergy(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, int step, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
+void estimatedShapeByEnergy(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
 // Estimate shape function by probability function
-void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, int step, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
+void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
 //==============================================================================
 
 
@@ -239,7 +239,7 @@ void initializeABSContainer(ABSContainer* dta3D, size_t imageHeight, size_t imag
 //==============================================================================
 // Estimate shape functions
 //==============================================================================
-void estimatedShapeByEnergy(ABSContainer* dta3D,dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, int step, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance)
+void estimatedShapeByEnergy(ABSContainer* dta3D,dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance)
 {
 	int k, i, j, xd, xyd, l;
 	//==============================================================================
@@ -498,7 +498,7 @@ void estimatedShapeByEnergy(ABSContainer* dta3D,dataType** dtaMeanShape, dataTyp
 	bound_eigvalues = NULL;
 }
 //==============================================================================
-void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, int step, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance)
+void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance)
 {
 	int k, i, j, xd, xyd;
 	//==============================================================================
@@ -818,7 +818,7 @@ void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, da
 }
 //==============================================================================
 // Estimate the current segmentation from the atlas function
-dataType estmateSegmentation(ABSContainer* dta3D, PCAData* pcaParam, dataType** currentSegmentation, size_t height, size_t length, size_t width, size_t reflexLength, dataType foreground, dataType background, dataType tol_s, int step, dataType h)
+dataType estmateSegmentation(ABSContainer* dta3D, PCAData* pcaParam, dataType** currentSegmentation, size_t height, size_t length, size_t width, size_t reflexLength, dataType foreground, dataType background, dataType tol_s, dataType h, Registration_Params regParams, Optimization_Method optMethod)
 {
 	//==============================================================================
 	size_t dim2D = length + 2 * reflexLength + 1 * width + 2 * reflexLength + 1;
@@ -866,8 +866,7 @@ dataType estmateSegmentation(ABSContainer* dta3D, PCAData* pcaParam, dataType** 
 		// Rescale 0 - 1
 		rescaleDta((*dta3D).dta_tmp3, height, length, width, 0, 0);
 		// Registration - Inputs are distance Maps for current segmentation and mean shape
-		// ToDo - update the run_registration function to return the optimal registration parameters.
-		Affine_Parameter finalResults = run_registration((*pcaParam).dtaMean, (*dta3D).dta_tmp3, regCurrentSegmentation, height, length, width, tol_est, step_size, false);
+		run_registration((*pcaParam).dtaMean, (*dta3D).dta_tmp3, regCurrentSegmentation, height, length, width, regParams, optMethod);
 		//==============================================================================
 		reflection3D(regCurrentSegmentation, height - reflexLength, length - reflexLength, width - reflexLength, reflexLength);
 		reflection3D(regCurrentSegmentation, height - reflexLength, length - reflexLength, width - reflexLength, reflexLength);
@@ -891,12 +890,12 @@ dataType estmateSegmentation(ABSContainer* dta3D, PCAData* pcaParam, dataType** 
 		{
 			bound = 1.25, eps = 1.0;
 			est_iterations = 200;
-			estimatedShapeByEnergy(dta3D,(*pcaParam).dtaMeanDist, regCurrSegDistMap, currentSegmentation, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, (*pcaParam).princomp, height, length, width, step, finalResults, bound, eps, est_iterations, false, 2, h, tolerance);
+			estimatedShapeByEnergy(dta3D,(*pcaParam).dtaMeanDist, regCurrSegDistMap, currentSegmentation, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, (*pcaParam).princomp, height, length, width, regParams.affineResults, bound, eps, est_iterations, false, 2, h, tolerance);
 		}
 		else if ((*pcaParam).estMethod == MIN_Probability) // Minimizing probability
 		{
 			bound = 0.25, eps = 1.0;
-			estimateShapeByProbability(dta3D ,(*pcaParam).dtaMeanDist, regCurrSegDistMap, currentSegmentation, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, (*pcaParam).princomp, height, length, width, step, finalResults, bound, eps, est_iterations, false, 2, h, tolerance);
+			estimateShapeByProbability(dta3D ,(*pcaParam).dtaMeanDist, regCurrSegDistMap, currentSegmentation, (*pcaParam).eigenvalues, (*pcaParam).eigenvectors, (*pcaParam).princomp, height, length, width, regParams.affineResults, bound, eps, est_iterations, false, 2, h, tolerance);
 		}
 		else
 		{
@@ -1310,6 +1309,124 @@ void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size
 }
 //==============================================================================
 // Atlas Segmentation Model Interface
-void atlasSegmentationModel(Segmentation_Paramereters segParameters, size_t imageHeight, size_t imageLength, size_t imageWidth)
+void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam)
 {
+	//==============================================================================
+	// Short varaible names abbrviations
+	size_t p = segParameters.reflectionLength;
+	dataType mu1 = segParameters.mu1, mu2 = segParameters.mu2; // values used in thesis -> mu1 5.0e-01, mu2 5.0e-01
+	dataType d1 = segParameters.d1, d2 = segParameters.d2; // values used in thesis -> d1 20.0 (12.0 for 75% noise, 3.0 for 75% noise)
+	size_t imageHeight = imageData.height, imageLength = imageData.length, imageWidth = imageData.width, dim2D = imageLength * imageLength;
+	size_t max_iters = segParameters.timeSteps; // 250
+	dataType tol_s = segParameters.toleranceSegmentation;
+	dataType tol_e = segParameters.toleranceEstimation;
+	dataType h3 = segParameters.hSpacing.x * segParameters.hSpacing.y * segParameters.hSpacing.z;
+	Optimization_Method optMethod = segParameters.optMethod;
+	Registration_Params regParams = segParameters.regParams;
+	//==============================================================================
+	// Holder for the operations todo after each time step
+	const size_t mem_alloc_h = sizeof(dataType*) * (imageHeight + 2 * p + 1);
+	const size_t mem_alloc_lw = ((imageLength + 2 * p + 1) * (imageWidth + 2 * p + 1)) * sizeof(dataType);
+	const size_t dimLW = ((imageLength + 2 * p + 1) * (imageWidth + 2 * p + 1));
+	tmpDataHolders* tmpDataStepHolder = (tmpDataHolders*)malloc(sizeof(tmpDataHolders));
+	// Initialize the pointers in the struct
+	tmpDataStepHolder->skip_g2 = false;
+	tmpDataStepHolder->est_fun = true;
+	tmpDataStepHolder->w_size = 5;
+	tmpDataStepHolder->offset = 10;
+	tmpDataStepHolder->beg_reduce = -1;
+	tmpDataStepHolder->reduce_g2 = false;
+	tmpDataStepHolder->turnoff_g2 = false;
+	tmpDataStepHolder->d_0th_step = (dataType**)malloc(mem_alloc_h);
+	tmpDataStepHolder->d_mass = (dataType*)malloc(sizeof(T) * (max_iters + 1));
+	for (size_t i = 0; i <= max_iters; i++)
+	{
+		tmpDataStepHolder->d_mass[i] = 0.;
+	}
+	for (size_t i = 0; i < (imageHeight + 2 * p + 1); i++)
+	{
+		tmpDataStepHolder->d_0th_step[i] = (dataType*)malloc(mem_alloc_lw);
+	}
+	//==============================================================================
+	// Set up data containers for the Gradient data and Atlas Data
+	// Atlas
+	AtlasData* atls3D;
+	initializeAtlasData(atls3D, imageHeight, imageLength, imageWidth, p);
+	// Gradient
+	GradData* grad3D;
+	initializeGradData(grad3D, imageHeight, imageLength, imageWidth, p);
+	//==============================================================================
+	// Set the ABSContainer
+	ABSContainer* dta3D;
+	initializeABSContainer(dta3D, imageHeight, imageLength, imageWidth, p);
+	//==============================================================================
+	// Shorten param names
+	dataType foreground = (*dta3D).imgForeground, background = (*dta3D).imgBackground;
+	//==============================================================================
+	// Estimate the initial segmentation and store to pcaPriorShape - 0th step?
+	(*dta3D).est_start = false;
+	//==============================================================================
+	// Copy the imageData to the (*dta3D).dta - used inside the segmentation fn's
+	copyDataPointer(imageData.imageDataPtr, (*dta3D).dta, imageHeight, imageLength, imageWidth);
+	//==============================================================================
+	// Run the gradient coeffiecient fn
+	gradientCoefficients(dta3D, grad3D, imageHeight, imageLength, imageWidth, p);
+	//==============================================================================
+	// Run the initial segmentation fn
+	segmentation3D_fn(dta3D, atls3D, (*dta3D).imgBackground, p, imageHeight, imageLength, imageWidth);
+	//==============================================================================
+	// Estimate initial segmentation - store as the 0th step priorShape
+	// Copy the zeroth or initial segmentation
+	copyDataPointer((*dta3D).dta_u, tmpDataStepHolder->d_0th_step, imageHeight + 2 * p + 1, imageLength + 2 * p + 1, imageWidth + 2 * p + 1);
+	//==============================================================================
+	// Get stored PCA results - mean shape, eigenvectors, eigenvalues, from the pcaParam
+	//==============================================================================
+	// Read the data for PCA from the files
+	readPCAData(pcaParam, pcaParam->pcaFolder, pcaParam->meanDistFile, pcaParam->meanFile, pcaParam->pcaResultFile);
+	// Calculate the dist. map for the mean shape
+	fastSweepingFunction_3D((*pcaParam).dtaMeanDist, (*pcaParam).dtaMean, imageLength, imageWidth, imageHeight, 1, 50000, foreground);
+	ReDistFn((*pcaParam).dtaMeanDist, imageHeight, imageLength, imageWidth, foreground, background);
+	//==============================================================================
+	// Set PCA paramaters and methods
+	dataType total = 0.0, eigsum = 0.0;
+	int k_comps = 0;;
+	for (int i = 0; i < (*pcaParam).princomp; i++)
+	{
+		total += fabsf((*pcaParam).eigenvalues[i]);
+	}
+	for (int i = 0; i < (*pcaParam).princomp; i++)
+	{
+		eigsum += fabsf((*pcaParam).eigenvalues[i]) / total;
+		k_comps++;
+		if (eigsum >= pcaParam->threshold_comp)
+		{
+			break;
+		}
+	}
+	// Set no. of components
+	(*pcaParam).princomp = k_comps;
+	//==============================================================================
+	// Initialize PCA Prior Segmentation shape to distance map for Mean shape
+	(*dta3D).priorShape = (dataType**)malloc(mem_alloc_h);
+	(*dta3D).estShape = (dataType**)malloc(mem_alloc_h);
+	dataType** dist_orig = (dataType**)malloc(mem_alloc_h);
+	for (size_t i = 0; i < (imageHeight + 2 * p + 1); i++)
+	{
+		(*dta3D).priorShape[i] = (dataType*)malloc(mem_alloc_lw);
+		(*dta3D).estShape[i] = (dataType*)malloc(mem_alloc_lw);
+		dist_orig[i] = (dataType*)malloc(mem_alloc_lw);
+		for (size_t j = 0; j < dimLW; j++)
+		{
+			(*dta3D).priorShape[i][j] = foreground;
+			(*dta3D).estShape[i][j] = foreground;
+		}
+	}
+	//==============================================================================
+	// Check if the initial segmentation is similar to the estimated shape
+	copyDataPointer((*dta3D).dta_u, (*dta3D).dta_tmp, ((*dta3D).height), ((*dta3D).length), ((*dta3D).width));
+	if (estmateSegmentation(dta3D, pcaParam, (*dta3D).dta_tmp, (*dta3D).height, (*dta3D).length, (*dta3D).width, p, foreground, background, tol_s, h3, regParams, optMethod) < tol_e)
+	{
+		printf("\nEstimated shape found very similar to current segmentation at step: %d\n", 0);
+	}
+	//==============================================================================
 }
