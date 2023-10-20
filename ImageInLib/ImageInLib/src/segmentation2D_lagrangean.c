@@ -1,10 +1,10 @@
 #include "segmentation2D_lagrangean.h"
 #include "common_functions.h"
 #include <stdlib.h>
-
+#include <math.h>
 #include "file.h"
 
-bool lagrangeanExplicitOpen2DCurveSegmentation(Image_Data2D inputImage2D, const Lagrangean2DSegmentationParameters* pSegmentationParams,
+bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagrangean2DSegmentationParameters* pSegmentationParams,
     unsigned char* pOutputPathPtr, Curve2D* pResultSegmentation)
 {
     if (pSegmentationParams == NULL || pResultSegmentation == NULL) {
@@ -48,6 +48,19 @@ bool lagrangeanExplicitOpen2DCurveSegmentation(Image_Data2D inputImage2D, const 
         edge_detector[i] = edgeDetector(abs_val_grad[i], edge_detector_coef);
     }
 
+ /*   dataType dx, dy, dist;
+    for (size_t i = 0; i < inputImage2D.height; i++)
+    {
+        for (size_t j = 0; j < inputImage2D.width; j++)
+        {
+            xd = x_new(j, i, inputImage2D.width);
+            dx = pow(j - inputImage2D.width / 2.0, 2);
+            dy = pow(i - inputImage2D.height / 2.0, 2);
+            dist = sqrt(dx + dy);
+            edge_detector[xd] = dist;
+        }
+    }*/
+
     Image_Data2D edgeDetector = { inputImage2D.height, inputImage2D.width, edge_detector };
 
     //get velocity
@@ -74,10 +87,14 @@ bool lagrangeanExplicitOpen2DCurveSegmentation(Image_Data2D inputImage2D, const 
         pResultSegmentation->pPoints[i].y = pSegmentationParams->pinitial_condition->pPoints[i].y;
     }
 
+    size_t iterPt = 0;
+    size_t maxIterPt = pResultSegmentation->numPoints;
 
-    const size_t iterPt = 1;
-    const size_t maxIterPt = pResultSegmentation->numPoints - 2;
-
+    if (pSegmentationParams->open_curve) {
+        iterPt = 1;
+        maxIterPt = pResultSegmentation->numPoints - 1;
+    }
+ 
     for(size_t t = 0; t < pSegmentationParams->num_time_steps; t++)
     {
         for (size_t i = iterPt; i < maxIterPt; i++)

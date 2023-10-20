@@ -32,7 +32,7 @@ void segmentImage(void * pInputImageData, void * pSegParameters, void * pfilterP
             Image_Data2D inputImageData = *(Image_Data2D*)pInputImageData;
             Lagrangean2DSegmentationParameters* pSegmentationParams = (Lagrangean2DSegmentationParameters*)pSegParameters;
             Curve2D* resultSegmentationCurve = (Curve2D*)resultSegment;
-            lagrangeanExplicitOpen2DCurveSegmentation(inputImageData, pSegmentationParams, outputPathPtr, resultSegmentationCurve);
+            lagrangeanExplicit2DCurveSegmentation(inputImageData, pSegmentationParams, outputPathPtr, resultSegmentationCurve);
         default:
             break;
 	}
