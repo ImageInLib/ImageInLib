@@ -15,6 +15,9 @@ extern "C" {
 	// Includes
 #include "segmentation3D_common.h"
 //==============================================================================
+// 
+#include <shape_registration.h>
+//==============================================================================
 // Macro's
 //==============================================================================
 // STRUCTs
@@ -58,7 +61,7 @@ typedef struct {
 typedef struct {
 	size_t maxNoGaussIterations, reflectionLength, storeFileFrequency, timeSteps;
 	dataType episonRegularization, tau, edgeDetectorCoef, inflationCoeff, toleranceGausedel, toleranceSegmentation, omegaGaussedel, toleranceEstimation;
-	dataType lamda, eta, eta; // control parameters for expanding and edge term influences respectively
+	double lambda, eta, zeta; // control parameters for expanding and edge term influences respectively
 	Point3D hSpacing; // pixel spacing - x,y,z
 	dataType mu1, mu2; // control parameters for the external force and the curvature terms
 	dataType d1, d2; // distance used to determing what gamma value to set before using the atlas
@@ -96,7 +99,21 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, size_t p);
 //==============================================================================
 // Atlas Segmentation Model interface function
-void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam);
+void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam, tmpDataHolders* tmpDataStepHolder);
+//==============================================================================
+// Stop segmentation function
+/*
+	* Call the stop segment function
+	* Estimate the segmentation, difference btn n and n+1 segmenation
+	* Checks if the tolerance has been reached
+	* Mofies original values for lambda, eta, zeta, mass_diff. - pass as pointers
+	* returns true to signal end of segmentation
+	* mass_diff - holds the difference between current and previous segmentation
+*/
+bool stop_segment3D(
+	ABSContainer* dta3D, tmpDataHolders* tmpDataStepHolder,
+	double * lambda, double * zeta, double * eta,
+	dataType * mass_diff);
 //==============================================================================
 #endif // !SEGMENTATIO3D_COMMON
 

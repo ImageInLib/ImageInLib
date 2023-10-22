@@ -1,5 +1,4 @@
 #include "segmentation3D_atlas.h"
-#include <shape_registration.h>
 #include <filter_params.h>
 #include <climits>
 //==============================================================================
@@ -16,6 +15,9 @@ void initializeABSContainer(ABSContainer* dta3D, size_t imageHeight, size_t imag
 void estimatedShapeByEnergy(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
 // Estimate shape function by probability function
 void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, dataType** shape, dataType** currentSeg, dataType* eigenvalues, dataType** eigenvectors, int princomp, size_t height, size_t length, size_t width, Affine_Parameter finalResults, dataType bound, dataType eps, int est_iterations, bool parallelize, int NUMTHREADS, dataType h, dataType tolerance);
+//==============================================================================
+// Free Containers
+void freeAtlasABSContainerGradData(ABSContainer* dta3D, AtlasData* atls3D, GradData* grad3D, size_t imageHeight, size_t reflexLength);
 //==============================================================================
 
 
@@ -1309,18 +1311,20 @@ void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size
 }
 //==============================================================================
 // Atlas Segmentation Model Interface
-void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam)
+void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam, tmpDataHolders* tmpDataStepHolder)
 {
 	//==============================================================================
-	// Short varaible names abbrviations
+	// Short varaible names abbreviations
 	size_t p = segParameters.reflectionLength;
 	dataType mu1 = segParameters.mu1, mu2 = segParameters.mu2; // values used in thesis -> mu1 5.0e-01, mu2 5.0e-01
 	dataType d1 = segParameters.d1, d2 = segParameters.d2; // values used in thesis -> d1 20.0 (12.0 for 75% noise, 3.0 for 75% noise)
+	double lambda = segParameters.lambda, eta = segParameters.eta, zeta = segParameters.zeta;
 	size_t imageHeight = imageData.height, imageLength = imageData.length, imageWidth = imageData.width, dim2D = imageLength * imageLength;
-	size_t max_iters = segParameters.timeSteps; // 250
+	size_t max_iters = segParameters.timeSteps;
 	dataType tol_s = segParameters.toleranceSegmentation;
 	dataType tol_e = segParameters.toleranceEstimation;
 	dataType h3 = segParameters.hSpacing.x * segParameters.hSpacing.y * segParameters.hSpacing.z;
+	dataType epsilon = segParameters.episonRegularization, tau = segParameters.tau;
 	Optimization_Method optMethod = segParameters.optMethod;
 	Registration_Params regParams = segParameters.regParams;
 	//==============================================================================
@@ -1328,25 +1332,6 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 	const size_t mem_alloc_h = sizeof(dataType*) * (imageHeight + 2 * p + 1);
 	const size_t mem_alloc_lw = ((imageLength + 2 * p + 1) * (imageWidth + 2 * p + 1)) * sizeof(dataType);
 	const size_t dimLW = ((imageLength + 2 * p + 1) * (imageWidth + 2 * p + 1));
-	tmpDataHolders* tmpDataStepHolder = (tmpDataHolders*)malloc(sizeof(tmpDataHolders));
-	// Initialize the pointers in the struct
-	tmpDataStepHolder->skip_g2 = false;
-	tmpDataStepHolder->est_fun = true;
-	tmpDataStepHolder->w_size = 5;
-	tmpDataStepHolder->offset = 10;
-	tmpDataStepHolder->beg_reduce = -1;
-	tmpDataStepHolder->reduce_g2 = false;
-	tmpDataStepHolder->turnoff_g2 = false;
-	tmpDataStepHolder->d_0th_step = (dataType**)malloc(mem_alloc_h);
-	tmpDataStepHolder->d_mass = (dataType*)malloc(sizeof(T) * (max_iters + 1));
-	for (size_t i = 0; i <= max_iters; i++)
-	{
-		tmpDataStepHolder->d_mass[i] = 0.;
-	}
-	for (size_t i = 0; i < (imageHeight + 2 * p + 1); i++)
-	{
-		tmpDataStepHolder->d_0th_step[i] = (dataType*)malloc(mem_alloc_lw);
-	}
 	//==============================================================================
 	// Set up data containers for the Gradient data and Atlas Data
 	// Atlas
@@ -1409,12 +1394,10 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 	// Initialize PCA Prior Segmentation shape to distance map for Mean shape
 	(*dta3D).priorShape = (dataType**)malloc(mem_alloc_h);
 	(*dta3D).estShape = (dataType**)malloc(mem_alloc_h);
-	dataType** dist_orig = (dataType**)malloc(mem_alloc_h);
 	for (size_t i = 0; i < (imageHeight + 2 * p + 1); i++)
 	{
 		(*dta3D).priorShape[i] = (dataType*)malloc(mem_alloc_lw);
 		(*dta3D).estShape[i] = (dataType*)malloc(mem_alloc_lw);
-		dist_orig[i] = (dataType*)malloc(mem_alloc_lw);
 		for (size_t j = 0; j < dimLW; j++)
 		{
 			(*dta3D).priorShape[i][j] = foreground;
@@ -1429,4 +1412,229 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 		printf("\nEstimated shape found very similar to current segmentation at step: %d\n", 0);
 	}
 	//==============================================================================
+	// Section to read precise result if any, it's dist. fn. This will can be used to compare with final segmentation results
+	//==============================================================================
+	// Initialize the mass_diff to a large negative value;
+	dataType mass_diff = INT_MIN;
+	// Loope through the iterations until either reach max no. or tolerance as the stopping condtion
+	for (size_t w = 1; w < max_iters; w++)
+	{
+		//==============================================================================
+		// Call the segmentation_ap to calculate the ap eq. coefficients
+		segmentation3D_Ap_coef(
+			dta3D, grad3D, atls3D,
+			imageHeight, imageLength, imageWidth,
+			(*dta3D).priorShape,
+			lambda, eta, zeta, h3, p,
+			epsilon, tau, mu1, mu2
+		);
+		//==============================================================================
+		// Call the gmcf_atlass fn.
+		gmcf3D_atlas(
+			dta3D, grad3D, atls3D,
+			imageHeight, imageLength, imageWidth,
+			p
+		);
+		//==============================================================================
+		// Find the error between current segmentation and precise didt. fn's if we have the precise
+		//==============================================================================
+		/*
+		* Call the stop segment function
+		*/
+		bool stopSegmentation = stop_segment3D(dta3D, tmpDataStepHolder, &lambda, &zeta, &eta, &mass_diff);
+		if (stopSegmentation) {
+			//==============================================================================
+			// Can cacl. the diff between segmentation result and precise result if we have
+			//==============================================================================
+			// Print the mass_diff
+			printf("The final error is %.12e\n", mass_diff);
+			//==============================================================================
+			// Clean up all pointers created
+			// Free dta3d
+			// Free atlas3d
+			// Free grad3D
+			freeAtlasABSContainerGradData(dta3D, atls3D, grad3D, imageHeight, p);
+			//==============================================================================
+			// Break out of the loop
+			break;
+			//==============================================================================
+
+		}
+	}
 }
+//==============================================================================
+void freeAtlasABSContainerGradData(ABSContainer* dta3D, AtlasData * atls3D, GradData* grad3D, size_t imageHeight, size_t reflexLength)
+	{
+		size_t k, height = imageHeight + 2 * reflexLength + 1;
+		for (k = 0; k < height; k++)
+		{
+			//==============================================================================
+			// dta3D
+			free((*dta3D).dta_h[k]);
+			free((*dta3D).dta_l[k]);
+			free((*dta3D).dta_w[k]);
+
+			free((*dta3D).dta_v[k]);
+			free((*dta3D).dta_u[k]);
+			free((*dta3D).dta_u0[k]);
+			free((*dta3D).dta_uq[k]);
+			free((*dta3D).dta_tmp[k]);
+			free((*dta3D).dta_tmp2[k]);
+			free((*dta3D).dta_tmp3[k]);
+
+			free((*dta3D).priorShape[k]);
+			free((*dta3D).estShape[k]);
+			//==============================================================================
+			// atlas3D
+			free((*atls3D).bp_e[k]);
+			free((*atls3D).bp_w[k]);
+			free((*atls3D).bp_s[k]);
+			free((*atls3D).bp_n[k]);
+			free((*atls3D).bp_b[k]);
+			free((*atls3D).bp_t[k]);
+			free((*atls3D).cp[k]);
+			free((*atls3D).dp[k]);
+			free((*atls3D).gd[k]);
+			//==============================================================================
+			// grad3D
+			free((*grad3D).ae[k]);
+			free((*grad3D).aw[k]);
+			free((*grad3D).an[k]);
+			free((*grad3D).as[k]);
+			free((*grad3D).at[k]);
+			free((*grad3D).ab[k]);
+
+			free((*grad3D).ge[k]);
+			free((*grad3D).gw[k]);
+			free((*grad3D).gn[k]);
+			free((*grad3D).gs[k]);
+			free((*grad3D).gt[k]);
+			free((*grad3D).gb[k]);
+			free((*grad3D).gd[k]);
+
+			free((*grad3D).ap[k]);
+			//==============================================================================
+		}
+		//==============================================================================
+		// Free atlas
+		free((*atls3D).bp_e);
+		free((*atls3D).bp_w);
+		free((*atls3D).bp_s);
+		free((*atls3D).bp_n);
+		free((*atls3D).bp_b);
+		free((*atls3D).bp_t);
+
+		free((*atls3D).cp);
+		free((*atls3D).dp);
+
+		free((*atls3D).gd);
+
+		// Set to NULL
+
+		(*atls3D).bp_e = NULL;
+		(*atls3D).bp_w = NULL;
+		(*atls3D).bp_s = NULL;
+		(*atls3D).bp_n = NULL;
+		(*atls3D).bp_b = NULL;
+		(*atls3D).bp_t = NULL;
+
+		(*atls3D).cp = NULL;
+		(*atls3D).dp = NULL;
+
+		(*atls3D).gd = NULL;
+
+		// Free Structs
+		free(atls3D->bp_e);
+		free(atls3D->bp_w);
+		free(atls3D->bp_s);
+		free(atls3D->bp_n);
+		free(atls3D->bp_b);
+		free(atls3D->bp_t);
+
+		free(atls3D->cp);
+		free(atls3D->dp);
+
+		free(atls3D->gd);;
+
+		free(atls3D);
+
+		atls3D = NULL;
+		//==============================================================================
+		// Free grad3D
+		free((*grad3D).ae);
+		free((*grad3D).aw);
+		free((*grad3D).an);
+		free((*grad3D).as);
+		free((*grad3D).at);
+		free((*grad3D).ab);
+
+		free((*grad3D).ge);
+		free((*grad3D).gw);
+		free((*grad3D).gn);
+		free((*grad3D).gs);
+		free((*grad3D).gt);
+		free((*grad3D).gb);
+		free((*grad3D).gd);
+
+		free((*grad3D).ap);
+
+		// Set to Null
+
+		(*grad3D).ae = NULL;
+		(*grad3D).aw = NULL;
+		(*grad3D).an = NULL;
+		(*grad3D).as = NULL;
+		(*grad3D).at = NULL;
+		(*grad3D).ab = NULL;
+
+		(*grad3D).ge = NULL;
+		(*grad3D).gw = NULL;
+		(*grad3D).gn = NULL;
+		(*grad3D).gs = NULL;
+		(*grad3D).gt = NULL;
+		(*grad3D).gb = NULL;
+		(*grad3D).gd = NULL;
+
+		(*grad3D).ap = NULL;
+		
+		free(grad3D);
+		grad3D = NULL;
+
+		//==============================================================================
+		// Free dta3D
+		free((*dta3D).dta_h);
+		free((*dta3D).dta_l);
+		free((*dta3D).dta_w);
+
+		free((*dta3D).dta_v);
+		free((*dta3D).dta_u);
+		free((*dta3D).dta_u0);
+		free((*dta3D).dta_uq);
+		free((*dta3D).dta_tmp);
+		free((*dta3D).dta_tmp2);
+		free((*dta3D).dta_tmp3);
+
+		free((*dta3D).priorShape);
+		free((*dta3D).estShape);
+
+		// Set to NULL
+		(*dta3D).dta_h = NULL;
+		(*dta3D).dta_l = NULL;
+		(*dta3D).dta_w = NULL;
+
+		(*dta3D).dta_v = NULL;
+		(*dta3D).dta_u = NULL;
+		(*dta3D).dta_u0 = NULL;
+		(*dta3D).dta_uq = NULL;
+		(*dta3D).dta_tmp = NULL;
+		(*dta3D).dta_tmp2 = NULL;
+		(*dta3D).dta_tmp3 = NULL;
+
+		(*dta3D).priorShape = NULL;
+		(*dta3D).estShape = NULL;
+		
+		free(dta3D);
+		dta3D = NULL;
+		//==============================================================================
+	}
+//==============================================================================
