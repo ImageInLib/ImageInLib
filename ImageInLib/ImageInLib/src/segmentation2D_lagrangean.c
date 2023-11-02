@@ -11,13 +11,16 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         return false;
     }
 
+    CurvePoint2D* pOldCurve = (CurvePoint2D*)malloc(sizeof(CurvePoint2D) * pResultSegmentation->numPoints);
+    Curve2D oldSegmentation = { pOldCurve, pResultSegmentation->numPoints };
+
     const size_t sizeHeight = sizeof(dataType *) * inputImage2D.height;
 
     const size_t dataDimension = inputImage2D.width * inputImage2D.height;
     const size_t dataSize = dataDimension * sizeof(dataType);
 
-    dataType* pvelocity_x = (dataType*)malloc(dataSize); // velocity component x
-    dataType* pvelocity_y = (dataType*)malloc(dataSize); // velocity component y
+    dataType* pgrad_x = (dataType*)malloc(dataSize); // velocity component x
+    dataType* pgrad_y = (dataType*)malloc(dataSize); // velocity component y
     dataType* abs_val_grad = (dataType*)malloc(dataSize); // absolute value of gradient
 
     dataType* edge_detector = (dataType*)malloc(dataSize); // edge detctor
@@ -48,18 +51,7 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         edge_detector[i] = edgeDetector(abs_val_grad[i], edge_detector_coef);
     }
 
- /*   dataType dx, dy, dist;
-    for (size_t i = 0; i < inputImage2D.height; i++)
-    {
-        for (size_t j = 0; j < inputImage2D.width; j++)
-        {
-            xd = x_new(j, i, inputImage2D.width);
-            dx = pow(j - inputImage2D.width / 2.0, 2);
-            dy = pow(i - inputImage2D.height / 2.0, 2);
-            dist = sqrt(dx + dy);
-            edge_detector[xd] = dist;
-        }
-    }*/
+    dataType dx, dy, dist, max_dist = 0;
 
     Image_Data2D edgeDetector = { inputImage2D.height, inputImage2D.width, edge_detector };
 
@@ -70,8 +62,8 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         {
             getGradient2D(edgeDetector, j, i, finite_volume_sz, &current_grad);
             xd = x_new(j, i, inputImage2D.width);
-            pvelocity_x[xd] = current_grad.x;
-            pvelocity_y[xd] = current_grad.y;
+            pgrad_x[xd] = current_grad.x;
+            pgrad_y[xd] = current_grad.y;
         }
     }
 
@@ -88,20 +80,31 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
     }
 
     size_t iterPt = 0;
-    size_t maxIterPt = pResultSegmentation->numPoints;
+    size_t maxIterPt = oldSegmentation.numPoints;
 
     if (pSegmentationParams->open_curve) {
         iterPt = 1;
-        maxIterPt = pResultSegmentation->numPoints - 1;
+        maxIterPt = oldSegmentation.numPoints - 1;
     }
  
+    dataType vx, vy;
+    dataType rx_l, rx_g, ry_l, ry_g;
+    dataType nx, ny, dot, norm, tx, ty;
+
     for(size_t t = 0; t < pSegmentationParams->num_time_steps; t++)
     {
+        for (size_t i = 0; i < (oldSegmentation.numPoints); i++)
+        {
+            oldSegmentation.pPoints[i].x = pResultSegmentation->pPoints[i].x;
+            oldSegmentation.pPoints[i].y = pResultSegmentation->pPoints[i].y;
+        }
+
+
         for (size_t i = iterPt; i < maxIterPt; i++)
         {
             //let us move by curve points just in vector field
-            current_i = (size_t)(pResultSegmentation->pPoints[i].y + 0.5);
-            current_j = (size_t)(pResultSegmentation->pPoints[i].x + 0.5);
+            current_i = (size_t)(oldSegmentation.pPoints[i].y + 0.5);
+            current_j = (size_t)(oldSegmentation.pPoints[i].x + 0.5);
 
             //let us keep points inside the image
             if (current_i < 0) {
@@ -116,18 +119,58 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
                 current_j = inputImage2D.width - 1;
             }
 
-            //it is just simple motion in vector field
             xd = x_new(current_j, current_i, inputImage2D.width);
-            pResultSegmentation->pPoints[i].x = pResultSegmentation->pPoints[i].x -
-                pSegmentationParams->time_step_size * pvelocity_x[xd];
 
-            pResultSegmentation->pPoints[i].y = pResultSegmentation->pPoints[i].y -
-                pSegmentationParams->time_step_size * pvelocity_y[xd];
+            if (i == 0) {
+                rx_l = oldSegmentation.pPoints[pResultSegmentation->numPoints - 1].x;
+                ry_l = oldSegmentation.pPoints[pResultSegmentation->numPoints - 1].y;
+                rx_g = oldSegmentation.pPoints[1].x;
+                ry_g = oldSegmentation.pPoints[1].y;
+            }
+            else if (i == oldSegmentation.numPoints - 1) {
+                rx_l = oldSegmentation.pPoints[i - 1].x;
+                ry_l = oldSegmentation.pPoints[i - 1].y;
+                rx_g = oldSegmentation.pPoints[0].x;
+                ry_g = oldSegmentation.pPoints[0].y;
+            }
+            else {
+                rx_l = oldSegmentation.pPoints[i - 1].x;
+                ry_l = oldSegmentation.pPoints[i - 1].y;
+                rx_g = oldSegmentation.pPoints[i + 1].x;
+                ry_g = oldSegmentation.pPoints[i + 1].y;
+            }
+
+            norm = sqrt(pow(rx_l - rx_g, 2) + pow(ry_l - ry_g, 2));
+            tx = (rx_g - rx_l) / norm;
+            ty = (ry_g - ry_l) / norm;
+
+            nx = ty;
+            ny = -tx;
+
+            dot = pgrad_x[xd] * nx + pgrad_y[xd] * ny;
+            
+            vx = -pgrad_x[xd];
+            vy = -pgrad_y[xd];
+
+            dot = vx* nx + vy * ny;
+
+            vx = dot * nx;
+            vy = dot * ny;
+
+            //it is just simple motion in vector field
+
+            pResultSegmentation->pPoints[i].x = oldSegmentation.pPoints[i].x +
+                pSegmentationParams->time_step_size * vx;
+
+            pResultSegmentation->pPoints[i].y = oldSegmentation.pPoints[i].y +
+                pSegmentationParams->time_step_size * vy;
         }
     }
 
-    free(pvelocity_x);
-    free(pvelocity_y);
+    free(pOldCurve);
+
+    free(pgrad_x);
+    free(pgrad_y);
 
     free(abs_val_grad);
     free(edge_detector);

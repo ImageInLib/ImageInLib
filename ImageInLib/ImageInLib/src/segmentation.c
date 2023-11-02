@@ -28,7 +28,7 @@ void segmentImage(void * pInputImageData, void * pSegParameters, void * pfilterP
             generalizedSubsurfSegmentation(inputImageData, pSegmentationParams->pInitialCondition, *pSegmentationParams, *explicitLheParameters, 
                 pSegmentationParams->pCenters, pSegmentationParams->no_of_centers, outputPathPtr);
         }
-        case CURVE_2D_OPEN_EXPLCIT:
+        case CURVE_2D_EXPLCIT:
             Image_Data2D inputImageData = *(Image_Data2D*)pInputImageData;
             Lagrangean2DSegmentationParameters* pSegmentationParams = (Lagrangean2DSegmentationParameters*)pSegParameters;
             Curve2D* resultSegmentationCurve = (Curve2D*)resultSegment;
