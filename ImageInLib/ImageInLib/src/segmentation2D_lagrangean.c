@@ -51,8 +51,6 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         edge_detector[i] = edgeDetector(abs_val_grad[i], edge_detector_coef);
     }
 
-    dataType dx, dy, dist, max_dist = 0;
-
     Image_Data2D edgeDetector = { inputImage2D.height, inputImage2D.width, edge_detector };
 
     //get velocity
@@ -87,9 +85,11 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         maxIterPt = oldSegmentation.numPoints - 1;
     }
  
+    //_l - lower, _g - greater, _c - current
     dataType vx, vy;
-    dataType rx_l, rx_g, ry_l, ry_g;
+    dataType rx_l, rx_g, ry_l, ry_g, rx_c, ry_c;
     dataType nx, ny, dot, norm, tx, ty;
+    dataType h_g, h_c;
 
     for(size_t t = 0; t < pSegmentationParams->num_time_steps; t++)
     {
@@ -121,9 +121,12 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
 
             xd = x_new(current_j, current_i, inputImage2D.width);
 
+            rx_c = oldSegmentation.pPoints[i].x;
+            ry_c = oldSegmentation.pPoints[i].y;
+
             if (i == 0) {
-                rx_l = oldSegmentation.pPoints[pResultSegmentation->numPoints - 1].x;
-                ry_l = oldSegmentation.pPoints[pResultSegmentation->numPoints - 1].y;
+                rx_l = oldSegmentation.pPoints[oldSegmentation.numPoints - 1].x;
+                ry_l = oldSegmentation.pPoints[oldSegmentation.numPoints - 1].y;
                 rx_g = oldSegmentation.pPoints[1].x;
                 ry_g = oldSegmentation.pPoints[1].y;
             }
@@ -140,7 +143,7 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
                 ry_g = oldSegmentation.pPoints[i + 1].y;
             }
 
-            norm = sqrt(pow(rx_l - rx_g, 2) + pow(ry_l - ry_g, 2));
+            norm = (dataType)sqrt(pow(rx_l - rx_g, 2) + pow(ry_l - ry_g, 2));
             tx = (rx_g - rx_l) / norm;
             ty = (ry_g - ry_l) / norm;
 
@@ -149,13 +152,19 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
 
             dot = pgrad_x[xd] * nx + pgrad_y[xd] * ny;
             
+            //basic velocity - gradients of edge detector
             vx = -pgrad_x[xd];
             vy = -pgrad_y[xd];
 
+            //projection of velocity field in direction of normal vector
             dot = vx* nx + vy * ny;
 
-            vx = dot * nx;
-            vy = dot * ny;
+            h_c = (dataType)sqrt(pow(rx_c - rx_l,2) + pow(ry_c - ry_l,2));
+            h_g = (dataType)sqrt(pow(rx_g - rx_c, 2) + pow(ry_g - ry_c, 2));
+
+            //mu * normal vector * projection + eps * normal * curvature
+            vx = pSegmentationParams->mu * dot * nx + pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((rx_g - rx_c) / h_g - ((rx_c - rx_l) / h_c));
+            vy = pSegmentationParams->mu * dot * ny + pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((ry_g - ry_c) / h_g - ((ry_c - ry_l) / h_c));
 
             //it is just simple motion in vector field
 
