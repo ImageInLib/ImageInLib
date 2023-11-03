@@ -343,8 +343,7 @@ bool store2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, co
 }
 
 //==================================
-//function for storing of 2D data in CSV.
-bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+bool storeCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
 {
 	FILE* pgmimg;
 	pgmimg = fopen(pathPtr, "w");
@@ -364,6 +363,31 @@ bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, c
 			}
         }
     }
+
+	fclose(pgmimg);
+	return true;
+}
+
+bool loadCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr)
+{
+	FILE* pgmimg;
+	pgmimg = fopen(pathPtr, "r");
+
+	for (size_t i = 0; i < xDim; i++) {
+		for (size_t j = 0; j < yDim; j++) {
+			// Writing the gray values in the 2D array to the file
+			fscanf(pgmimg, "%f", &(imageDataPtr[i][j]));
+
+			if (j == yDim - 1)
+			{
+				fscanf(pgmimg, "\n");
+			}
+			else
+			{
+				fscanf(pgmimg, ",");
+			}
+		}
+	}
 
 	fclose(pgmimg);
 	return true;

@@ -13,7 +13,7 @@ extern "C" {
 		GSUBSURF_MODEL,
 		LABELING,
 		GSUBSURF_ATLAS_MODEL,
-		CURVE_2D_OPEN_EXPLCIT
+		CURVE_2D_EXPLCIT
 	} SegmentationMethod;
 
 	// Structure that holds the parameters used during 2d Lagrangean segmentation process.

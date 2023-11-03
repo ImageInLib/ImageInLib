@@ -37,8 +37,25 @@ extern "C" {
 		const size_t imageHeight, unsigned char * pathPtr, VTK_Header_Lines *lines);
 
 	bool store2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr, const bool writeRawData);
+	/// <summary>
+	/// A function for storing of data in CSV.
+	/// </summary>
+	/// <param name="imageDataPtr">input data</param>
+	/// <param name="xDim">data width</param>
+	/// <param name="yDim">data length</param>
+	/// <param name="pathPtr">file path</param>
+	/// <returns></returns>
+	bool storeCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
 
-	bool store2dCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
+	/// <summary>
+	/// A function for loading data in CSV.
+	/// </summary>
+	/// <param name="imageDataPtr">input data</param>
+	/// <param name="xDim">data width</param>
+	/// <param name="yDim">data length</param>
+	/// <param name="pathPtr">file path</param>
+	/// <returns></returns>
+	bool loadCSV(dataType** imageDataPtr, const size_t xDim, const size_t yDim, const char* pathPtr);
 
 	bool store2dRawData(dataType* array2DPtr, const size_t xDim, const size_t yDim, const char* pathPtr, Storage_Flags flags);
 #ifdef __cplusplus
