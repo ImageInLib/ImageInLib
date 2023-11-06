@@ -83,8 +83,8 @@ typedef struct {
 } PCAData;
 //==============================================================================
 typedef struct {
-	dataType** d_0th_step, * d_mass, rho_zero_step;
-	int w_size, offset, beg_reduce, turnoff_g2;
+	dataType** d_0th_step, * d_mass, rho_zero_step, reduce_eta_value, reduce_zeta_value;
+	int w_size, offset, beg_reduce, turnoff_g2, begie_est;
 	bool skip_g2, est_fun, reduce_g2;
 } tmpDataHolders;
 //==============================================================================
@@ -111,9 +111,14 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 	* mass_diff - holds the difference between current and previous segmentation
 */
 bool stop_segment3D(
-	ABSContainer* dta3D, tmpDataHolders* tmpDataStepHolder,
-	double * lambda, double * zeta, double * eta,
-	dataType * mass_diff);
+	ABSContainer* dta3D,
+	tmpDataHolders* tmpDataStepHolder,
+	size_t p, dataType h3, size_t* step,
+	double* lambda, double* zeta, double* eta,
+	dataType* mass_prev, size_t* max_iters,
+	dataType tol_m, dataType tol_e,
+	PCAData* pcaParam, Optimization_Method optMethod, Registration_Params regParams
+);
 //==============================================================================
 #endif // !SEGMENTATIO3D_COMMON
 

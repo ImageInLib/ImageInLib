@@ -19,6 +19,24 @@ void estimateShapeByProbability(ABSContainer* dta3D, dataType** dtaMeanShape, da
 // Free Containers
 void freeAtlasABSContainerGradData(ABSContainer* dta3D, AtlasData* atls3D, GradData* grad3D, size_t imageHeight, size_t reflexLength);
 //==============================================================================
+// Calculate the variance fun
+void calcVariance(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t height, size_t length, size_t width, size_t p, int step, dataType rho_zero_step);
+//==============================================================================
+// Calculate the rho value
+dataType calcRho(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t height, size_t length, size_t width, size_t p);
+//==============================================================================
+// 
+dataType error_3D(dataType** aPtr, dataType** bPtr, size_t height, size_t length, size_t width, dataType h_val, size_t step);
+//==============================================================================
+// Curve functions for estimation
+void extend_array(dataType** ext_array, dataType* in_array, int length, int w_size);
+void moving_average(dataType** results, dataType* dtarray, int w_size, int length);
+void est_curve(dataType** est_y, dataType* arr, dataType* d_arr, int count_b, int count_e, int* est_x, int length, int offset);
+dataType curve_area(dataType* arr, int length, int interval);
+int half_area(dataType* arr, int count_a, int length);
+int find_min(dataType* arr, dataType* minimum, int begin, int length);
+void diff_s(dataType** rlts, dataType* arr, int length);
+//==============================================================================
 
 
 /* Function implementations*/
@@ -1310,6 +1328,494 @@ void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size
 	//==============================================================================
 }
 //==============================================================================
+dataType calcRho(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t height, size_t length, size_t width, size_t p) {
+	size_t k, i, j, xd;
+	dataType rho = 0;
+	int counts = 0;
+	for (k = p; k < height; k++)
+	{
+		for (i = p; i < length; i++)
+		{
+			for (j = p; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+
+				if (bPtr[k][xd] < distWithin) // Inside the region defined for init seg fn
+				{
+					rho += aPtr[k][xd]; // adds intensity in original image to rho
+					counts++;
+				}
+			}
+		}
+	}
+	// Find average intesity
+	if (counts == 0) // Ensuring no division by zero!
+	{
+		counts = 1;
+	}
+	rho = rho / counts;
+	return rho;
+}
+//==============================================================================
+void calcVariance(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t height, size_t length, size_t width, size_t p, int step, dataType rho_zero_step) {
+	size_t k, i, j, xd;
+	// Calc. rho
+	dataType rho = calcRho(aPtr, bPtr, distWithin, height, length, width, p);
+	dataType variance = 0.;
+	int counts = 0;
+	// Calc the sample variance
+	for (k = p; k < height; k++)
+	{
+		for (i = p; i < length; i++)
+		{
+			for (j = p; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+
+				if (bPtr[k][xd] < distWithin) // Inside the region
+				{
+					//T tmp = aPtr[k][xd] - rho;
+					dataType tmp = aPtr[k][xd] - rho_zero_step;
+					variance += tmp * tmp;
+					counts++;
+				}
+			}
+		}
+	}
+	if (counts == 0) // Ensuring no division by zero!
+	{
+		counts = 1;
+	}
+	variance /= (counts - 1);
+	//==============================================================================
+}
+//==============================================================================
+dataType error_3D(dataType** aPtr, dataType** bPtr, size_t height, size_t length, size_t width, dataType h_val, size_t step) {
+	size_t i, j, k, xd;
+	dataType** tmPtr = (dataType**)malloc(sizeof(dataType*) * height);
+	const size_t dim2D_mem = sizeof(dataType) * (length * width);
+	for (i = 0; i < height; i++)
+	{
+		tmPtr[i] = (dataType*)malloc(dim2D_mem);
+	}
+	dataType tmp, tmax = 1.0e+38 * -1.0;
+	for (k = 0; k < height; k++)
+	{
+		for (i = 0; i < length; i++)
+		{
+			for (j = 0; j < width; j++)
+			{
+				// 1D Conversion of row and column
+				xd = x_new(i, j, length);
+				// Error calculation
+				tmp = (aPtr[k][xd] - bPtr[k][xd]) * h_val;
+				tmp = fabs(tmp);
+				// Fill ptr
+				tmPtr[k][xd] = tmp;
+				// find max diff.
+				if (tmp > tmax)
+				{
+					tmax = tmp;
+				}
+			}
+		}
+	}
+	//==============================================================================
+	for (i = 0; i < height; i++)
+	{
+		free(tmPtr[i]);
+	}
+	free(tmPtr);
+	tmPtr = NULL;
+	//==============================================================================
+	return tmax;
+}
+//==============================================================================
+// Curve estimation functions
+
+// Extend array function
+void extend_array(dataType** ext_array, dataType* in_array, int length, int w_size)
+{
+	int i;
+	*ext_array = (dataType*)malloc(sizeof(dataType) * (length + w_size));;
+	// Copy to extended array
+	int count_ext = 2;
+	for (i = 0; i < (length + w_size); i++)
+	{
+		if (i < length)
+		{
+			(*ext_array)[i] = in_array[i];
+		}
+		else if (i >= length)
+		{
+			(*ext_array)[i] = in_array[length - count_ext];
+			count_ext++;
+		}
+	}
+}
+// Moving average fn
+void moving_average(dataType** results, dataType* dtarray, int w_size, int length)
+{
+	int i;
+	*results = (dataType*)malloc(sizeof(dataType) * (length));
+	// Extend
+	dataType* ext_arr = NULL;
+	extend_array(&ext_arr, dtarray, length, w_size);
+	dataType tmp;
+	for (i = 0; i < length; i++)
+	{
+		tmp = (ext_arr[i] + ext_arr[i + 1] + ext_arr[i + 2] + ext_arr[i + 3] + ext_arr[i + 4]) / (dataType)w_size;
+		(*results)[i] = tmp;
+	}
+	// Free
+	free(ext_arr);
+	ext_arr = NULL;
+}
+// Est. a curve by offset val.
+void est_curve(dataType** est_y, dataType* arr, dataType* d_arr, int count_b, int count_e, int* est_x, int length, int offset)
+{
+	int i;
+	// array for idx + 1 of array
+	dataType* orig_y = (dataType*)malloc(sizeof(dataType) * (length - 1));
+	int* orig_x = malloc(sizeof(int) * (length - 1));
+	*est_y = (dataType*)malloc(sizeof(dataType) * (length - 1));
+	for (i = 0; i < length - 1; i++)
+	{
+		(*est_y)[i] = 0.;
+		est_x[i] = 0;
+	}
+	for (i = 0; i < length; i++)
+	{
+		orig_y[i] = arr[i + 1];
+		orig_x[i] = i + 1;
+	}
+	for (i = count_b; i < count_e; i++)
+	{
+		dataType dy = -0.2 * (d_arr[i - 2] + d_arr[i - 1] + d_arr[i] + d_arr[i + 1] + d_arr[i + 2]);
+		est_x[i] = orig_x[i] + offset;
+		(*est_y)[i] = orig_y[i] + (dy * offset);
+		if ((*est_y)[i] < 0)
+		{
+			(*est_y)[i] = 0.;
+		}
+	}
+	// Free
+	/*free(orig_y);
+	free(orig_x);*/
+	orig_x = NULL;
+	orig_y = NULL;
+}
+// Area of curve
+dataType curve_area(dataType* arr, int length, int interval)
+{
+	int i;
+	dataType total = 0.;
+	for (i = 0; i < length; i++)
+	{
+		if ((i == 0) || (i == length - 1))
+		{
+			total += arr[i] / 2.;
+		}
+		else
+		{
+			total += arr[i];
+		}
+	}
+	return total * interval;
+}
+// Half area for a curve
+int half_area(dataType* arr, int count_a, int length)
+{
+	int i;
+	dataType* f_area = (dataType*)malloc(sizeof(dataType) * (length));
+	// Initialize to zero
+	for (i = 0; i < length; i++)
+	{
+		// Initial area
+		if (i < 2)
+		{
+			f_area[i] = arr[i];
+		}
+		else
+		{
+			f_area[i] = 0.;
+		}
+	}
+	// Initial area
+	dataType h_area = 0.5 * curve_area(arr, length, 1);
+	for (i = count_a; i < length + 1; i++)
+	{
+		dataType _area = curve_area(arr, i, 1);
+		if (_area >= h_area)
+		{
+			printf("Half area %.6lf at index %d\n", _area, i);
+			break;
+		}
+		f_area[i] = arr[i];
+	}
+	// Free
+	free(f_area);
+	return i;
+}
+// Find min
+int find_min(dataType* arr, dataType* minimum, int begin, int length)
+{
+	int index, count = 0;
+	(*minimum) = arr[begin];
+	int i;
+	for (i = begin; i < length; i++)
+	{
+		if ((arr[i] < (*minimum)) && (i != begin))
+		{
+			(*minimum) = arr[i];
+			index = i;
+		}
+		if (((*minimum) == 0) && (i != begin))
+		{
+			count = count + begin;
+			break;
+		}
+		count++;
+	}
+	return i;
+}
+// Difference btn idx and idx + 1 array values
+void diff_s(dataType** rlts, dataType* arr, int length)
+{
+	int i;
+	*rlts = (dataType*)malloc(sizeof(dataType) * (length - 1));
+	for (i = 0; i < length - 1; i++)
+	{
+		(*rlts)[i] = arr[i] - arr[i + 1];
+	}
+}
+//==============================================================================
+// Stop segmentation function
+bool stop_segment3D(
+	ABSContainer* dta3D,
+	tmpDataHolders* tmpDataStepHolder,
+	size_t p, dataType h3, size_t* step,
+	double* lambda, double* zeta, double* eta,
+	dataType* mass_prev, size_t* max_iters,
+	dataType tol_m, dataType tol_e,
+	PCAData* pcaParam,Optimization_Method optMethod, Registration_Params regParams
+) {
+	size_t i, j;
+	dataType mass = 0.0;
+	bool stpcond = false;
+	//==============================================================================
+	dataType foreground = (*dta3D).imgForeground, background = (*dta3D).imgBackground;
+	//==============================================================================
+	size_t height = (*dta3D).height, length = (*dta3D).length, width = (*dta3D).width;
+	//==============================================================================
+	// calc rho, variance
+	//calcVar((*dta3D).dta, (*dta3D).dta_u, 0.7, height, length, width, p, P, (*step), statsPtr, tmpDataStepHolder->rho_zero_step);
+	calcVar((*dta3D).dta, (*dta3D).dta_u, 0.0, height, length, width, p, (*step), tmpDataStepHolder->rho_zero_step);
+	//==============================================================================
+	// Apply minimization of least square
+	// https://en.wikipedia.org/wiki/Stochastic_gradient_descent
+	//==============================================================================
+	mass = errorCalc((*dta3D).dta_u0, (*dta3D).dta_u, height, length, width, h3);
+	//==============================================================================
+	double diff_mass = fabs(mass - (*mass_prev));
+	//==============================================================================
+	// Update previous weight after
+	(*mass_prev) = mass;
+	//==============================================================================
+	// Save the 3D difference to a file
+	dataType max_diff = error_3D((*dta3D).dta_u0, (*dta3D).dta_u, height, length, width, h3, (*step));
+	//==============================================================================
+	// Useful pointers for below fn's
+	int begin = 2, end;
+	//==============================================================================
+	// Determine what step to go back and reduce g2 effect and also where to stop it
+	// 0. Store the mass in a 1D array
+	// 1. smooth fn
+	// 2. Difference
+	// 3. Estimate curve and find first zero
+	// 4. If 1st zero, determin how far to go back - 10th or 20th step
+	// 5 Stop the above
+	if (tmpDataStepHolder->est_fun) // Only do this when still estimating
+	{
+		// Save the mass vals
+		tmpDataStepHolder->d_mass[(*step) - 1] = mass;
+		if ((*step) == 2)
+		{
+			tmpDataStepHolder->d_mass[(*step) - 2] = tmpDataStepHolder->d_mass[(*step) - 1];
+			//tmpDataStepHolder->d_mass[(*step) - 1] = 0.;
+		}
+		// Start smoothing the results after steps > 10
+		if ((*step) > tmpDataStepHolder->begie_est)
+		{
+			// Smooth the current results
+			dataType* smooth_ptrs = NULL;
+			moving_average(&smooth_ptrs, tmpDataStepHolder->d_mass, tmpDataStepHolder->w_size, (*step));
+			// The differences
+			dataType* diff = NULL;
+			diff_s(&diff, smooth_ptrs, (*step));
+			// Estimate the current curve
+			int* est_x = (int*)malloc(sizeof(int) * ((*step) - 1));
+			end = (*step) - begin - 1;
+			dataType* est_y = NULL;
+			est_curve(&est_y, smooth_ptrs, diff, begin, end, est_x, (*step), tmpDataStepHolder->offset);
+			// Finding minimum
+			dataType minimum = -1.;
+			int idx_min = find_min(est_y, &minimum, begin, end);
+			printf("Minimum %lf found at index %d\n", minimum, est_x[idx_min]);
+			if ((minimum == 0))
+			{
+				// Calculate half area, also first zero found
+				int _b = idx_min - tmpDataStepHolder->offset + 1, _e = idx_min + 1;
+				// Previous 10 values up to the 1st zero.
+				// Replace the last 10 values with values from estimated
+				for (size_t i = _b; i < _e; i++)
+				{
+					tmpDataStepHolder->d_mass[i + 1] = est_y[i];
+				}
+				// Half area
+				int idx_hlf_area = half_area(tmpDataStepHolder->d_mass, begin, est_x[idx_min]);
+				// Define params to determine skipping g2
+				printf("Found first zero at %d\n", est_x[idx_min]);
+				// Set where to start reduce g2
+				tmpDataStepHolder->beg_reduce = idx_hlf_area;
+				//==============================================================================
+				// ADjust max iteration with the changes also
+				//(*max_iters) = (*max_iters) - (*step);
+				//(*max_iters) = (*max_iters) - est_x[idx_min];
+				//(*max_iters) = 82;
+				//==============================================================================
+				// Reset the steps and data to initial
+				(*step) = 0;
+				// Set to go back to begin reduce step results
+				copyDataPointer(tmpDataStepHolder->d_0th_step, (*dta3D).dta_u, height + 2 * p + 1, length + 2 * p + 1, width + 2 * p + 1);
+				//==============================================================================
+				// Set to false to stop with the estimations
+				tmpDataStepHolder->est_fun = false;
+				// Activate reducing g2
+				tmpDataStepHolder->reduce_g2 = true;
+				// Free mem at the end
+				free(diff);
+				free(smooth_ptrs);
+				free(est_x);
+				free(est_y);
+				smooth_ptrs = NULL;
+				diff = NULL;
+				est_x = NULL;
+				est_y = NULL;
+			}
+		}
+	}
+	//==============================================================================
+	// G2 skip
+	if (!tmpDataStepHolder->est_fun)
+	{
+		//==============================================================================
+		// Only doit once!
+		if ((!(*dta3D).est_start))
+		{
+			//==============================================================================
+			//if (((*step) == tmpDataStepHolder->beg_reduce) && !(tmpDataStepHolder->skip_g2))
+			if ((*step) == tmpDataStepHolder->beg_reduce)
+			{
+				printf("Decreasing g2 influence from %d step\n\n", tmpDataStepHolder->beg_reduce);
+				//==============================================================================
+				// New approach - affects only g2
+				(*zeta) = tmpDataStepHolder->reduce_zeta_value * (*zeta);
+				(*eta) = tmpDataStepHolder->reduce_eta_value * (*eta);
+				printf("New reduced Zeta %.4lf\n\n", (*zeta));
+				printf("New reduced eta %.4lf\n\n", (*eta));
+				//==============================================================================
+				tmpDataStepHolder->skip_g2 = true;
+				//==============================================================================
+				// Set turn off g2
+				tmpDataStepHolder->turnoff_g2 = tmpDataStepHolder->beg_reduce + (*step);
+				//==============================================================================
+			}
+			if (((*step) == tmpDataStepHolder->turnoff_g2) && (tmpDataStepHolder->skip_g2))
+			{
+				printf("Skipping g2 from step %d\n\n", (*step) + 1);
+				//==============================================================================
+				// Old approach - affects both g1, g2
+				// Set lambda to 1.0 to skip using g2 and use only g1
+				(*lambda) = 1.0;
+				printf("New lambda %.4lf\n\n", (*lambda));
+				//==============================================================================
+				// Activate atlas
+				(*dta3D).est_start = true;
+				//==============================================================================
+			}
+		}
+	}
+	//==============================================================================
+	if ((mass > tol_m) && ((*step) <= (*max_iters)) && (diff_mass != 0.0))
+	{
+		//if (((*dta3D).est_start) && (step % begin_est_step == 0)) // After N Steps
+		if (((*dta3D).est_start))
+		{
+			printf("\n Estimating current segmentation at Time Step: %d-th\n", (*step));
+			bool stp = false;
+			// Make a copy of current segmentation to tmp
+			//copyDataPointer((*dta3D).dta_u, (*dta3D).dta_tmp, (height + 2 * p + 1), (length + 2 * p + 1), (width + 2 * p + 1));
+			copyDataPointer((*dta3D).dta_u, (*dta3D).dta_tmp, (height), (length), (width));
+			// Evaluate estimated segmentation shape error
+			if (estmateSegmentation(
+				dta3D, pcaParam, (*dta3D).dta_tmp,
+				height, length, width,
+				p, foreground, background,
+				tol_m, h3,
+				regParams, optMethod
+			) < tol_e)
+			{
+				printf("\nEstimated shape found very similar to current segmentation at step: %d\n", (*step));
+				stpcond = true;
+			}
+			else
+			{
+				if ((*step) == (*max_iters))
+				{
+					goto ExitFn;
+				}
+				else
+				{
+					goto Cont;
+				}
+			}
+		}
+		else
+		{
+			if ((*step) == (*max_iters))
+			{
+				goto ExitFn;
+			}
+			else
+			{
+				goto Cont;
+			}
+		}
+	Cont:
+		printf(" Calculated Mass: %.12lf\n", mass);
+		if (stpcond)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		goto ExitFn;
+	}
+ExitFn:
+	printf("Stop Mass: %.12lf\n", mass);
+	stpcond = true;
+	goto Cont;
+	//==============================================================================
+}
+//==============================================================================
 // Atlas Segmentation Model Interface
 void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam, tmpDataHolders* tmpDataStepHolder)
 {
@@ -1441,7 +1947,7 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 		/*
 		* Call the stop segment function
 		*/
-		bool stopSegmentation = stop_segment3D(dta3D, tmpDataStepHolder, &lambda, &zeta, &eta, &mass_diff);
+		bool stopSegmentation = stop_segment3D(dta3D, tmpDataStepHolder, p, h3, &w, &lambda, &zeta, &eta, &mass_diff, &max_iters, tol_s, tol_e, pcaParam, optMethod, regParams);
 		if (stopSegmentation) {
 			//==============================================================================
 			// Can cacl. the diff between segmentation result and precise result if we have
