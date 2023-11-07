@@ -1,9 +1,9 @@
 #include "segmentation3D_atlas.h"
-#include <filter_params.h>
-#include <climits>
+#include "filter_params.h"
+#include <limits.h>
 //==============================================================================
 // Function to calclate the gamma parameter - eq 91
-dataType chooseGamma(dataType value, dataType dist1, dataType dist2);
+dataType GammaFun(dataType value, dataType dist1, dataType dist2);
 //==============================================================================
 // Intitialize the atlas data containers
 void initializeAtlasData(AtlasData* atls3D, size_t height, size_t length, size_t width, size_t reflexLength);
@@ -37,11 +37,9 @@ int half_area(dataType* arr, int count_a, int length);
 int find_min(dataType* arr, dataType* minimum, int begin, int length);
 void diff_s(dataType** rlts, dataType* arr, int length);
 //==============================================================================
-
-
 /* Function implementations*/
 //==============================================================================
-dataType chooseGamma(dataType value, dataType dist1, dataType dist2)
+dataType GammaFun(dataType value, dataType dist1, dataType dist2)
 {
 	if (fabs(value) > dist1)
 	{
@@ -965,7 +963,7 @@ ExitCond:
 	return error;
 }
 //==============================================================================
-void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, dataType** priorShape, dataType lambda, dataType eta, dataType zeta, dataType h, size_t p, dataType epsilon, dataType tau, dataType mu1, dataType mu2)
+void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, dataType** priorShape, dataType lambda, dataType eta, dataType zeta, dataType h, size_t p, dataType epsilon, dataType tau, dataType mu1, dataType mu2, dataType d1, dataType d2)
 {
 	//==============================================================================
 	size_t k, i, j, xd;
@@ -1086,7 +1084,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k][x_new(i, j - 1, length)] - priorShape[k][x_new(i, j - 1, length)])) / 2.;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k][x_new(i, j - 1, length)]) - (priorShape[k][xd] + priorShape[k][x_new(i, j - 1, length)])) / 2.;
 				//tmp6 = ((*dta3D).dta_u[k][x_new(i, j - 1, length)] - priorShape[k][x_new(i, j - 1, length)]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k][x_new(i, j - 1, length)] - (*dta3D).dta_u[k][xd]) * (g_mcf(Gw));
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k][x_new(i, j - 1, length)] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1100,7 +1098,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k][x_new(i - 1, j, length)] - priorShape[k][x_new(i - 1, j, length)])) / 2;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k][x_new(i - 1, j, length)]) - (priorShape[k][xd] + priorShape[k][x_new(i - 1, j, length)])) / 2;
 				//tmp6 = ((*dta3D).dta_u[k][x_new(i - 1, j, length)] - priorShape[k][x_new(i - 1, j, length)]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k][x_new(i - 1, j, length)] - (*dta3D).dta_u[k][xd]) * (g_mcf(Gn));
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k][x_new(i - 1, j, length)] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1114,7 +1112,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k][x_new(i + 1, j, length)] - priorShape[k][x_new(i + 1, j, length)])) / 2;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k][x_new(i + 1, j, length)]) - (priorShape[k][xd] + priorShape[k][x_new(i + 1, j, length)])) / 2;
 				//tmp6 = ((*dta3D).dta_u[k][x_new(i + 1, j, length)] - priorShape[k][x_new(i + 1, j, length)]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k][x_new(i + 1, j, length)] - (*dta3D).dta_u[k][xd]) * (g_mcf(Gs));
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k][x_new(i + 1, j, length)] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1128,7 +1126,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k + 1][xd] - priorShape[k + 1][xd])) / 2;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k + 1][xd]) - (priorShape[k][xd] + priorShape[k + 1][xd])) / 2;
 				//tmp6 = ((*dta3D).dta_u[k + 1][xd] - priorShape[k + 1][xd]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k + 1][xd] - (*dta3D).dta_u[k][xd]) * g_mcf(Gt);
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k + 1][xd] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1142,7 +1140,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k - 1][xd] - priorShape[k - 1][xd])) / 2;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k - 1][xd]) - (priorShape[k][xd] + priorShape[k - 1][xd])) / 2;
 				//tmp6 = ((*dta3D).dta_u[k - 1][xd] - priorShape[k - 1][xd]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k - 1][xd] - (*dta3D).dta_u[k][xd]) * g_mcf(Gb);
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k - 1][xd] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1156,7 +1154,7 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 				//tmp6 = (((*dta3D).dta_u[k][xd] - priorShape[k][xd]) + ((*dta3D).dta_u[k][x_new(i, j + 1, length)] - priorShape[k][x_new(i, j + 1, length)])) / 2;
 				tmp6 = (((*dta3D).dta_u[k][xd] + (*dta3D).dta_u[k][x_new(i, j + 1, length)]) - (priorShape[k][xd] + priorShape[k][x_new(i, j + 1, length)])) / 2;
 				//tmp6 = ((*dta3D).dta_u[k][x_new(i, j + 1, length)] - priorShape[k][x_new(i, j + 1, length)]);
-				gama = GammaFun(tmp6); // |u - u|
+				gama = GammaFun(tmp6, d1, d2); // |u - u|
 
 				tmp9 = ((*dta3D).dta_u[k][x_new(i, j + 1, length)] - (*dta3D).dta_u[k][xd]) * g_mcf(Ge);
 				tmp7 = gama * (1 - lambda) * (zeta) * ((((*atls3D).gd[k][x_new(i, j + 1, length)] + (*atls3D).gd[k][xd]) / 2) * (tmp9));
@@ -1602,7 +1600,7 @@ bool stop_segment3D(
 	dataType tol_m, dataType tol_e,
 	PCAData* pcaParam,Optimization_Method optMethod, Registration_Params regParams
 ) {
-	size_t i, j;
+	//size_t i, j;
 	dataType mass = 0.0;
 	bool stpcond = false;
 	//==============================================================================
@@ -1932,7 +1930,7 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 			imageHeight, imageLength, imageWidth,
 			(*dta3D).priorShape,
 			lambda, eta, zeta, h3, p,
-			epsilon, tau, mu1, mu2
+			epsilon, tau, mu1, mu2, d1, d2
 		);
 		//==============================================================================
 		// Call the gmcf_atlass fn.

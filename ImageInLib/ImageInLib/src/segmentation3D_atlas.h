@@ -94,7 +94,7 @@ enum EstimationMethod { MIN_Energy = 1, MIN_Probability };
 // Global Variables
 //==============================================================================
 // Function Prototypes
-void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, dataType** priorShape, dataType lambda, dataType eta, dataType zeta, dataType h, size_t p, dataType epsilon, dataType tau, dataType mu1, dataType mu2);
+void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, dataType** priorShape, dataType lambda, dataType eta, dataType zeta, dataType h, size_t p, dataType epsilon, dataType tau, dataType mu1, dataType mu2, dataType d1, dataType d2);
 //==============================================================================
 void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, size_t p);
 //==============================================================================

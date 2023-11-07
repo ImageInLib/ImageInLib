@@ -501,7 +501,7 @@ bool gsubsurf(Image_Data2D imageData, dataType* initialSegment, const char* segm
 			for (j = 0; j < width; j++) {
 				size_t currentIndx = x_new(i, j, height);
 				average_norm_gradient = (dataType)((uCoef.East[currentIndx] + uCoef.West[currentIndx] + uCoef.North[currentIndx] + uCoef.South[currentIndx]) / 4.0);
-				u_average = sqrt(average_norm_gradient * average_norm_gradient + eps * eps);
+				u_average = (dataType)sqrt(average_norm_gradient * average_norm_gradient + eps * eps);
 
 				//Explicit for advection
 				coefEast[currentIndx] = (dataType)(coef_tau * (-min(vEast[currentIndx], 0) + diff * edgeDetectorPtr[currentIndx] * u_average * (1.0 / uCoef.East[currentIndx])));
