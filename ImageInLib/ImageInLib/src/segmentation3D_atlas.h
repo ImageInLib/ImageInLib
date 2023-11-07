@@ -67,7 +67,7 @@ typedef struct {
 	dataType d1, d2; // distance used to determing what gamma value to set before using the atlas
 	Registration_Params regParams;
 	Optimization_Method optMethod;
-} Segmentation_Paramereters;
+} Atlas_Segmentation_Parameters;
 //==============================================================================
 // Struct for mean shape, eigenvectors, eigenvalues, princomp
 typedef struct {
@@ -99,7 +99,13 @@ void segmentation3D_Ap_coef(ABSContainer* dta3D, GradData* grad3D, AtlasData* at
 void gmcf3D_atlas(ABSContainer* dta3D, GradData* grad3D, AtlasData* atls3D, size_t height, size_t length, size_t width, size_t p);
 //==============================================================================
 // Atlas Segmentation Model interface function
-void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam, tmpDataHolders* tmpDataStepHolder);
+void atlasSegmentationModel(
+	Image_Data imageData,
+	Atlas_Segmentation_Parameters segParameters,
+	PCAData* pcaParam,
+	tmpDataHolders* tmpDataStepHolder,
+	unsigned char* outputPathPtr
+);
 //==============================================================================
 // Stop segmentation function
 /*
@@ -113,11 +119,12 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 bool stop_segment3D(
 	ABSContainer* dta3D,
 	tmpDataHolders* tmpDataStepHolder,
-	size_t p, dataType h3, size_t* step,
+	size_t p, dataType h3, size_t* step, size_t writeFrequencystep,
 	double* lambda, double* zeta, double* eta,
 	dataType* mass_prev, size_t* max_iters,
 	dataType tol_m, dataType tol_e,
-	PCAData* pcaParam, Optimization_Method optMethod, Registration_Params regParams
+	PCAData* pcaParam, Optimization_Method optMethod, Registration_Params regParams,
+	unsigned char* outputPathPtr
 );
 //==============================================================================
 #endif // !SEGMENTATIO3D_COMMON

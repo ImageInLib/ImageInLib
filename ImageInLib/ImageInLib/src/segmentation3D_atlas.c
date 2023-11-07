@@ -62,8 +62,6 @@ void initializeAtlasData(AtlasData* atls3D, size_t imageHeight, size_t imageLeng
 	// Initial value
 	dataType inititialValue = 0.0f;
 	//==============================================================================
-	atls3D = (AtlasData*)malloc(sizeof(AtlasData));
-	//==============================================================================
 	// Allocate memory
 	// Bp
 	(*atls3D).bp_e = (dataType**)malloc(heightExt * sizeof(dataType*));
@@ -120,8 +118,6 @@ void initializeGradData(GradData* grad3D, size_t imageHeight, size_t imageLength
 	//==============================================================================
 	// Initial value
 	dataType inititialValue = 0.0f;
-	//==============================================================================
-	grad3D = (GradData*)malloc(sizeof(GradData));
 	//==============================================================================
 	// Allocate memory
 	// Containers for tau/m(p) * g1|\nable U_p | * (1 / {|\nabla U_pq|)
@@ -189,9 +185,7 @@ void initializeABSContainer(ABSContainer* dta3D, size_t imageHeight, size_t imag
 	size_t lengthExt = imageLength + 2 * reflexLength + 1, widthExt = imageWidth + 2 * reflexLength + 1, heightExt = imageHeight + 2 * reflexLength + 1, dim2DExt = lengthExt * widthExt, i, j;
 	//==============================================================================
 	// Initial value
-	dataType inititialValue = 0.0f;
-	//==============================================================================
-	dta3D = (ABSContainer*)malloc(sizeof(ABSContainer));
+	dataType inititialValue = 0.0f;	
 	//==============================================================================
 	// Assisgn the dimensions
 	(*dta3D).height = imageHeight;
@@ -1594,11 +1588,12 @@ void diff_s(dataType** rlts, dataType* arr, int length)
 bool stop_segment3D(
 	ABSContainer* dta3D,
 	tmpDataHolders* tmpDataStepHolder,
-	size_t p, dataType h3, size_t* step,
+	size_t p, dataType h3, size_t* step, size_t writeFrequencystep,
 	double* lambda, double* zeta, double* eta,
 	dataType* mass_prev, size_t* max_iters,
 	dataType tol_m, dataType tol_e,
-	PCAData* pcaParam,Optimization_Method optMethod, Registration_Params regParams
+	PCAData* pcaParam,Optimization_Method optMethod, Registration_Params regParams,
+	unsigned char* outputPathPtr
 ) {
 	//size_t i, j;
 	dataType mass = 0.0;
@@ -1793,6 +1788,19 @@ bool stop_segment3D(
 			}
 		}
 	Cont:
+		// Saving the results
+		if (((*step) % writeFrequencystep) == 0) {
+			unsigned char name[350];
+			unsigned char name_ending[100];
+			Storage_Flags flags = { false,false };
+
+			printf("\n Saving File at Time Step: %d-th\n", (*step));
+			// Write the file
+			strcpy_s(name, sizeof name, outputPathPtr);
+			sprintf_s(name_ending, sizeof(name_ending), "_seg_func_%03zd.raw", (*step));
+			strcat_s(name, sizeof(name), name_ending);
+			store3dDataArrayD((*dta3D).dta_u, length, width, height, name, flags);
+		}
 		printf(" Calculated Mass: %.12lf\n", mass);
 		if (stpcond)
 		{
@@ -1815,7 +1823,13 @@ ExitFn:
 }
 //==============================================================================
 // Atlas Segmentation Model Interface
-void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segParameters, PCAData* pcaParam, tmpDataHolders* tmpDataStepHolder)
+void atlasSegmentationModel(
+	Image_Data imageData,
+	Atlas_Segmentation_Parameters segParameters,
+	PCAData* pcaParam,
+	tmpDataHolders* tmpDataStepHolder,
+	unsigned char* outputPathPtr
+)
 {
 	//==============================================================================
 	// Short varaible names abbreviations
@@ -1824,7 +1838,7 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 	dataType d1 = segParameters.d1, d2 = segParameters.d2; // values used in thesis -> d1 20.0 (12.0 for 75% noise, 3.0 for 75% noise)
 	double lambda = segParameters.lambda, eta = segParameters.eta, zeta = segParameters.zeta;
 	size_t imageHeight = imageData.height, imageLength = imageData.length, imageWidth = imageData.width, dim2D = imageLength * imageLength;
-	size_t max_iters = segParameters.timeSteps;
+	size_t max_iters = segParameters.timeSteps, storeFileFrequency = segParameters.storeFileFrequency;
 	dataType tol_s = segParameters.toleranceSegmentation;
 	dataType tol_e = segParameters.toleranceEstimation;
 	dataType h3 = segParameters.hSpacing.x * segParameters.hSpacing.y * segParameters.hSpacing.z;
@@ -1839,14 +1853,14 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 	//==============================================================================
 	// Set up data containers for the Gradient data and Atlas Data
 	// Atlas
-	AtlasData* atls3D;
+	AtlasData* atls3D = (AtlasData*)malloc(sizeof(AtlasData));
 	initializeAtlasData(atls3D, imageHeight, imageLength, imageWidth, p);
 	// Gradient
-	GradData* grad3D;
+	GradData* grad3D = (GradData*)malloc(sizeof(GradData));
 	initializeGradData(grad3D, imageHeight, imageLength, imageWidth, p);
 	//==============================================================================
 	// Set the ABSContainer
-	ABSContainer* dta3D;
+	ABSContainer* dta3D = (ABSContainer*)malloc(sizeof(ABSContainer));
 	initializeABSContainer(dta3D, imageHeight, imageLength, imageWidth, p);
 	//==============================================================================
 	// Shorten param names
@@ -1945,13 +1959,16 @@ void atlasSegmentationModel(Image_Data imageData, Segmentation_Paramereters segP
 		/*
 		* Call the stop segment function
 		*/
-		bool stopSegmentation = stop_segment3D(dta3D, tmpDataStepHolder, p, h3, &w, &lambda, &zeta, &eta, &mass_diff, &max_iters, tol_s, tol_e, pcaParam, optMethod, regParams);
+		bool stopSegmentation = stop_segment3D(dta3D, tmpDataStepHolder, p, h3, &w, storeFileFrequency, &lambda, &zeta, &eta, &mass_diff, &max_iters, tol_s, tol_e, pcaParam, optMethod, regParams, outputPathPtr);
 		if (stopSegmentation) {
 			//==============================================================================
 			// Can cacl. the diff between segmentation result and precise result if we have
 			//==============================================================================
 			// Print the mass_diff
 			printf("The final error is %.12e\n", mass_diff);
+			//==============================================================================
+			// Store final results
+			// 
 			//==============================================================================
 			// Clean up all pointers created
 			// Free dta3d
