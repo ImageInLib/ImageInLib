@@ -168,6 +168,16 @@ extern "C" {
 	*/
 	dataType edgeDetector(dataType value, dataType coef);
 	//==============================================================================
+	
+	/// <summary>
+	/// Evaluates the similar density detector (how much is the current value similar to reference value)
+	/// </summary>
+	/// <param name="currValue">current value</param>
+	/// <param name="refValue">refference value</param>
+	/// <param name="coef">coeficient</param>
+	/// <returns></returns>
+	dataType similarIntensityDetector(dataType currValue, dataType refValue, dataType coef);
+	
 	/*
 	void copyDataToExtendedArea(const dataType ** originalDataPtr, dataType ** extendedDataPtr, const size_t originalHeight, const size_t originalLength, const size_t originalWidth);
 
@@ -219,6 +229,14 @@ extern "C" {
 	/// <param name="pcurve">Input curve to be checked</param>
 	/// <returns>Returns true, if the curve is closed, otherwise false.</returns>
 	bool isCurveClosed(const Curve2D * pcurve);
+
+	/// <summary>
+	/// Returns approximation of curve center of gravity
+	/// The function expects, that the curve points are distributed almost uniformly along the curve
+	/// </summary>
+	/// <param name="pcurve">a pointer to the input curve</param>
+	/// <returns>calculted centroid</returns>
+	Point2D getCurveCentroid(const Curve2D* pcurve);
 
 	/// <summary>
 	/// Calculates gradient in 2D point given by central difference on input data
