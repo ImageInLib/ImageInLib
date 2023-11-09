@@ -2,6 +2,8 @@
 #include "filter_params.h"
 #include <limits.h>
 //==============================================================================
+// Util fn's used in this file
+//==============================================================================
 // Function to calclate the gamma parameter - eq 91
 dataType GammaFun(dataType value, dataType dist1, dataType dist2);
 //==============================================================================
@@ -25,7 +27,6 @@ void calcVariance(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t 
 // Calculate the rho value
 dataType calcRho(dataType** aPtr, dataType** bPtr, dataType distWithin, size_t height, size_t length, size_t width, size_t p);
 //==============================================================================
-// 
 dataType error_3D(dataType** aPtr, dataType** bPtr, size_t height, size_t length, size_t width, dataType h_val, size_t step);
 //==============================================================================
 // Curve functions for estimation
@@ -1425,8 +1426,6 @@ dataType error_3D(dataType** aPtr, dataType** bPtr, size_t height, size_t length
 	return tmax;
 }
 //==============================================================================
-// Curve estimation functions
-
 // Extend array function
 void extend_array(dataType** ext_array, dataType* in_array, int length, int w_size)
 {
