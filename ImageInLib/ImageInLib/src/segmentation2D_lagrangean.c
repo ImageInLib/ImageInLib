@@ -23,12 +23,25 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
     dataType* pgrad_y = (dataType*)malloc(dataSize); // velocity component y
     dataType* abs_val_grad = (dataType*)malloc(dataSize); // absolute value of gradient
 
-    dataType* edge_detector = (dataType*)malloc(dataSize); // edge detctor
+    dataType* edge_detector = (dataType*)malloc(dataSize); // edge detector
     const dataType edge_detector_coef = 10;// 00000;
+    dataType* similar_intensity_detector = NULL;
+    if (!pSegmentationParams->open_curve)
+    {
+        similar_intensity_detector = (dataType*)malloc(dataSize); // similar intensity detector
+    }
+
+    const dataType similar_intensity_detector_coef = 10;// 00000;
     const dataType hx = 1, hy = 1;      //spatial discretization step
     const dataType hx_c = 1, hy_c = 1;  //h for central differences
     Point2D current_grad;
     FiniteVolumeSize2D finite_volume_sz = { 1.0, 1.0 };
+
+    dataType lambda = 1.0;
+    
+    if (!pSegmentationParams->open_curve) {
+        lambda = pSegmentationParams->lambda;
+    }
 
     const size_t sizeWidth = sizeof(dataType) * inputImage2D.width;
 
@@ -51,6 +64,19 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
         edge_detector[i] = edgeDetector(abs_val_grad[i], edge_detector_coef);
     }
 
+    Point2D centroid = getCurveCentroid(pSegmentationParams->pinitial_condition);
+    size_t centroid_i = (size_t)(centroid.y + 0.5);
+    size_t centroid_j = (size_t)(centroid.x + 0.5);
+    dataType ref_intensity = inputImage2D.imageDataPtr[x_new(centroid_j, centroid_i, inputImage2D.width)];
+
+    if (!pSegmentationParams->open_curve)
+    {
+        for (size_t i = 0; i < dataDimension; i++)
+        {
+            similar_intensity_detector[i] = similarIntensityDetector(inputImage2D.imageDataPtr[i], ref_intensity, similar_intensity_detector_coef);
+        }
+    }
+
     Image_Data2D edgeDetector = { inputImage2D.height, inputImage2D.width, edge_detector };
 
     //get velocity
@@ -71,6 +97,7 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
 
     size_t current_i = 0;
     size_t current_j = 0;
+
     for (size_t i = 0; i < (pResultSegmentation->numPoints); i++)
     {
         pResultSegmentation->pPoints[i].x = pSegmentationParams->pinitial_condition->pPoints[i].x;
@@ -163,8 +190,12 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
             h_g = (dataType)sqrt(pow(rx_g - rx_c, 2) + pow(ry_g - ry_c, 2));
 
             //mu * normal vector * projection + eps * normal * curvature
-            vx = pSegmentationParams->mu * dot * nx + pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((rx_g - rx_c) / h_g - ((rx_c - rx_l) / h_c));
-            vy = pSegmentationParams->mu * dot * ny + pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((ry_g - ry_c) / h_g - ((ry_c - ry_l) / h_c));
+            vx = pSegmentationParams->mu * (lambda * dot * nx + 
+                ((dataType)1.0 - lambda) * similar_intensity_detector[xd] * nx) +
+                pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((rx_g - rx_c) / h_g - ((rx_c - rx_l) / h_c));
+            vy = pSegmentationParams->mu * dot * ny + (lambda * dot * ny +
+                ((dataType)1.0 - lambda) * similar_intensity_detector[xd] * ny) +
+                pSegmentationParams->eps * (dataType)(2.0 / (h_g + h_c)) * ((ry_g - ry_c) / h_g - ((ry_c - ry_l) / h_c));
 
             //it is just simple motion in vector field
 
@@ -183,6 +214,11 @@ bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, const Lagr
 
     free(abs_val_grad);
     free(edge_detector);
+
+    if (similar_intensity_detector)
+    {
+        free(similar_intensity_detector);
+    }
 
     return true;
 }
