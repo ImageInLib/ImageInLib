@@ -30,8 +30,11 @@ bool manageFile(void* imageDataPtr, const size_t length, const size_t width,
         case STORE_2D_DATA_PGM:
             status = store2dPGM((dataType*)imageDataPtr, width, height, pathPtr, dType == BINARY_DATA);
             break;
-        case STORE_2D_DATA_CSV:
-            status = store2dCSV((dataType**)imageDataPtr, width, height, pathPtr);
+        case STORE_CSV:
+            status = storeCSV((dataType**)imageDataPtr, width, height, pathPtr);
+            break;
+        case LOAD_CSV:
+            status = loadCSV((dataType**)imageDataPtr, width, height, pathPtr);
             break;
         default:
             break;
