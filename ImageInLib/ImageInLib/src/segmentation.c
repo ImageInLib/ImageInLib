@@ -5,8 +5,9 @@
 #include "segmentation3d_gsubsurf.h"
 #include "../include/segmentation2d.h"
 #include "segmentation2D_lagrangean.h"
+#include "segmentation3D_atlas.h"
 
-void segmentImage(void * pInputImageData, void * pSegParameters, void * pfilterParameters,
+void segmentImage(void * pInputImageData, void * pSegParameters, void * aSegParameters, void * aPcaParams, void * aTmpDataHolders, void * pfilterParameters,
 	const SegmentationMethod model, unsigned char* outputPathPtr, void* resultSegment)
 {
 	switch (model)
@@ -32,7 +33,13 @@ void segmentImage(void * pInputImageData, void * pSegParameters, void * pfilterP
             Image_Data2D inputImageData = *(Image_Data2D*)pInputImageData;
             Lagrangean2DSegmentationParameters* pSegmentationParams = (Lagrangean2DSegmentationParameters*)pSegParameters;
             Curve2D* resultSegmentationCurve = (Curve2D*)resultSegment;
-            lagrangeanExplicit2DCurveSegmentation(inputImageData, pSegmentationParams, outputPathPtr, resultSegmentationCurve);
+            lagrangeanExplicitOpen2DCurveSegmentation(inputImageData, pSegmentationParams, outputPathPtr, resultSegmentationCurve);
+        case GSUBSURF_ATLAS_MODEL:
+            Image_Data imageData = *(Image_Data*)pInputImageData;
+            Atlas_Segmentation_Parameters* segParameters = (Atlas_Segmentation_Parameters*)(pSegParameters);
+            PCAData* pcaParams = (PCAData*)(aPcaParams);
+            tmpDataHolders* tmpDataStepHolder = (tmpDataHolders*)(aTmpDataHolders);
+            atlasSegmentationModel(imageData, *segParameters, pcaParams, tmpDataStepHolder, outputPathPtr);
         default:
             break;
 	}

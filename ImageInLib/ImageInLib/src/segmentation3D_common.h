@@ -24,8 +24,6 @@ extern "C" {
 // Global Variables
 //==============================================================================
 // Function Prototypes
-	// Function to calclate the gamma parameter - eq 91
-	dataType chooseGamma(dataType value, dataType dist1, dataType dist2);
 //==============================================================================
 #endif // !SEGMENTATION3D_COMMON
 
