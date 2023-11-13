@@ -93,6 +93,13 @@ dataType edgeDetector(dataType value, dataType coef)
 {
 	return (dataType)(1.0 / (1 + coef * value));
 }
+
+dataType similarIntensityDetector(dataType currValue, dataType refValue, dataType coef)
+{
+	return (dataType)(1.0 / (1 + coef * pow(currValue - refValue,2)));
+}
+
+
 //==============================================================================
 size_t x_new(const size_t rowIndex, const size_t columnIndex, const size_t rowLength)
 {
@@ -334,6 +341,22 @@ bool isCurveClosed(const Curve2D* pcurve)
 	{
 		return false;
 	}
+}
+
+Point2D getCurveCentroid(const Curve2D* pcurve)
+{
+	if (pcurve == NULL)
+	{
+		return (Point2D){ 0.0, 0.0};
+	}
+	dataType x = 0, y = 0;
+
+	for (size_t i = 0; i < pcurve->numPoints; i++) {
+		x += pcurve->pPoints[i].x;
+		y += pcurve->pPoints[i].y;
+	}
+
+	return (Point2D){x/ pcurve->numPoints, y/ pcurve->numPoints	};
 }
 
 bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D* grad)

@@ -13,7 +13,7 @@ extern "C" {
 		GSUBSURF_MODEL,
 		LABELING,
 		GSUBSURF_ATLAS_MODEL,
-		CURVE_2D_OPEN_EXPLCIT
+		CURVE_2D_EXPLCIT
 	} SegmentationMethod;
 
 	// Structure that holds the parameters used during 2d Lagrangean segmentation process.
@@ -23,6 +23,10 @@ extern "C" {
 		Curve2D* pinitial_condition;	// Initial curve
 		size_t num_points;// Number of initial segmentation curve points
 		dataType time_step_size;	//discrete time step size
+		dataType mu;	//influence of edge detector gradient field
+		dataType lambda; //weight between projected gradient field and intensity similarity field
+		dataType eps;	//influence of curvature
+		bool open_curve;
 	} Lagrangean2DSegmentationParameters;
 
 	/// <summary>
