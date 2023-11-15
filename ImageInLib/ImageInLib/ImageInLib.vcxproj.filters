@@ -329,6 +329,9 @@
     <ClCompile Include="src\imageInterpolation.c">
       <Filter>Source Files\Transformation</Filter>
     </ClCompile>
+    <ClCompile Include="src\solvers.c">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -495,6 +498,9 @@
     </ClInclude>
     <ClInclude Include="src\generate_2d_curves.h">
       <Filter>Header Files\Shape Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\solvers.h">
+      <Filter>Header Files\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

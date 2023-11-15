@@ -62,6 +62,7 @@
     <ClCompile Include="src\setting_boundary_values.c" />
     <ClCompile Include="src\shapeGeneration.c" />
     <ClCompile Include="src\shape_registration.c" />
+    <ClCompile Include="src\solvers.c" />
     <ClCompile Include="src\statistics.c" />
     <ClCompile Include="src\thresholding_function.c" />
     <ClCompile Include="src\time_space_l2_norm.c" />
@@ -119,6 +120,7 @@
     <ClInclude Include="src\setting_boundary_values.h" />
     <ClInclude Include="src\shapeAnalysis_params.h" />
     <ClInclude Include="src\shape_registration.h" />
+    <ClInclude Include="src\solvers.h" />
     <ClInclude Include="src\thresholding.h" />
     <ClInclude Include="src\trajectories.h" />
     <ClInclude Include="src\transformations.h" />
