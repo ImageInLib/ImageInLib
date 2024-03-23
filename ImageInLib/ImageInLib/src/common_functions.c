@@ -1,6 +1,8 @@
 #include <memory.h>
 #include "common_functions.h"
 #include <math.h>
+#include <stdlib.h>
+
 
 //==============================================================================
 // Local Function Prototype
@@ -343,6 +345,37 @@ bool isCurveClosed(const Curve2D* pcurve)
 	}
 }
 
+bool isCurveOrientedPositively(const Curve2D* pcurve)
+{
+	if (pcurve == NULL) {
+		return false;
+	}
+
+	double signed_area = 0;
+	double x_i_plus = -1;
+	double y_i_plus = -1;
+
+	for (size_t i = 0; i < pcurve->numPoints; i++)
+	{
+		if (i + 1 == pcurve->numPoints)
+		{
+			x_i_plus = pcurve->pPoints[0].x;
+			y_i_plus = pcurve->pPoints[0].y;
+		}
+		else
+		{
+			x_i_plus = pcurve->pPoints[i+1].x;
+			y_i_plus = pcurve->pPoints[i + 1].y;
+		}
+
+		signed_area += (pcurve->pPoints[i].x * y_i_plus - x_i_plus * pcurve->pPoints[i].y);
+	}
+
+	signed_area *= 0.5;
+
+	return signum(signed_area) > 0.0;
+}
+
 Point2D getCurveCentroid(const Curve2D* pcurve)
 {
 	if (pcurve == NULL)
@@ -359,22 +392,22 @@ Point2D getCurveCentroid(const Curve2D* pcurve)
 	return (Point2D){x/ pcurve->numPoints, y/ pcurve->numPoints	};
 }
 
-bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D* grad)
+bool getGradient2D(dataType* pbase_data, const size_t width, const size_t height, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D* grad)
 {
-	if (image_data.imageDataPtr == NULL || image_data.height < 2 || image_data.width < 2 ||
+	if (pbase_data == NULL || height < 2 || width < 2 ||
 		sz.hx == 0 || sz.hy == 0) {
 		return false;
 	}
 
 	size_t x = ind_x, y = ind_y;
-	if (x >= image_data.width)
+	if (x >= width)
 	{
-		x = image_data.width - 1;
+		x = width - 1;
 	}
 
-	if (y >= image_data.height)
+	if (y >= height)
 	{
-		y = image_data.height - 1;
+		y = height - 1;
 	}
 
 	dataType dx = 0, dy = 0;
@@ -383,29 +416,29 @@ bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind
 
 	if (x == 0)
 	{
-		dx = (image_data.imageDataPtr[x_new(x + 1, y, image_data.width)] - image_data.imageDataPtr[x_new(x, y, image_data.width)]) / sz.hx;
+		dx = (pbase_data[x_new(x + 1, y, width)] - pbase_data[x_new(x, y, width)]) / sz.hx;
 	}
-	else if (x == image_data.width - 1)
+	else if (x == width - 1)
 	{
-		dx = (image_data.imageDataPtr[x_new(x, y, image_data.width)] - image_data.imageDataPtr[x_new(x - 1, y, image_data.width)]) / sz.hx;
+		dx = (pbase_data[x_new(x, y, width)] - pbase_data[x_new(x - 1, y, width)]) / sz.hx;
 	}
 	else
 	{
-		dx = (image_data.imageDataPtr[x_new(x + 1, y, image_data.width)] - image_data.imageDataPtr[x_new(x - 1, y, image_data.width)]) / hx_c;
+		dx = (pbase_data[x_new(x + 1, y, width)] - pbase_data[x_new(x - 1, y, width)]) / hx_c;
 	}
 
 	if (y == 0)
 	{
-		dy = (image_data.imageDataPtr[x_new(x, y + 1, image_data.width)] - image_data.imageDataPtr[x_new(x, y, image_data.width)]) / sz.hy;
+		dy = (pbase_data[x_new(x, y + 1, width)] - pbase_data[x_new(x, y, width)]) / sz.hy;
 	}
-	else if (y == image_data.height - 1)
+	else if (y == height - 1)
 	{
-		dy = (image_data.imageDataPtr[x_new(x, y, image_data.width)] - image_data.imageDataPtr[x_new(x, y - 1, image_data.width)]) / sz.hy;
+		dy = (pbase_data[x_new(x, y, width)] - pbase_data[x_new(x, y - 1, width)]) / sz.hy;
 	}
 	else
 	{
-		const size_t xtmp = x_new(x, y + 1, image_data.width);
-		dy = (image_data.imageDataPtr[x_new(x, y + 1, image_data.width)] - image_data.imageDataPtr[x_new(x, y - 1, image_data.width)]) / hy_c;
+		const size_t xtmp = x_new(x, y + 1, width);
+		dy = (pbase_data[x_new(x, y + 1, width)] - pbase_data[x_new(x, y - 1, width)]) / hy_c;
 	}
 
 
@@ -418,4 +451,208 @@ bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind
 dataType norm(const Point2D pt)
 {
 	return (dataType)sqrt(pt.x * pt.x + pt.y * pt.y);
+}
+
+double signum(const double value)
+{
+	if (value > 0.0)
+		return 1.0;
+	else if (value == 0.0)
+		return 0.0;
+	else
+		return -1.0;
+}
+
+//LinkedCurve
+LinkedCurve createLinkedCurve()
+{
+	LinkedCurve linkedCurve;
+	linkedCurve.number_of_points = 0;
+	//linkedCurve.first_point = CreateLinkedPoint(first_point_x, first_point_y);
+	linkedCurve.length = 0;
+	return linkedCurve;
+}
+
+LinkedPoint* createLinkedPoint(const double point_x, const double point_y)
+{
+	LinkedPoint* linked_point = (LinkedPoint*)malloc(sizeof(LinkedPoint));
+	linked_point->x = point_x;
+	linked_point->y = point_y;
+	linked_point->next = NULL;
+	linked_point->previous = NULL;
+	linked_point->distance_to_next = 0;
+	linked_point->id = getNextID();
+	return linked_point;
+}
+
+bool initializeLinkedCurve(Curve2D * pcurve, LinkedCurve * plinked_curve, const bool reverse, const bool close_curve)
+{
+	if (pcurve == NULL || plinked_curve == NULL)
+	{
+		return false;
+	}
+
+	size_t from = 0, to = pcurve->numPoints - 1;
+	size_t increment = 1;
+	if (reverse)
+	{
+		from = pcurve->numPoints;
+		to = 0;
+		size_t increment = -1;
+	}
+
+	size_t i = from;
+	LinkedPoint * pcurrent_point = createLinkedPoint(pcurve->pPoints[from].x, pcurve->pPoints[from].y);
+	plinked_curve->first_point = pcurrent_point;
+	plinked_curve->number_of_points = 1;
+
+	while (i != to)
+	{
+		i += increment;
+
+		pcurrent_point = pushAfterPoint(plinked_curve, pcurrent_point, pcurve->pPoints[i].x, pcurve->pPoints[i].y);
+	}
+
+	pcurrent_point->next = plinked_curve->first_point;
+	plinked_curve->first_point->previous = pcurrent_point;
+	updateDistanceToNext(plinked_curve, pcurrent_point);
+
+	return true;
+}
+
+LinkedPoint* pushAfterPoint(LinkedCurve* linked_curve, LinkedPoint* linked_point, const double point_x, const double point_y)
+{
+	LinkedPoint* new_linked_point = createLinkedPoint(point_x, point_y);
+
+	if (linked_point->next != NULL)
+	{
+		new_linked_point->next = linked_point->next;
+		(linked_point->next)->previous = new_linked_point;
+	}
+	else if (linked_curve->first_point->previous == NULL)
+	{
+		linked_curve->first_point->previous = new_linked_point;
+		new_linked_point->next = linked_curve->first_point;
+	}
+
+	linked_point->next = new_linked_point;
+	new_linked_point->previous = linked_point;
+
+	linked_curve->number_of_points++;
+
+	updateDistanceToNext(linked_curve, linked_point);
+	updateDistanceToNext(linked_curve, new_linked_point);
+
+	return new_linked_point;
+}
+
+void releaseLinkedCurve(LinkedCurve* linked_curve)
+{
+	if (linked_curve == NULL)
+	{
+		return;
+	}
+
+	LinkedPoint* current_point = linked_curve->first_point;
+	if (current_point != NULL &&
+		current_point->previous != NULL)
+	{
+		(current_point->previous)->next = NULL;
+	}
+
+	LinkedPoint* next_point = NULL;
+
+	while (current_point != NULL) {
+		next_point = current_point->next;
+		free(current_point);
+		current_point = NULL;
+		linked_curve->number_of_points--;
+
+		current_point = next_point;
+	}
+}
+
+double updateDistanceToNext(LinkedCurve* linked_curve, LinkedPoint* linked_point)
+{
+	if (linked_curve == NULL ||
+		linked_point == NULL ||
+		linked_point->next == NULL)
+	{
+		return -1;
+	}
+
+	const double old_distance = linked_point->distance_to_next;
+
+	double hx = fabs(linked_point->x - linked_point->next->x);
+	double hy = fabs(linked_point->y - linked_point->next->y);
+
+	linked_point->distance_to_next = sqrt(hx * hx + hy * hy);
+	linked_point->distance_to_next_x = hx;
+	linked_point->distance_to_next_y = hy;
+
+	double diff = linked_point->distance_to_next - old_distance;
+
+	linked_curve->length = max(linked_curve->length + diff, 0);
+
+	return linked_point->distance_to_next;
+}
+
+bool updateLinkedCurveLengths(LinkedCurve* linked_curve)
+{
+	if (linked_curve == NULL)
+	{
+		return false;
+	}
+
+	LinkedPoint* current_point = linked_curve->first_point;
+	const unsigned long long first_id = current_point->id;
+	double curve_length = 0;
+	size_t number_of_points = 0;
+
+	do {
+		number_of_points++;
+		curve_length += updateDistanceToNext(linked_curve, current_point);
+		current_point = current_point->next;
+	} while (current_point->id != first_id);
+
+	linked_curve->number_of_points = number_of_points;
+	linked_curve->length = curve_length;
+
+	return true;
+}
+
+bool updatePoint(LinkedCurve* linked_curve, LinkedPoint* linked_point, const double x, const double y)
+{
+	if (linked_point == NULL)
+	{
+		return false;
+	}
+
+	if (linked_point->x == x &&
+		linked_point->y == y) {
+		return true;
+	}
+
+	linked_point->x = x;
+	linked_point->y = y;
+
+	if (linked_point->previous != NULL)
+	{
+		updateDistanceToNext(linked_curve, linked_point);
+		updateDistanceToNext(linked_curve, linked_point->previous);
+	}
+
+	return true;
+}
+
+static unsigned long long id = 1;
+
+unsigned long long getNextID()
+{
+	return id++;
+}
+
+void resetIDGenerator()
+{
+	id = 1;
 }

@@ -13,7 +13,8 @@ extern "C" {
 		GSUBSURF_MODEL,
 		LABELING,
 		GSUBSURF_ATLAS_MODEL,
-		CURVE_2D_EXPLCIT
+		CURVE_2D_EXPLCIT,
+		CURVE_2D_SEMI_IMPLICIT
 	} SegmentationMethod;
 
 	// Structure that holds the parameters used during 2d Lagrangean segmentation process.
@@ -26,6 +27,9 @@ extern "C" {
 		dataType mu;	//influence of edge detector gradient field
 		dataType lambda; //weight between projected gradient field and intensity similarity field
 		dataType eps;	//influence of curvature
+		dataType omega;	//redistribution speed
+		void(*get_velocity)(Image_Data2D*, double, double, double*, double*);//pointer to the function returning the velocity for a given coordinate
+		void(*get_g2)(Image_Data2D*, double, double, double*);//pointer to the function returning the g2 value for a given coordinate
 		bool open_curve;
 	} Lagrangean2DSegmentationParameters;
 

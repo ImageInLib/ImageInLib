@@ -59,6 +59,26 @@ extern "C" {
 		size_t numPoints;
 	} Curve2D;
 
+	// LinkedCurve
+	typedef struct LinkedPoint
+	{
+		struct LinkedPoint* next;
+		struct LinkedPoint* previous;
+		double x;
+		double y;
+		double distance_to_next;
+		double distance_to_next_x;
+		double distance_to_next_y;
+		unsigned long long id;
+	} LinkedPoint;
+
+	typedef struct LinkedCurve
+	{
+		size_t number_of_points;
+		LinkedPoint* first_point;
+		double length;
+	} LinkedCurve;
+
 // Common 3D Points - {x,y,z}
 	typedef struct {
 		dataType x, y, z;
@@ -231,6 +251,14 @@ extern "C" {
 	bool isCurveClosed(const Curve2D * pcurve);
 
 	/// <summary>
+	/// The function is implemented according to https://en.wikipedia.org/wiki/Polygon
+	/// It returns indicates, if the given curve is oriented possitively.
+	/// </summary>
+	/// <param name="pcurve">pointer to given curve</param>
+	/// <returns>true, if the curve given by pcurve is oriented positively (clock-wise) and false, otherwise (if the curve is unitialized as well)</returns>
+	bool isCurveOrientedPositively(const Curve2D* pcurve);
+
+	/// <summary>
 	/// Returns approximation of curve center of gravity
 	/// The function expects, that the curve points are distributed almost uniformly along the curve
 	/// </summary>
@@ -241,13 +269,15 @@ extern "C" {
 	/// <summary>
 	/// Calculates gradient in 2D point given by central difference on input data
 	/// </summary>
-	/// <param name="image_data">Input image data</param>
+	/// <param name="pbase_data">base (e.g. image) data</param>
+	/// <param name="width">base data width</param>
+	/// <param name="height">base data height</param>
 	/// <param name="ind_x">x coordinate of the finite volume to calculate the gradient component</param>
 	/// <param name="ind_y">y coordinate of the finite volume to calculate the gradient component</param>
 	/// <param name="sz">size of finite volumes</param>
 	/// <param name="grad">output - calculated gradient</param>
 	/// <returns>True, if it was possible to estimate gradient</returns>
-	bool getGradient2D(Image_Data2D image_data, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D * grad);
+	bool getGradient2D(dataType * pbase_data, const size_t width, const size_t height, const size_t ind_x, const size_t ind_y, const FiniteVolumeSize2D sz, Point2D * grad);
 
 	/// <summary>
 	/// The function returns the distance to given point from orgin (0,0) - in other words, calculated a norm of the given vector 
@@ -266,6 +296,81 @@ extern "C" {
 	* The function return the coordinates of the voxel with the higest value
 	*/
 	Point3D getPointWithTheHighestValue(dataType** distanceMapPtr, const size_t length, const size_t width, const size_t height);
+
+	/// <summary>
+	/// The function returns the signum of the given value parameter represented
+	/// by -1 for negative sign, 0 for zero value, 1 for possitive sign
+	/// </summary>
+	/// <param name="value">the value to be investigated</param>
+	/// <returns></returns>
+	double signum(const double value);
+
+	// Functions for LinkedCurve management
+
+	/// <summary>
+	/// the function kjust creates empty LinkedCurve
+	/// </summary>
+	/// <returns>Returns the entity of empty Linked|Curve</returns>
+	LinkedCurve createLinkedCurve();
+
+	/// <summary>
+	/// Creates a linked point given by coordinates, without any neighbours
+	/// </summary>
+	/// <param name="point_x">input x coordinate</param>
+	/// <param name="point_y">input y coordinate</param>
+	/// <returns>a pointer to created LinkedPoint</returns>
+	LinkedPoint* createLinkedPoint(const double point_x, const double point_y);
+
+	/// <summary>
+	/// Pushes a point by the coordinates x and y immediately after the given linked point 
+	/// </summary>
+	/// <param name="linked_curve">given linked curve</param>
+	/// <param name="linked_point">given linked point of the linked_curve (the function pushes a new point immediately after this point)</param>
+	/// <param name="point_x">x coordinate of the point to be pushed after linked_point</param>
+	/// <param name="point_y">y coordinate of the point to be pushed after linked_point</param>
+	/// <returns>the pointer to newlu pushed LinkedPoint</returns>
+	LinkedPoint* pushAfterPoint(LinkedCurve* linked_curve, LinkedPoint* linked_point, const double point_x, const double point_y);
+	
+	/// <summary>
+	/// Releases memory reserved for the points of given linked_curve 
+	/// </summary>
+	/// <param name="linked_curve">pointer to given LinkedCurve to be released</param>
+	void releaseLinkedCurve(LinkedCurve* linked_curve);		
+	/// <summary>
+	/// Initializes plinked_curve by data given by pcurve 
+	/// </summary>
+	/// <param name="pcurve">pointer to input Curve2D - serving as the base, plinked_curve is initialized based on</param>
+	/// <param name="plinked_curve">pointer to LinkedCurve to be initialized</param>
+	/// <param name="reverse">flag indicating, if the curve should be initialized in reverse order</param>
+	/// <param name="close_curve">flag indicating, if the curve should be cloesed or open</param>
+	/// <returns>Returns true, if the initialisation succeeds, false otherwide</returns>
+	bool initializeLinkedCurve(Curve2D* pcurve, LinkedCurve* plinked_curve, const bool reverse, const bool close_curve);
+	/// <summary>
+	/// Updates the distance to the next linked point and the lenght of the whole curve as well
+	/// </summary>
+	/// <param name="linked_curve">pointer to given LionkedCurve</param>
+	/// <param name="linked_point">pointer to given LinkedPoint</param>
+	/// <returns>returns the new length </returns>
+	double updateDistanceToNext(LinkedCurve* linked_curve, LinkedPoint* linked_point);
+	/// <summary>
+	/// update all local and global lengths of the given curve
+	/// </summary>
+	/// <param name="linked_curve">pointer to given curve</param>
+	/// <returns>returns true, if the lenghts were upadted successfully, false otherwise</returns>
+	bool updateLinkedCurveLengths(LinkedCurve* linked_curve);
+	/// <summary>
+	/// Updates thegiven LinkedPoint and corresponding lenths
+	/// </summary>
+	/// <param name="linked_curve">pointer to the input curve</param>
+	/// <param name="linked_point">poiner to the point to be updated</param>
+	/// <param name="x">input new x coordinate value</param>
+	/// <param name="y">input new y coordinate value</param>
+	/// <returns></returns>
+	bool updatePoint(LinkedCurve* linked_curve, LinkedPoint* linked_point, const double x, const double y);
+	
+//id generator	
+	void resetIDGenerator();
+	unsigned long long getNextID();
 #endif // !COMMON_FUNCTIONS
 
 #ifdef __cplusplus

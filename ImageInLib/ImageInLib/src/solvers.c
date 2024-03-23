@@ -3,100 +3,91 @@
 
 #include "solvers.h"
 
-bool sherman_morris(dataType* a, dataType* b, dataType* c, dataType alpha, dataType beta, dataType* x, dataType* ps, const size_t N)
+bool sherman_morris(SchemeData* pscheme_data, const size_t number_of_points)
 {
-    if (a == NULL || b == NULL || c == NULL || x == NULL || ps == NULL) {
-        return false;
-    }
+	if (pscheme_data == NULL)
+	{
+		return false;
+	}
 
-    int i = 0;
-    dataType fact = 0, gamma = 0;
-    dataType* bb = (dataType*)malloc(sizeof(dataType*) * (N + 2));
-    if (bb == NULL)
-    {
-        return false;
-    }
-    dataType* u = (dataType*)malloc(sizeof(dataType*) * (N + 2));
-    if (u == NULL) {
-        free(bb);
-        return false;
-    }
-    dataType* z = (dataType*)malloc(sizeof(dataType*) * (N + 2));
-    if (z == NULL) {
-        free(bb);
-        free(u);
-        return false;
-    }
+	//bb, aa, cc, cc[n], bb[1], u, ps
+	//double *a, double * b, double * c, double alpha, double beta, double * x, double * ps, int N
 
-    memcpy(bb, b, sizeof(dataType) * (N + 2));
-    gamma = -b[1];
-    bb[1] -= gamma;
-    bb[N] -= alpha * beta / gamma;
+	int i = 0;
+	double fact = 0, gamma = 0;
+	const double beta = pscheme_data[1].b;
+	const double alpha = pscheme_data[number_of_points].c;
 
-    thomas(a, bb, c, x, ps, N);
+	for (size_t i = 0; i < number_of_points + 2; i++)
+	{
+		pscheme_data[i].bb = pscheme_data[i].a; // toto bolo popletene pomenovanie
+	}
 
-    memset(u, 0, sizeof(dataType) * (N + 2));
+	gamma = -pscheme_data[1].a;  //popletene pomenovanie
+	pscheme_data[1].bb -= gamma;
+	pscheme_data[number_of_points].bb -= alpha * beta / gamma;
 
-    u[1] = gamma;
-    u[N] = alpha;
+	for (size_t i = 0; i < number_of_points + 2; i++)
+	{
+		pscheme_data[i].thomas_a = pscheme_data[i].b;
+		pscheme_data[i].thomas_b = pscheme_data[i].bb;
+		pscheme_data[i].thomas_c = pscheme_data[i].c;
+		pscheme_data[i].thomas_ps = pscheme_data[i].ps;
+	}
+	thomas(pscheme_data, number_of_points);
 
-    thomas(a, bb, c, z, u, N);
+	for (size_t i = 0; i < number_of_points + 2; i++)
+	{
+		pscheme_data[i].sol = pscheme_data[i].thomas_x;
+		pscheme_data[i].thomas_ps = 0;
+		pscheme_data[i].thomas_b = pscheme_data[i].bb;
+	}
 
-    fact = (x[1] + beta * x[N] / gamma) / ((dataType)1.0 + z[1] + beta * z[N] / gamma);
+	pscheme_data[1].thomas_ps = gamma;
+	pscheme_data[number_of_points].thomas_ps = alpha;
 
-    for (i = 1; i < N + 1; i++)
-    {
-        x[i] -= fact * z[i];
-    }
+	thomas(pscheme_data, number_of_points);
 
-    free(bb);
-    free(u);
-    free(z);
+	fact = (pscheme_data[1].sol + beta * pscheme_data[number_of_points].sol / gamma) /
+		(1.0 + pscheme_data[1].thomas_x + beta * pscheme_data[number_of_points].thomas_x / gamma);
 
-    return true;
+	for (size_t i = 1; i < number_of_points + 1; i++)
+	{
+		pscheme_data[i].sol -= fact * pscheme_data[i].thomas_x;
+	}
+
+	pscheme_data[0].sol = pscheme_data[number_of_points].sol;
+	pscheme_data[number_of_points + 1].sol = pscheme_data[1].sol;
+
+	return true;
 }
 
-bool thomas(dataType* a, dataType* b, dataType* c, dataType* x, dataType* ps, const size_t N)
+bool thomas(SchemeData* pscheme_data, const size_t number_of_points)
 {
-    if (a == NULL || b ==NULL || c == NULL || x == NULL || ps == NULL) {
-        return false;
-    }
+	if (pscheme_data == NULL)
+	{
+		return false;
+	}
 
-    size_t i = 0;
-    dataType m = 0;
-    dataType* bb = (dataType*)malloc(sizeof(dataType*) * (N + 2));
-    if (bb == NULL) {
-        return false;
-    }
-    dataType* pps = (dataType*)malloc(sizeof(dataType*) * (N + 2));
-    if (pps == NULL) {
-        free(bb);
-        return false;
-    }
+	double m = 0;
 
-    memcpy(bb, b, sizeof(dataType) * (N + 2));
-    memcpy(pps, ps, sizeof(dataType) * (N + 2));
+	//forward elimination
 
-    //Forward elimination phase
+	for (size_t i = 2; i < number_of_points + 1; i++)
+	{
+		m = pscheme_data[i].thomas_a / pscheme_data[i - 1].thomas_b;
+		pscheme_data[i].thomas_b -= m * pscheme_data[i - 1].c;
+		pscheme_data[i].thomas_ps -= m * pscheme_data[i - 1].thomas_ps;
+	}
 
-    for (i = 2; i < N + 1; i++)
-    {
-        m = a[i] / bb[i - 1];
-        bb[i] -= m * c[i - 1];
-        pps[i] -= m * pps[i - 1];
-    }
+	//backward substitution
 
-    //Bakward substitution phase
+	pscheme_data[number_of_points].thomas_x = pscheme_data[number_of_points].thomas_ps / pscheme_data[number_of_points].thomas_b;
 
-    x[N] = pps[N] / bb[N];
+	for (size_t i = number_of_points - 1; i >= 1; i--)
+	{
+		pscheme_data[i].thomas_x = (pscheme_data[i].thomas_ps - pscheme_data[i].thomas_c * pscheme_data[i + 1].thomas_x) / pscheme_data[i].thomas_b;
+	}
 
-    for (i = N - 1; i >= 1; i--)
-    {
-        x[i] = (pps[i] - c[i] * x[i + 1]) / bb[i];
-    }
-
-    free(bb);
-    free(pps);
-
-    return true;
+	return true;
 }
