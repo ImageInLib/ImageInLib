@@ -3,6 +3,7 @@
 #include "shapeGeneration.h"
 #include "generate_3d_shapes.h"
 #include "generate_2d_curves.h"
+#include "generate_3d_curves.h"
 
 void generateShape(dataType **inputDataPtr, unsigned char *outputDataPtr, Point3D center, Point3D blockCorner, dataType *fillBlockDimension,
 	size_t length, size_t width, size_t height, dataType sphereRadius, dataType smallRadius, dataType fillValue, ShapeType method)
@@ -48,6 +49,31 @@ size_t getNumberOfExpected2DCurvePoints(const Point2D* pInitialPoints, const siz
 		return howManyPointsForCircleCurve(pInitialPoints, initialPointsCount, pointsDistance);
 	case LINE_2D_CURVE:
 		return howManyPointsForStraightLineCurve(pInitialPoints, initialPointsCount, pointsDistance);
+	default:
+		return 0;
+	}
+}
+
+bool generate3DCurve(Curve3D* pCurve, const Point3D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance, ShapeType method) {
+	switch (method)
+	{
+	case SPHERE_3D_CURVE:
+		return generateSphereCurve(pCurve, pInitialPoints, initialPointsCount, pointsDistance);
+	//case LINE_3D_CURVE:
+	//	return generateStraightLineCurve(pCurve, pInitialPoints, initialPointsCount, pointsDistance);
+	default:
+		return false;
+	}
+}
+
+size_t getNumberOfExpected3DCurvePoints(const Point3D* pInitialPoints, const size_t initialPointsCount, const double pointsDistance, ShapeType method)
+{
+	switch (method)
+	{
+	case SPHERE_3D_CURVE:
+		return howManyPointsForSphereCurve(pInitialPoints, initialPointsCount, pointsDistance);
+	case LINE_3D_CURVE:
+		return howManyPointsFor3DStraightLineCurve(pInitialPoints, initialPointsCount, pointsDistance);
 	default:
 		return 0;
 	}

@@ -1,11 +1,5 @@
 #pragma warning(disable : 4996)
 
-/*
-* Author: Markjoe Olunna UBA
-* Purpose: ImageInLife project - 4D Image Segmentation Methods
-* Language:  C
-*/
-
 #include "common_functions.h"
 #include "data_load.h"
 #include "endianity_bl.h"
@@ -13,6 +7,7 @@
 #include <string.h>
 #include "endianity_bl.h"
 #include <stdlib.h>
+#include "imageInterpolation.h"
 
 
 bool load3dDataArrayVTK(unsigned char ** imageDataPtr, const size_t imageLength, const size_t imageWidth,
@@ -156,15 +151,6 @@ bool load3dDataArrayRAW(dataType ** imageDataPtr, const size_t imageLength, cons
 		}
 	}
   
-	//change from little endian to big endian
-	for (k = 0; k < imageHeight; k++)
-	{
-		for (i = 0; i < imageLength * imageWidth; i++)
-		{
-			revertBytes(&imageDataPtr[k][i], sizeof(dataType));
-		}
-	}
-  
 	fclose(file);
 	return true;
 }
@@ -188,7 +174,11 @@ bool load2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, con
 
     int pgmVersion;
     fgets(line1, 4, file);
-    sscanf(line1, "P%d\n", &pgmVersion);
+	if (sscanf(line1, "P%d", &pgmVersion) != 1) {
+		fclose(file);
+		free(line2);
+		return false; // Error reading PGM version
+	}
 
 	//filtering out potential comment
 	do {
@@ -196,7 +186,11 @@ bool load2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, con
 	} while (line2[0] == '#');
 
 	size_t tmpX, tmpY;
-	sscanf(line2, "%zu %zu", &tmpX, &tmpY);
+	if(sscanf(line2, "%zu %zu", &tmpX, &tmpY) != 2) {
+		fclose(file);
+		free(line2);
+		return false; // Error reading dimensions
+	}
 
 	if (xDim != tmpX || yDim != tmpY) {
 		//dimensions of used array is not compatible with loaded image
@@ -212,7 +206,10 @@ bool load2dPGM(dataType* imageDataPtr, const size_t xDim, const size_t yDim, con
 		size_t xd = 0;
         for (i = 0; i < yDim; i++) {
             for (j = 0; j < xDim; j++) {
-                fscanf(file, "%d", &intensity);
+				if (fscanf(file, "%d", &intensity) != 1) {
+					fclose(file);
+					return false; // Error reading intensity
+				}
 				// 2D to 1D representation for i, j
 				xd = x_new(j, i, xDim);
                 imageDataPtr[xd] = (dataType)intensity;
@@ -288,20 +285,54 @@ bool load2dArrayRAW(dataType* imageDataPtr, const size_t length, const size_t wi
 		}
 	}
 
-	//const size_t dataSize = sizeof(dataType);
-	//char* swapBuf = (char*)malloc(dataSize);
-	//revert byte
-	//if (revert == true) {
-	//	for (i = 0; i < pointsInSlice; i++) {
-	//		revertBytesEx(&imageDataPtr[i], dataSize, swapBuf);
-	//	}
-	//}
-
-	//for (size_t i = 0; i < pointsInSlice; i++) {
-	//	revertBytesEx(&imageDataPtr[i], dataSize, swapBuf);
-	//}
-	//free(swapBuf);
-
 	fclose(file);
+	return true;
+}
+
+//==================================
+
+bool loadListof3dPoints(Image_Data image, Curve3D* pCurve, const char* filePath, CoordinateSystem cSystem)
+{
+	
+	FILE* file;
+	if (fopen_s(&file, filePath, "r") != 0) {
+		printf("Enable to open");
+		return false;
+	}
+
+	Point3D previous_point;
+	double dist = 0;
+	
+	dataType x = 0, y = 0, z = 0;
+
+	for (size_t i = 0; i < pCurve->numPoints; i++) {
+		
+		fscanf_s(file, "%f", &x);
+		fscanf_s(file, ",");
+		fscanf_s(file, "%f", &y);
+		fscanf_s(file, ",");
+		fscanf_s(file, "%f", &z);
+		fscanf_s(file, "\n");
+
+		Point3D current_point = { x , y , z };
+
+		if (cSystem == REAL) {
+			//Get image coordinate
+			current_point = getImageCoordFromRealCoord3D(current_point, image.origin, image.spacing, image.orientation);
+			pCurve->pPoints[i].x = current_point.x;
+			pCurve->pPoints[i].y = current_point.y;
+			pCurve->pPoints[i].z = current_point.z;
+		}
+		else {
+			pCurve->pPoints[i].x = x;
+			pCurve->pPoints[i].y = y;
+			pCurve->pPoints[i].z = z;
+		}
+
+		previous_point = current_point;
+
+	}
+	fclose(file);
+
 	return true;
 }

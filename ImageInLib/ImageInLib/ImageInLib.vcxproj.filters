@@ -153,6 +153,18 @@
     <Filter Include="Source Files\morphology">
       <UniqueIdentifier>{4391e895-a529-434c-b679-ffc255f9b1ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Front Popagation">
+      <UniqueIdentifier>{36ab1fcf-3a04-40a0-9417-e3b735f1efc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Interfaces\Front Propagation">
+      <UniqueIdentifier>{c5469f28-b256-4cb7-9e80-79f612705d0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Front propagation">
+      <UniqueIdentifier>{30a00689-394c-48d7-b5ef-e72dd8b4ee6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interfaces\Front propagation">
+      <UniqueIdentifier>{2e9c3afb-187d-4f5b-96ff-c2396c3fd5d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\transformations.c">
@@ -332,6 +344,33 @@
     <ClCompile Include="src\solvers.c">
       <Filter>Source Files\Common</Filter>
     </ClCompile>
+    <ClCompile Include="src\segmentation3D_lagrangean.c">
+      <Filter>Source Files\Segmentation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\generate_3d_curves.c">
+      <Filter>Source Files\Shape Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\front_propagation.cpp">
+      <Filter>Source Files\Front Popagation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fast_marching_front_propagation.cpp">
+      <Filter>Source Files\Interfaces\Front Propagation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\partial_front_propagation.cpp">
+      <Filter>Source Files\Front Popagation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\path_extraction.cpp">
+      <Filter>Source Files\Front Popagation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gaussian.c">
+      <Filter>Source Files\Filtering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\double_front_propagation.cpp">
+      <Filter>Source Files\Front Popagation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\key_points_detection.cpp">
+      <Filter>Source Files\Front Popagation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\transformations.h">
@@ -501,6 +540,33 @@
     </ClInclude>
     <ClInclude Include="src\solvers.h">
       <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\segmentation3D_lagrangean.h">
+      <Filter>Header Files\Segmentation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\generate_3d_curves.h">
+      <Filter>Header Files\Shape Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\front_propagation.h">
+      <Filter>Header Files\Front propagation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\fast_marching_front_propagation.h">
+      <Filter>Header Files\Interfaces\Front propagation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\partial_front_propagation.h">
+      <Filter>Header Files\Front propagation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\path_extraction.h">
+      <Filter>Header Files\Front propagation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gaussian.h">
+      <Filter>Header Files\Filtering</Filter>
+    </ClInclude>
+    <ClInclude Include="include\double_front_propagation.h">
+      <Filter>Header Files\Front propagation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\key_points_detection.h">
+      <Filter>Header Files\Front propagation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

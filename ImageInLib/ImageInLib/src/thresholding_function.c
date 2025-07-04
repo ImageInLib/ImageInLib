@@ -1,8 +1,4 @@
-/*
-* Author: Markjoe Olunna UBA
-* Purpose: ImageInLife project - 4D Image Segmentation Methods
-* Language:  C
-*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "thresholding.h"
@@ -216,7 +212,6 @@ bool thresholdingOTSU(dataType** image3DPtr, const size_t xDim, const size_t yDi
 			optimalThresholdValue = T;
 		}
 	}
-	printf("optimal threshold value = %d \n", optimalThresholdValue);
 
 	//Threshold
 	for (k = 0; k < zDim; k++) {

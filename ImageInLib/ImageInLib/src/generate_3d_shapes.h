@@ -38,6 +38,8 @@ extern "C" {
 	bool generateSphere(dataType ** dataArray3D, Point3D center, size_t length, size_t width, size_t height,
 		dataType sphereRadius, dataType fillValue, const char * outputPathPtr);
 
+	bool generate3DSpiralTube(Image_Data image, Point3D center, double radius, double length, const size_t turns, const size_t segment_per_turn);
+
 #endif // !GENERATE3DSHAPES_H
 
 #ifdef __cplusplus

@@ -74,9 +74,6 @@ dataType mean_hausdorff(dataType ** curveA_Pointer, dataType ** curveB_Pointer, 
 	free(dist1);
 	free(surface_points_a);
 	free(surface_points_b);
-	dist1 = NULL;
-	surface_points_a = NULL;
-	surface_points_b = NULL;
 	//==============================================================================
 	return mhd;
 	//==============================================================================

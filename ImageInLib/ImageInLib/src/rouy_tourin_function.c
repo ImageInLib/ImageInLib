@@ -29,7 +29,7 @@ bool rouyTourinFunction_3D(dataType ** distance3DPtr, dataType ** image3DPtr, da
 
 	size_t sliceBound = (rowDim_ext - 1)* columnDim_ext;
 	size_t k_o, i_o, j_o, j;
-	const size_t noIteration = (size_t)(sqrt((double)(xDim * xDim + yDim * yDim + zDim * zDim)) / tau);
+	const size_t noIteration = 1000;//(size_t)(sqrt((double)(xDim * xDim + yDim * yDim + zDim * zDim)) / tau);
 
 	const size_t dim2D_ext = rowDim_ext * columnDim_ext;
 	dataType tauu = tau / h, mass = 10.0;

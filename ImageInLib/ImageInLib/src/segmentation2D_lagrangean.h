@@ -18,7 +18,7 @@ extern "C" {
 	/// <param name="pOutputPathPtr">Destination path, where resulting segmentation should be strored</param>
 	/// <param name="resultSegmentation">Resulting Curve2D segmentation curve</param>
 	/// <returns>Returns true in case of sucessfully finished segmentatio process. Otherwise returns false</returns>
-	bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D, 
+	bool lagrangeanExplicit2DCurveSegmentation(Image_Data2D inputImage2D,
 		const Lagrangean2DSegmentationParameters* pSegmentationParams, unsigned char* pOutputPathPtr, Curve2D* resultSegmentation);
 
 
